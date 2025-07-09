@@ -1,104 +1,98 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>IngressAI | Venda de Ingressos com Inteligência</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <style>
-      body {
-        margin: 0;
-        font-family: 'Segoe UI', sans-serif;
-        background-color: #0f172a; /* tom azul escuro */
-        color: #f8fafc;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        min-height: 100vh;
-        padding: 20px;
-        text-align: center;
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>IngressAI - Seu ingresso no futuro</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Arial', sans-serif;
+      background-color: #0066cc;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .logo {
+      height: 120px;
+      margin-bottom: 20px;
+      opacity: 0;
+      animation: fadeInLogo 1.5s ease forwards;
+    }
+
+    @keyframes fadeInLogo {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
       }
-
-      .logo {
-        width: 180px;
-        margin-bottom: 30px;
+      to {
+        opacity: 1;
+        transform: translateY(0);
       }
+    }
 
-      h1 {
-        font-size: 2.5rem;
-        margin-bottom: 10px;
-      }
+    h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+    }
 
-      p {
-        font-size: 1.2rem;
-        max-width: 600px;
-        margin-bottom: 30px;
-        color: #cbd5e1;
-      }
+    p {
+      font-size: 1.2em;
+      max-width: 600px;
+      margin-bottom: 40px;
+    }
 
-      .buttons {
-        display: flex;
-        gap: 20px;
-        flex-wrap: wrap;
-        justify-content: center;
-      }
+    .buttons {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
 
-      .btn {
-        background-color: #1d4ed8;
-        color: white;
-        padding: 12px 20px;
-        border: none;
-        border-radius: 10px;
-        font-size: 1rem;
-        cursor: pointer;
-        text-decoration: none;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        transition: background-color 0.3s ease;
-      }
+    .button {
+      background-color: #ffffff;
+      color: #0066cc;
+      padding: 14px 20px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.3s ease;
+    }
 
-      .btn:hover {
-        background-color: #2563eb;
-      }
+    .button:hover {
+      background-color: #e0e0e0;
+    }
 
-      footer {
-        margin-top: 40px;
-        font-size: 0.9rem;
-        color: #94a3b8;
-      }
+    .button i {
+      font-size: 1.2em;
+    }
+  </style>
+</head>
+<body>
+  <img src="./assets/logo.png" alt="IngressAI Logo" class="logo" />
+  <h1>IngressAI</h1>
+  <p>Automatize a venda e controle de ingressos via WhatsApp com inteligência artificial.</p>
 
-      .btn i {
-        font-size: 1.2rem;
-      }
-    </style>
-  </head>
-  <body>
-
-    <!-- LOGO -->
-    <img src="logo.png" alt="IngressAI Logo" class="logo" />
-
-    <h1>IngressAI</h1>
-    <p>Venda de ingressos automatizada com inteligência artificial. Crie, venda e valide seus eventos de forma fácil com nosso bot no WhatsApp.</p>
-
-    <!-- BOTÕES -->
-    <div class="buttons">
-      <a href="https://wa.me/5534999992747" class="btn">
-        <i class="fas fa-robot"></i> Acessar o Bot
-      </a>
-      <a href="mailto:contato@ingressai.chat" class="btn">
-        <i class="fas fa-envelope"></i> Enviar E-mail
-      </a>
-      <a href="https://instagram.com/ingressai" class="btn" target="_blank">
-        <i class="fab fa-instagram"></i> Instagram
-      </a>
-    </div>
-
-    <!-- RODAPÉ -->
-    <footer>
-      © 2025 IngressAI • Todos os direitos reservados
-    </footer>
-
-  </body>
+  <div class="buttons">
+    <a href="https://instagram.com/seuperfil" class="button" target="_blank">
+      <i class="fab fa-instagram"></i> Instagram
+    </a>
+    <a href="mailto:contato@ingressai.chat" class="button">
+      <i class="fas fa-envelope"></i> Email
+    </a>
+    <a href="https://wa.me/5534999992747" class="button" target="_blank">
+      <i class="fas fa-robot"></i> Iniciar com o Bot
+    </a>
+  </div>
+</body>
 </html>
