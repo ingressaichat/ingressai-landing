@@ -2,124 +2,106 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>IngressAI</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: 'Inter', sans-serif;
-      scroll-behavior: smooth;
     }
 
     body {
-      background: #0f0f0f;
-      color: #ffffff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #0057d8;
+      color: white;
+      scroll-behavior: smooth;
+    }
+
+    .section {
       min-height: 100vh;
-      overflow-x: hidden;
-    }
-
-    header {
-      position: sticky;
-      top: 0;
-      background: #0f0f0f;
-      width: 100%;
-      text-align: center;
-      padding: 2rem 0 1rem;
-      z-index: 1000;
-    }
-
-    header img {
-      height: 80px;
-      transition: transform 0.3s ease;
-    }
-
-    header img:hover {
-      transform: scale(1.05);
-    }
-
-    .slogan {
-      margin-top: 2rem;
-      font-size: 1.4rem;
-      font-weight: 600;
-      text-align: center;
-      max-width: 90%;
-      line-height: 1.6;
-      color: #ccc;
-      opacity: 0;
-      transform: translateY(40px);
-      animation: fadeUp 1s ease forwards;
-    }
-
-    @keyframes fadeUp {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .btn-container {
-      margin-top: 4rem;
       display: flex;
       flex-direction: column;
-      gap: 1.5rem;
+      justify-content: center;
       align-items: center;
-      animation: fadeIn 1.5s ease-in;
+      padding: 40px 20px;
+      text-align: center;
+    }
+
+    .logo {
+      max-width: 160px;
+      margin-bottom: 40px;
     }
 
     .btn {
-      padding: 1rem 2rem;
+      background-color: white;
+      color: #0057d8;
       border: none;
-      border-radius: 12px;
-      background: #ffffff;
-      color: #0f0f0f;
-      font-size: 1rem;
-      font-weight: 600;
+      border-radius: 10px;
+      padding: 14px 24px;
+      margin: 10px 0;
+      font-size: 18px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 12px;
       text-decoration: none;
-      transition: background 0.3s, transform 0.3s;
-      width: 260px;
-      text-align: center;
+      transition: background-color 0.3s ease;
     }
 
     .btn:hover {
-      background: #00ffcc;
-      transform: scale(1.03);
+      background-color: #f0f0f0;
+    }
+
+    .btn img {
+      width: 24px;
+      height: 24px;
     }
 
     footer {
-      margin-top: auto;
-      padding: 2rem 0;
-      font-size: 0.9rem;
-      color: #777;
+      padding: 30px 20px;
+      font-size: 14px;
+      opacity: 0.7;
       text-align: center;
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <img src="logo.png" alt="Logo da IngressAI" />
-  </header>
-
-  <section class="slogan">
-    IngressAI: a revolução automatizada na venda e validação de ingressos via WhatsApp.
+  <!-- LOGO -->
+  <section class="section" id="home">
+    <img src="logo.png" alt="IngressAI Logo" class="logo" />
+    <p style="font-size: 20px; max-width: 300px;">
+      Bem-vindo ao IngressAI – automação de ingressos via WhatsApp com inteligência.
+    </p>
   </section>
 
-  <section class="btn-container">
-    <a href="https://www.instagram.com/ingressai" target="_blank" class="btn">Instagram</a>
-    <a href="https://wa.me/5534999992747" target="_blank" class="btn">Falar com o Bot</a>
-    <a href="mailto:contato@ingressai.chat" class="btn">Contato por E-mail</a>
+  <!-- INSTAGRAM -->
+  <section class="section" id="instagram">
+    <a href="https://www.instagram.com/ingressai" target="_blank" class="btn">
+      <img src="https://cdn-icons-png.flaticon.com/512/174/174855.png" alt="Instagram">
+      Siga no Instagram
+    </a>
+  </section>
+
+  <!-- BOT WHATSAPP -->
+  <section class="section" id="bot">
+    <a href="https://wa.me/5534999992747" target="_blank" class="btn">
+      <img src="https://cdn-icons-png.flaticon.com/512/1384/1384007.png" alt="WhatsApp Bot">
+      Iniciar Bot do WhatsApp
+    </a>
+  </section>
+
+  <!-- CONTATO EMAIL -->
+  <section class="section" id="contato">
+    <a href="mailto:contato@ingressai.chat" class="btn">
+      <img src="https://cdn-icons-png.flaticon.com/512/561/561127.png" alt="Email Icon">
+      Enviar E-mail
+    </a>
   </section>
 
   <footer>
-    © 2025 IngressAI. Todos os direitos reservados.
+    © 2025 IngressAI.chat — Todos os direitos reservados.
   </footer>
 
 </body>
