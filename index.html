@@ -4,105 +4,106 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>IngressAI</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
   <style>
     body {
       margin: 0;
-      padding: 0;
-      background-color: #0057D9;
-      font-family: 'Inter', sans-serif;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #0057d9;
       color: white;
       display: flex;
       flex-direction: column;
       align-items: center;
-      text-align: center;
     }
 
-    .container {
-      max-width: 500px;
-      padding: 40px 20px;
+    header {
+      margin-top: 60px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
     }
 
-    .logo {
+    header img {
       width: 120px;
       height: auto;
-      margin-bottom: 30px;
     }
 
     h1 {
-      font-size: 1.6rem;
-      font-weight: 600;
-      margin-bottom: 40px;
+      font-size: 1.2rem;
+      font-weight: 400;
+      text-align: center;
+      max-width: 90%;
     }
 
-    .btns {
+    .buttons {
+      margin-top: 60px;
       display: flex;
       flex-direction: column;
       gap: 20px;
     }
 
-    .btn {
+    .button {
       display: flex;
       align-items: center;
       justify-content: center;
+      gap: 10px;
       background-color: white;
-      color: #0057D9;
-      border-radius: 50px;
-      padding: 12px 20px;
-      font-weight: 600;
+      color: #0057d9;
+      padding: 14px 24px;
+      border-radius: 12px;
       font-size: 1rem;
       text-decoration: none;
       transition: all 0.3s ease;
+      width: 260px;
     }
 
-    .btn:hover {
-      background-color: #e0e0e0;
+    .button:hover {
+      background-color: #e5e5e5;
     }
 
-    .btn svg {
-      margin-right: 10px;
+    .icon {
       width: 20px;
       height: 20px;
     }
 
-    @media (min-width: 600px) {
-      .btns {
-        flex-direction: row;
+    footer {
+      margin-top: 60px;
+      font-size: 0.8rem;
+      opacity: 0.5;
+    }
+
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 1rem;
       }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <img src="https://sdmntprsouthcentralus.oaiusercontent.com/files/00000000-c494-61f7-8d8b-d55ce8cd03e3/raw" alt="Logo IngressAI" class="logo" />
+  <header>
+    <!-- LOGO -->
+    <img src="https://sdmntprsouthcentralus.oaiusercontent.com/files/00000000-c494-61f7-8d8b-d55ce8cd03e3/raw?se=2025-07-10T23%3A39%3A51Z&sp=r&sv=2024-08-04&sr=b&scid=f624e4c0-2001-525b-a2b6-47f3f87e673c&skoid=c953efd6-2ae8-41b4-a6d6-34b1475ac07c&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2025-07-10T18%3A13%3A41Z&ske=2025-07-11T18%3A13%3A41Z&sks=b&skv=2024-08-04&sig=TpWycUIVdMw%2BFz6baxMM4n3%2Bv8MvRwjshvBxzuw/8F0%3D" alt="IngressAI Logo">
+    
+    <h1>Automatize a venda e controle de ingressos via WhatsApp com inteligência artificial.</h1>
+  </header>
 
-    <h1>Automatize a venda e controle de ingressos via WhatsApp com inteligência artificial</h1>
+  <section class="buttons">
+    <a class="button" href="https://wa.me/5534999992747" target="_blank">
+      <img src="https://cdn-icons-png.flaticon.com/512/2111/2111728.png" class="icon" alt="Bot WhatsApp" />
+      Acessar o Bot
+    </a>
+    <a class="button" href="https://instagram.com/ingressai" target="_blank">
+      <img src="https://cdn-icons-png.flaticon.com/512/1384/1384063.png" class="icon" alt="Instagram" />
+      Instagram
+    </a>
+    <a class="button" href="mailto:contato@ingressai.chat">
+      <img src="https://cdn-icons-png.flaticon.com/512/561/561127.png" class="icon" alt="Email" />
+      contato@ingressai.chat
+    </a>
+  </section>
 
-    <div class="btns">
-      <a href="https://wa.me/5534999992747" class="btn">
-        <!-- Ícone WhatsApp -->
-        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M20.5 3.5A11.5 11.5 0 003.5 20.5L2 24l3.6-1.5A11.5 11.5 0 0020.5 3.5zm-9 17c-1.9 0-3.7-.6-5.2-1.6l-.4-.3-2.2.9.9-2.1-.3-.4A9.5 9.5 0 1111.5 20.5zM8 9c.3-.5.6-1 .9-1.5.3-.5.6-1 .9-1.5.3-.5.6-1 .9-1.5.3-.5.6-1 .9-1.5.3-.5.6-1 .9-1.5C13.7 2 13.9 2 14 2c.1 0 .3.1.4.2.1.1.3.3.3.5 0 .1 0 .3-.1.4-.2.2-.3.4-.5.5-.2.2-.4.3-.6.4-.2.1-.5.2-.7.3-.2.1-.4.3-.6.4-.2.2-.4.4-.5.6-.2.2-.3.4-.4.6-.1.2-.2.5-.3.7-.1.2-.3.4-.4.6-.2.2-.4.4-.6.5-.2.2-.4.3-.6.4-.2.1-.5.2-.7.3-.2.1-.4.3-.6.4-.2.2-.4.4-.5.6-.1.2-.2.5-.3.7-.1.2-.3.4-.4.6-.2.2-.4.4-.6.5-.2.2-.4.3-.6.4-.2.1-.5.2-.7.3-.2.1-.4.3-.6.4-.2.2-.4.4-.5.6-.1.2-.2.5-.3.7-.1.2-.3.4-.4.6-.2.2-.4.4-.6.5-.2.2-.4.3-.6.4-.2.1-.5.2-.7.3-.2.1-.4.3-.6.4-.2.2-.4.4-.5.6C8.1 14.3 8 14.7 8 15c0 .1 0 .3.1.4s.3.3.5.3c.1 0 .3 0 .4-.1.2-.1.4-.3.5-.5.2-.2.3-.4.4-.6.1-.2.2-.5.3-.7.1-.2.3-.4.4-.6.2-.2.4-.4.6-.5.2-.2.4-.3.6-.4.2-.1.5-.2.7-.3.2-.1.4-.3.6-.4.2-.2.4-.4.5-.6.2-.2.3-.5.4-.7.1-.2.3-.4.4-.6.2-.2.4-.4.6-.5.2-.2.4-.3.6-.4.2-.1.5-.2.7-.3.2-.1.4-.3.6-.4.2-.2.4-.4.5-.6.1-.2.2-.5.3-.7.1-.2.3-.4.4-.6.2-.2.4-.4.6-.5.2-.2.4-.3.6-.4.2-.1.5-.2.7-.3.2-.1.4-.3.6-.4.2-.2.4-.4.5-.6C13.9 2.3 14 2.1 14 2c0-.1-.1-.3-.2-.4s-.3-.3-.5-.3-.3 0-.5.1c-.2.1-.4.3-.5.5-.2.2-.3.4-.4.6-.1.2-.2.5-.3.7-.1.2-.3.4-.4.6-.2.2-.4.4-.6.5-.2.2-.4.3-.6.4-.2.1-.5.2-.7.3-.2.1-.4.3-.6.4-.2.2-.4.4-.5.6-.2.2-.3.5-.4.7-.1.2-.3.4-.4.6-.2.2-.4.4-.6.5-.2.2-.4.3-.6.4-.2.1-.5.2-.7.3-.2.1-.4.3-.6.4-.2.2-.4.4-.5.6C8.1 14.3 8 14.7 8 15z"/>
-        </svg>
-        Bot WhatsApp
-      </a>
-      <a href="https://instagram.com/ingressai" class="btn">
-        <!-- Ícone Instagram -->
-        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M12 2.2c3.2 0 3.6 0 4.9.1 1.3.1 2 .3 2.5.5.6.2 1 .5 1.4.9.4.4.7.8.9 1.4.2.5.4 1.2.5 2.5.1 1.3.1 1.7.1 4.9s0 3.6-.1 4.9c-.1 1.3-.3 2-.5 2.5-.2.6-.5 1-.9 1.4-.4.4-.8.7-1.4.9-.5.2-1.2.4-2.5.5-1.3.1-1.7.1-4.9.1s-3.6 0-4.9-.1c-1.3-.1-2-.3-2.5-.5-.6-.2-1-.5-1.4-.9-.4-.4-.7-.8-.9-1.4-.2-.5-.4-1.2-.5-2.5-.1-1.3-.1-1.7-.1-4.9s0-3.6.1-4.9c.1-1.3.3-2 .5-2.5.2-.6.5-1 .9-1.4.4-.4.8-.7 1.4-.9.5-.2 1.2-.4 2.5-.5C8.4 2.2 8.8 2.2 12 2.2m0-2.2C8.7 0 8.3 0 7 .1c-1.4.1-2.4.3-3.2.6-.9.3-1.6.7-2.3 1.4-.7.7-1.1 1.4-1.4 2.3C0 5.6-.2 6.6-.1 8 .1 9.3 0 9.7 0 12c0 2.3.1 2.7.1 4 .1 1.4.3 2.4.6 3.2.3.9.7 1.6 1.4 2.3.7.7 1.4 1.1 2.3 1.4.9.3 1.9.5 3.2.6 1.3.1 1.7.1 4 .1s2.7 0 4-.1c1.4-.1 2.4-.3 3.2-.6.9-.3 1.6-.7 2.3-1.4.7-.7 1.1-1.4 1.4-2.3.3-.9.5-1.9.6-3.2.1-1.3.1-1.7.1-4s0-2.7-.1-4c-.1-1.4-.3-2.4-.6-3.2-.3-.9-.7-1.6-1.4-2.3-.7-.7-1.4-1.1-2.3-1.4C18.4.3 17.4.1 16 .1 14.7 0 14.3 0 12 0z"/>
-          <path d="M12 5.8A6.2 6.2 0 105.8 12 6.2 6.2 0 0012 5.8m0-2.2A8.4 8.4 0 113.6 12 8.4 8.4 0 0112 3.6zM18.4 4.6a1.6 1.6 0 11-3.2 0 1.6 1.6 0 013.2 0z"/>
-        </svg>
-        Instagram
-      </a>
-      <a href="mailto:contato@ingressai.chat" class="btn">
-        <!-- Ícone E-mail -->
-        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M2 4h20v16H2z" fill="none"/>
-          <path d="M22 4H2c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h20c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 2v.01L12 13 2 6.01V6h20zM2 18V8l10 7 10-7v10H2z"/>
-        </svg>
-        E-mail
-      </a>
-    </div>
-  </div>
+  <footer>
+    © 2025 IngressAI. Todos os direitos reservados.
+  </footer>
 </body>
 </html>
