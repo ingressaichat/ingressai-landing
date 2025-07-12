@@ -3,170 +3,238 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>IngressAI • Seu ingresso via WhatsApp</title>
+  <title>IngressAI – Ingressos via WhatsApp</title>
   <link rel="icon" href="logo.png" type="image/png">
   <style>
     :root {
-      --cor-principal: #4f46e5;
-      --cor-hover: #4338ca;
-      --cor-fundo: #f9fafb;
-      --cor-texto: #111;
+      --azul-principal: #007aff;
+      --fundo: #fefefe;
+      --texto: #1c1c1e;
+      --cinza-claro: #f2f2f7;
     }
 
     * {
-      box-sizing: border-box;
       margin: 0;
       padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
     }
 
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: var(--cor-fundo);
-      color: var(--cor-texto);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: var(--fundo);
+      color: var(--texto);
       line-height: 1.6;
       padding: 0 1rem;
-      animation: fadeIn 1s ease-out;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
     }
 
     header {
       text-align: center;
-      padding: 3rem 1rem 2rem;
+      padding: 4rem 1rem 2rem;
+      animation: fadeIn 1s ease forwards;
     }
 
     header img {
-      width: 80px;
-      margin-bottom: 1rem;
+      width: 90px;
+      margin-bottom: 1.5rem;
     }
 
     h1 {
-      font-size: 2.2rem;
+      font-size: 2.6rem;
       font-weight: 600;
+      margin-bottom: 1rem;
     }
 
-    p.descricao {
-      color: #555;
-      font-size: 1.1rem;
-      margin-top: 0.5rem;
+    p.sub {
+      font-size: 1.2rem;
+      color: #666;
     }
 
-    .cta {
+    .hero-cta {
+      margin-top: 3rem;
       display: flex;
       flex-direction: column;
-      align-items: center;
       gap: 1rem;
-      margin: 2.5rem 0;
+      align-items: center;
     }
 
-    .cta a {
-      display: flex;
+    .hero-cta a {
+      display: inline-flex;
       align-items: center;
-      justify-content: center;
       gap: 0.5rem;
       padding: 0.9rem 2rem;
-      background-color: var(--cor-principal);
+      background-color: var(--azul-principal);
       color: white;
-      border-radius: 10px;
-      text-decoration: none;
+      border-radius: 30px;
       font-weight: 500;
+      text-decoration: none;
       font-size: 1rem;
-      transition: background-color 0.3s ease, transform 0.2s ease;
-      min-width: 240px;
+      transition: background 0.3s ease, transform 0.2s ease;
     }
 
-    .cta a:hover {
-      background-color: var(--cor-hover);
-      transform: scale(1.02);
+    .hero-cta a:hover {
+      background-color: #005fc4;
+      transform: scale(1.03);
+    }
+
+    section {
+      max-width: 800px;
+      margin: 3rem auto;
+      padding: 0 1rem;
+      animation: fadeIn 1.5s ease forwards;
+    }
+
+    .beneficios {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    .beneficio {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .beneficio-icon {
+      font-size: 2rem;
+    }
+
+    .como-funciona {
+      margin-top: 4rem;
+    }
+
+    .como-funciona h2,
+    .eventos h2 {
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+    }
+
+    .como-funciona ol {
+      padding-left: 1.2rem;
     }
 
     .eventos {
-      max-width: 600px;
-      margin: 0 auto 3rem;
-      padding: 2rem 1rem;
-      background: white;
-      border-radius: 16px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    }
-
-    .eventos h2 {
-      font-size: 1.6rem;
-      text-align: center;
-      margin-bottom: 1.5rem;
+      background: var(--cinza-claro);
+      padding: 2rem;
+      border-radius: 20px;
+      margin-top: 3rem;
     }
 
     .evento {
       margin-bottom: 1.5rem;
-      padding: 1rem;
-      border: 1px solid #eee;
-      border-radius: 10px;
-      background-color: #fafafa;
     }
 
     .evento h3 {
-      margin-bottom: 0.5rem;
-    }
-
-    .evento p {
-      margin: 0.3rem 0;
+      font-size: 1.2rem;
+      margin-bottom: 0.3rem;
     }
 
     footer {
       text-align: center;
-      font-size: 0.9rem;
-      color: #aaa;
-      padding: 2rem 0;
+      font-size: 0.85rem;
+      color: #888;
+      margin-top: 4rem;
+      padding-bottom: 2rem;
     }
 
     footer a {
-      color: var(--cor-principal);
+      color: var(--azul-principal);
       text-decoration: none;
       margin: 0 0.5rem;
     }
 
-    @media (min-width: 600px) {
-      .cta {
+    @media (min-width: 700px) {
+      .beneficios {
         flex-direction: row;
-        justify-content: center;
+        justify-content: space-between;
       }
+
+      .beneficio {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
 <body>
+
   <header>
-    <img src="logo.png" alt="IngressAI Logo">
+    <img src="logo.png" alt="IngressAI logo">
     <h1>IngressAI</h1>
-    <p class="descricao">Compre e gerencie seus ingressos direto pelo WhatsApp</p>
+    <p class="sub">Ingressos digitais direto no seu WhatsApp</p>
+
+    <div class="hero-cta">
+      <a href="https://wa.me/5534999992747">🎟️ Comprar ingresso</a>
+      <a href="mailto:contato@ingressai.chat">📩 Fale com a gente</a>
+      <a href="https://instagram.com/ingressai" target="_blank">📷 Instagram</a>
+    </div>
   </header>
 
-  <div class="cta">
-    <a href="https://wa.me/5534999992747" target="_blank">🎟️ Comprar Ingresso</a>
-    <a href="mailto:contato@ingressai.chat">💬 Fale com a gente</a>
-    <a href="https://instagram.com/ingressai" target="_blank">📷 Instagram</a>
-  </div>
-
-  <section class="eventos">
-    <h2>Eventos em destaque</h2>
-    <div class="evento">
-      <h3>🎉 Sunset Universitário</h3>
-      <p>📅 26 de julho • Uberaba</p>
-      <p>💵 A partir de R$20,00</p>
+  <section>
+    <div class="beneficios">
+      <div class="beneficio">
+        <div class="beneficio-icon">⚡️</div>
+        <div>
+          <h3>Rápido e prático</h3>
+          <p>Compre em segundos, sem login ou apps.</p>
+        </div>
+      </div>
+      <div class="beneficio">
+        <div class="beneficio-icon">🔒</div>
+        <div>
+          <h3>Seguro</h3>
+          <p>Pagamento via Pix ou Cartão com total segurança.</p>
+        </div>
+      </div>
+      <div class="beneficio">
+        <div class="beneficio-icon">📱</div>
+        <div>
+          <h3>Ingressos no WhatsApp</h3>
+          <p>Receba e valide direto no celular.</p>
+        </div>
+      </div>
     </div>
-    <div class="evento">
-      <h3>🎊 Baile da IngressAI</h3>
-      <p>📅 10 de agosto • Uberlândia</p>
-      <p>💵 A partir de R$30,00</p>
+
+    <div class="como-funciona">
+      <h2>Como funciona</h2>
+      <ol>
+        <li>Escolha um evento disponível</li>
+        <li>Pague com Pix ou Cartão</li>
+        <li>Receba o ingresso por WhatsApp</li>
+        <li>Apresente o QR Code na entrada</li>
+      </ol>
+    </div>
+
+    <div class="eventos">
+      <h2>🎉 Eventos em destaque</h2>
+      <div class="evento">
+        <h3>🎊 Baile da IngressAI</h3>
+        <p>📍 Uberlândia – 10 de agosto</p>
+        <p>🎫 A partir de R$30,00</p>
+      </div>
+      <div class="evento">
+        <h3>🌅 Sunset Universitário</h3>
+        <p>📍 Uberaba – 26 de julho</p>
+        <p>🎫 A partir de R$20,00</p>
+      </div>
     </div>
   </section>
 
   <footer>
-    © 2025 IngressAI. Todos os direitos reservados.
-    <br>
-    <a href="/politica.html">Política de Privacidade</a> |
+    © 2025 IngressAI. Todos os direitos reservados. <br>
+    <a href="/politica.html">Política de Privacidade</a> •
     <a href="/termos.html">Termos de Uso</a>
   </footer>
+
 </body>
 </html>
