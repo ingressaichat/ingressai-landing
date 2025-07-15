@@ -3,153 +3,194 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IngressAI – Seu ingresso digital inteligente</title>
+  <title>IngressAI – Ingressos digitais inteligentes</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet" />
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       font-family: 'Inter', sans-serif;
-      background-color: #f9f9f9;
-      color: #111;
+      background-color: #f5f5f7;
+      color: #1c1c1e;
     }
+
     header {
       text-align: center;
       padding: 4rem 1rem 2rem;
       background: #fff;
-      border-bottom: 1px solid #eaeaea;
     }
+
     header img {
-      max-width: 180px;
+      max-width: 160px;
       margin-bottom: 1rem;
     }
+
     header h1 {
-      font-size: 1.8rem;
+      font-size: 2rem;
       font-weight: 600;
       margin: 0;
     }
+
+    header p {
+      font-size: 1rem;
+      color: #555;
+      margin-top: 0.5rem;
+    }
+
     section {
-      padding: 2rem 1rem;
+      padding: 3rem 1rem;
       max-width: 600px;
       margin: 0 auto;
     }
+
+    h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
     .form-group {
       margin-bottom: 1.5rem;
     }
+
     label {
       display: block;
+      margin-bottom: 0.4rem;
       font-weight: 500;
-      margin-bottom: 0.5rem;
     }
+
     input, button {
       width: 100%;
       padding: 0.8rem;
-      border-radius: 8px;
+      border-radius: 12px;
       border: 1px solid #ccc;
       font-size: 1rem;
     }
+
     button {
       background: #000;
       color: #fff;
-      cursor: pointer;
-      border: none;
       font-weight: 600;
+      border: none;
+      cursor: pointer;
       transition: background 0.2s ease-in-out;
     }
+
     button:hover {
       background: #111;
     }
+
     .ticket-preview {
+      display: none;
+      margin-top: 2.5rem;
+      padding: 2rem;
+      border-radius: 20px;
+      background: #fff;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.06);
+    }
+
+    .ticket-preview p {
+      font-size: 1rem;
+      margin: 0.5rem 0;
+    }
+
+    .ticket-preview h3 {
+      margin-bottom: 1.2rem;
+      font-size: 1.3rem;
+    }
+
+    .events {
       margin-top: 3rem;
+    }
+
+    .event-card {
       background: #fff;
       border-radius: 16px;
       padding: 1.5rem;
-      box-shadow: 0 6px 30px rgba(0,0,0,0.08);
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
     }
-    .ticket-preview h2 {
-      font-size: 1.4rem;
-      margin-bottom: 1rem;
-    }
-    .events {
-      margin-top: 4rem;
-    }
-    .event-card {
-      background: #fff;
-      padding: 1.5rem;
-      border-radius: 12px;
-      margin-bottom: 1.5rem;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-    }
-    .event-card h3 {
-      margin: 0 0 0.5rem;
-    }
-    .event-card p {
-      margin: 0;
-      font-size: 0.95rem;
-      color: #444;
-    }
+
     footer {
       text-align: center;
       padding: 3rem 1rem;
+      font-size: 0.85rem;
       color: #888;
-      font-size: 0.9rem;
+      background: #f9f9f9;
+    }
+
+    footer a {
+      color: #888;
+      text-decoration: underline;
+      margin: 0 0.5rem;
     }
   </style>
 </head>
 <body>
+
   <header>
     <img src="logo_ingressai.png" alt="Logo IngressAI" />
-    <h1>Experimente o futuro dos eventos com a IngressAI</h1>
+    <h1>IngressAI</h1>
+    <p>Ingressos digitais com design inteligente e integração automatizada.</p>
   </header>
 
   <section>
-    <h2>Emita um ingresso teste</h2>
+    <h2>Gerar ingresso teste</h2>
     <form id="ticketForm">
       <div class="form-group">
         <label for="nome">Nome do participante</label>
-        <input type="text" id="nome" name="nome" required />
+        <input type="text" id="nome" required />
       </div>
       <div class="form-group">
         <label for="evento">Nome do evento</label>
-        <input type="text" id="evento" name="evento" required />
+        <input type="text" id="evento" required />
       </div>
       <div class="form-group">
         <label for="data">Data e hora</label>
-        <input type="datetime-local" id="data" name="data" required />
+        <input type="datetime-local" id="data" required />
       </div>
       <div class="form-group">
         <label for="local">Local</label>
-        <input type="text" id="local" name="local" required />
+        <input type="text" id="local" required />
       </div>
       <div class="form-group">
         <label for="telefone">WhatsApp do participante</label>
-        <input type="tel" id="telefone" name="telefone" required />
+        <input type="tel" id="telefone" required />
       </div>
       <button type="submit">Gerar ingresso</button>
     </form>
 
-    <div class="ticket-preview" id="ticketPreview" style="display: none;">
-      <h2>Ingresso gerado</h2>
+    <div class="ticket-preview" id="ticketPreview">
+      <h3>Ingresso gerado</h3>
       <p><strong>Participante:</strong> <span id="pNome"></span></p>
       <p><strong>Evento:</strong> <span id="pEvento"></span></p>
       <p><strong>Data:</strong> <span id="pData"></span></p>
-      <p><strong>Local:</strong> <a href="#" id="pLocal" target="_blank"></a></p>
+      <p><strong>Local:</strong> <a id="pLocal" href="#" target="_blank"></a></p>
     </div>
   </section>
 
   <section class="events">
-    <h2>Exemplos de eventos criados</h2>
+    <h2>Exemplos de eventos</h2>
     <div class="event-card">
       <h3>Open Bar de Lançamento 🍻</h3>
-      <p>Dia 25/07 às 22h<br />Bar da Praça – Uberaba/MG</p>
+      <p>25/07 às 22h<br />Bar da Praça – Uberaba/MG</p>
     </div>
     <div class="event-card">
       <h3>Baile do Branco 💃</h3>
-      <p>Dia 10/08 às 23h<br />Salão Império – Uberaba/MG</p>
+      <p>10/08 às 23h<br />Salão Império – Uberaba/MG</p>
     </div>
   </section>
 
   <footer>
-    © 2025 IngressAI. Desenvolvido com tecnologia própria e inspiração Apple.
+    <p>© 2025 IngressAI – Todos os direitos reservados.</p>
+    <p>
+      <a href="#">Política de Privacidade</a> •
+      <a href="#">Termos de Uso</a> •
+      <a href="mailto:contato@ingressai.chat">contato@ingressai.chat</a>
+    </p>
   </footer>
 
   <script>
@@ -157,12 +198,12 @@
       e.preventDefault();
       const nome = document.getElementById("nome").value;
       const evento = document.getElementById("evento").value;
-      const data = document.getElementById("data").value;
+      const data = new Date(document.getElementById("data").value).toLocaleString('pt-BR');
       const local = document.getElementById("local").value;
 
       document.getElementById("pNome").textContent = nome;
       document.getElementById("pEvento").textContent = evento;
-      document.getElementById("pData").textContent = new Date(data).toLocaleString('pt-BR');
+      document.getElementById("pData").textContent = data;
       document.getElementById("pLocal").textContent = local;
       document.getElementById("pLocal").href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(local)}`;
 
