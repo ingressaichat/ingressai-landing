@@ -1,78 +1,173 @@
-import { useState } from 'react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { motion } from 'framer-motion';
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IngressAI – Seu ingresso digital inteligente</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background-color: #f9f9f9;
+      color: #111;
+    }
+    header {
+      text-align: center;
+      padding: 4rem 1rem 2rem;
+      background: #fff;
+      border-bottom: 1px solid #eaeaea;
+    }
+    header img {
+      max-width: 180px;
+      margin-bottom: 1rem;
+    }
+    header h1 {
+      font-size: 1.8rem;
+      font-weight: 600;
+      margin: 0;
+    }
+    section {
+      padding: 2rem 1rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+    input, button {
+      width: 100%;
+      padding: 0.8rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+    button {
+      background: #000;
+      color: #fff;
+      cursor: pointer;
+      border: none;
+      font-weight: 600;
+      transition: background 0.2s ease-in-out;
+    }
+    button:hover {
+      background: #111;
+    }
+    .ticket-preview {
+      margin-top: 3rem;
+      background: #fff;
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: 0 6px 30px rgba(0,0,0,0.08);
+    }
+    .ticket-preview h2 {
+      font-size: 1.4rem;
+      margin-bottom: 1rem;
+    }
+    .events {
+      margin-top: 4rem;
+    }
+    .event-card {
+      background: #fff;
+      padding: 1.5rem;
+      border-radius: 12px;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+    .event-card h3 {
+      margin: 0 0 0.5rem;
+    }
+    .event-card p {
+      margin: 0;
+      font-size: 0.95rem;
+      color: #444;
+    }
+    footer {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: #888;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="logo_ingressai.png" alt="Logo IngressAI" />
+    <h1>Experimente o futuro dos eventos com a IngressAI</h1>
+  </header>
 
-export default function Landing() {
-  const [form, setForm] = useState({ nome: '', evento: '', data: '', local: '', telefone: '' });
-  const [ingressoGerado, setIngressoGerado] = useState(null);
+  <section>
+    <h2>Emita um ingresso teste</h2>
+    <form id="ticketForm">
+      <div class="form-group">
+        <label for="nome">Nome do participante</label>
+        <input type="text" id="nome" name="nome" required />
+      </div>
+      <div class="form-group">
+        <label for="evento">Nome do evento</label>
+        <input type="text" id="evento" name="evento" required />
+      </div>
+      <div class="form-group">
+        <label for="data">Data e hora</label>
+        <input type="datetime-local" id="data" name="data" required />
+      </div>
+      <div class="form-group">
+        <label for="local">Local</label>
+        <input type="text" id="local" name="local" required />
+      </div>
+      <div class="form-group">
+        <label for="telefone">WhatsApp do participante</label>
+        <input type="tel" id="telefone" name="telefone" required />
+      </div>
+      <button type="submit">Gerar ingresso</button>
+    </form>
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const gerarIngresso = () => {
-    const ingresso = {
-      ...form,
-      linkMaps: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(form.local)}`,
-    };
-    setIngressoGerado(ingresso);
-  };
-
-  return (
-    <div className="min-h-screen bg-white text-black font-sans">
-      <section className="py-10 px-6 text-center">
-        <motion.h1 className="text-4xl font-bold mb-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>IngressAI</motion.h1>
-        <motion.p className="text-lg mb-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
-          Crie, compartilhe e gerencie seus eventos de forma simples e gratuita. Experimente agora mesmo.
-        </motion.p>
-        <Button className="text-white bg-black px-6 py-2 rounded-full">Criar meu evento</Button>
-      </section>
-
-      <section className="py-10 px-6 bg-gray-100 text-center">
-        <h2 className="text-2xl font-semibold mb-4">Teste o gerador de ingresso</h2>
-        <div className="grid gap-4 max-w-xl mx-auto">
-          <Input placeholder="Nome do participante" name="nome" onChange={handleChange} />
-          <Input placeholder="Nome do evento" name="evento" onChange={handleChange} />
-          <Input placeholder="Data e hora" name="data" onChange={handleChange} />
-          <Input placeholder="Local do evento" name="local" onChange={handleChange} />
-          <Input placeholder="Telefone/WhatsApp" name="telefone" onChange={handleChange} />
-          <Button className="bg-black text-white" onClick={gerarIngresso}>Gerar Ingresso</Button>
-        </div>
-
-        {ingressoGerado && (
-          <motion.div className="mt-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <Card className="max-w-sm mx-auto text-left">
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold mb-2">{ingressoGerado.evento}</h3>
-                <p><strong>Participante:</strong> {ingressoGerado.nome}</p>
-                <p><strong>Data e hora:</strong> {ingressoGerado.data}</p>
-                <p><strong>Local:</strong> <a href={ingressoGerado.linkMaps} className="text-blue-600 underline" target="_blank">{ingressoGerado.local}</a></p>
-                <p><strong>Contato:</strong> {ingressoGerado.telefone}</p>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-      </section>
-
-      <section className="py-10 px-6">
-        <h2 className="text-2xl font-semibold text-center mb-6">Exemplos de eventos criados</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          <Card>
-            <CardContent className="p-4">
-              <h3 className="font-bold text-lg">Sunset Universitário</h3>
-              <p>21 de julho - AABB Uberaba</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <h3 className="font-bold text-lg">Quinta IngressAI</h3>
-              <p>18 de julho - Bar do Léo</p>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
+    <div class="ticket-preview" id="ticketPreview" style="display: none;">
+      <h2>Ingresso gerado</h2>
+      <p><strong>Participante:</strong> <span id="pNome"></span></p>
+      <p><strong>Evento:</strong> <span id="pEvento"></span></p>
+      <p><strong>Data:</strong> <span id="pData"></span></p>
+      <p><strong>Local:</strong> <a href="#" id="pLocal" target="_blank"></a></p>
     </div>
-  );
-}
+  </section>
+
+  <section class="events">
+    <h2>Exemplos de eventos criados</h2>
+    <div class="event-card">
+      <h3>Open Bar de Lançamento 🍻</h3>
+      <p>Dia 25/07 às 22h<br />Bar da Praça – Uberaba/MG</p>
+    </div>
+    <div class="event-card">
+      <h3>Baile do Branco 💃</h3>
+      <p>Dia 10/08 às 23h<br />Salão Império – Uberaba/MG</p>
+    </div>
+  </section>
+
+  <footer>
+    © 2025 IngressAI. Desenvolvido com tecnologia própria e inspiração Apple.
+  </footer>
+
+  <script>
+    document.getElementById("ticketForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const nome = document.getElementById("nome").value;
+      const evento = document.getElementById("evento").value;
+      const data = document.getElementById("data").value;
+      const local = document.getElementById("local").value;
+
+      document.getElementById("pNome").textContent = nome;
+      document.getElementById("pEvento").textContent = evento;
+      document.getElementById("pData").textContent = new Date(data).toLocaleString('pt-BR');
+      document.getElementById("pLocal").textContent = local;
+      document.getElementById("pLocal").href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(local)}`;
+
+      document.getElementById("ticketPreview").style.display = "block";
+    });
+  </script>
+</body>
+</html>
