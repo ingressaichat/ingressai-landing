@@ -9,90 +9,71 @@
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
     }
+    .icon-style {
+      width: 24px;
+      height: 24px;
+      stroke: #374151;
+      stroke-width: 1.5;
+      fill: none;
+    }
   </style>
 </head>
 <body class="bg-white text-gray-900">
-  <!-- Logo -->
+  <!-- Cabeçalho com logo -->
   <header class="flex justify-center items-center py-8">
     <img src="logo_ingressai.png" alt="Logo IngressAI" class="h-20">
   </header>
 
-  <!-- Hero -->
-  <section class="text-center px-6 py-10">
-    <h1 class="text-4xl md:text-5xl font-semibold mb-4">Venda de ingressos automatizada</h1>
-    <p class="text-lg text-gray-600 max-w-2xl mx-auto mb-8">
-      Com a IngressAI, seus eventos são divulgados, pagos e validados diretamente no WhatsApp. Simples, rápido e 100% digital.
-    </p>
-    <a href="https://wa.me/5534999992747" class="bg-blue-600 text-white px-6 py-3 rounded-full text-base hover:bg-blue-700 transition">
-      Criar ingresso teste no WhatsApp
-    </a>
-    <p class="text-xs text-gray-400 mt-2">
-      Ao clicar, você autoriza o contato via WhatsApp. Leia a <a href="/politica.html" class="underline">Política de Privacidade</a>.
-    </p>
-  </section>
-
-  <!-- Como funciona -->
-  <section class="px-6 py-12 bg-gray-50 text-center">
-    <h2 class="text-2xl font-medium mb-8">Como funciona</h2>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-      <div>
-        <h3 class="font-semibold text-lg mb-2">1. Crie o evento</h3>
-        <p class="text-sm text-gray-600">Preencha nome, valor e data. Você receberá um link exclusivo.</p>
-      </div>
-      <div>
-        <h3 class="font-semibold text-lg mb-2">2. Compartilhe</h3>
-        <p class="text-sm text-gray-600">Divulgue o link. O cliente paga por PIX, cartão ou débito.</p>
-      </div>
-      <div>
-        <h3 class="font-semibold text-lg mb-2">3. Envio automático</h3>
-        <p class="text-sm text-gray-600">Após o pagamento, o ingresso com QR Code é enviado via WhatsApp.</p>
-      </div>
-    </div>
-  </section>
-
   <!-- Eventos fictícios -->
-  <section class="px-6 py-12 text-center">
-    <h2 class="text-2xl font-medium mb-8">Eventos em destaque</h2>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-      <div class="border rounded-lg p-6 shadow-sm">
-        <h3 class="font-semibold text-lg">Open Bar Universitário</h3>
-        <p class="text-sm text-gray-600">Sexta • 22h • R$40</p>
-        <button class="mt-4 text-blue-600 hover:underline">Saiba mais</button>
+  <section class="max-w-4xl mx-auto px-4 py-12">
+    <h2 class="text-2xl font-semibold text-center mb-8">Eventos em destaque</h2>
+    <div class="grid md:grid-cols-3 gap-6">
+      <div class="border rounded-xl p-4 shadow hover:shadow-md transition">
+        <h3 class="font-bold text-lg">Sunset Universitário</h3>
+        <p class="text-sm text-gray-600 mb-2">Sábado, 20h • Uberaba-MG</p>
+        <span class="inline-block bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded">Disponível em breve</span>
       </div>
-      <div class="border rounded-lg p-6 shadow-sm">
-        <h3 class="font-semibold text-lg">Festa Neon República</h3>
-        <p class="text-sm text-gray-600">Sábado • 23h • R$35</p>
-        <button class="mt-4 text-blue-600 hover:underline">Saiba mais</button>
+      <div class="border rounded-xl p-4 shadow hover:shadow-md transition">
+        <h3 class="font-bold text-lg">Festa da República 011</h3>
+        <p class="text-sm text-gray-600 mb-2">Sexta, 23h • Uberaba-MG</p>
+        <span class="inline-block bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded">Aguardando liberação</span>
       </div>
-      <div class="border rounded-lg p-6 shadow-sm">
-        <h3 class="font-semibold text-lg">Pagode do Terraço</h3>
-        <p class="text-sm text-gray-600">Domingo • 18h • R$25</p>
-        <button class="mt-4 text-blue-600 hover:underline">Saiba mais</button>
+      <div class="border rounded-xl p-4 shadow hover:shadow-md transition">
+        <h3 class="font-bold text-lg">Rave IngressAI</h3>
+        <p class="text-sm text-gray-600 mb-2">Data secreta • Local reservado</p>
+        <span class="inline-block bg-gray-200 text-gray-800 text-xs px-2 py-1 rounded">Exclusivo</span>
       </div>
     </div>
   </section>
 
-  <!-- Rodapé -->
+  <!-- Rodapé com SVGs -->
   <footer class="text-center text-sm text-gray-500 py-10 border-t mt-10">
     <div class="flex justify-center gap-4 mb-4">
       <!-- Instagram -->
       <a href="https://instagram.com/ingressai.oficial" target="_blank" class="border border-gray-300 p-3 rounded-full hover:bg-gray-100 transition" aria-label="Instagram">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M7 2C4.8 2 3 3.8 3 6v12c0 2.2 1.8 4 4 4h10c2.2 0 4-1.8 4-4V6c0-2.2-1.8-4-4-4H7zm0 2h10c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H7c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2zm5 2a5 5 0 100 10 5 5 0 000-10zm0 2a3 3 0 110 6 3 3 0 010-6zm4.5-1a1.5 1.5 0 100 3 1.5 1.5 0 000-3z"/>
+        <svg class="icon-style" viewBox="0 0 24 24">
+          <path d="M8 2h8a6 6 0 0 1 6 6v8a6 6 0 0 1-6 6H8a6 6 0 0 1-6-6V8a6 6 0 0 1 6-6z"/>
+          <circle cx="12" cy="12" r="3.2"/>
+          <circle cx="17.5" cy="6.5" r="1"/>
         </svg>
       </a>
 
       <!-- E-mail -->
       <a href="mailto:contato@ingressai.chat" class="border border-gray-300 p-3 rounded-full hover:bg-gray-100 transition" aria-label="E-mail">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M2 4a2 2 0 012-2h16a2 2 0 012 2v1l-10 7L2 5V4zm0 3.2l8.2 5.7a1 1 0 001.6 0L22 7.2V20a2 2 0 01-2 2H4a2 2 0 01-2-2V7.2z"/>
+        <svg class="icon-style" viewBox="0 0 24 24">
+          <path d="M4 4h16v16H4z" fill="none"/>
+          <path d="M4 4l8 7 8-7"/>
         </svg>
       </a>
 
       <!-- Bot (robô) -->
       <a href="https://wa.me/5534999992747" class="border border-gray-300 p-3 rounded-full hover:bg-gray-100 transition" aria-label="Bot WhatsApp">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 2a10 10 0 00-7.07 17.07l-1.9 1.9a1 1 0 001.41 1.41l1.9-1.9A10 10 0 1012 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+        <svg class="icon-style" viewBox="0 0 24 24">
+          <rect x="3" y="7" width="18" height="12" rx="2" ry="2"/>
+          <circle cx="8" cy="13" r="1"/>
+          <circle cx="16" cy="13" r="1"/>
+          <line x1="12" y1="3" x2="12" y2="7"/>
+          <circle cx="12" cy="3" r="1"/>
         </svg>
       </a>
     </div>
