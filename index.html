@@ -2,54 +2,97 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IngressAI – Ingressos pelo WhatsApp</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IngressAI – Ingressos automáticos no WhatsApp</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif; }
+  </style>
 </head>
-<body class="bg-white text-gray-900 font-sans">
-  <header class="text-center py-10 bg-blue-700 text-white">
-    <h1 class="text-5xl font-bold mb-2">IngressAI</h1>
-    <p class="text-lg">A forma mais moderna e automática de vender ingressos. Diretamente no WhatsApp.</p>
+<body class="bg-white text-gray-900">
+  <!-- Logo -->
+  <header class="flex justify-center items-center py-6">
+    <img src="logo_ingressai.png" alt="Logo IngressAI" class="h-12">
   </header>
 
-  <section class="text-center my-12 px-4">
-    <h2 class="text-3xl font-semibold mb-6 text-blue-700">Como funciona</h2>
-    <div class="flex flex-col md:flex-row justify-center items-start gap-10">
-      <div class="max-w-xs text-left">
-        <h3 class="font-bold text-xl text-blue-700">1. Crie seu evento</h3>
-        <p>Cadastre nome, data e valor. Um link exclusivo será gerado.</p>
-      </div>
-      <div class="max-w-xs text-left">
-        <h3 class="font-bold text-xl text-blue-700">2. Compartilhe no WhatsApp</h3>
-        <p>O público acessa e compra direto pelo celular, com pagamento seguro.</p>
-      </div>
-      <div class="max-w-xs text-left">
-        <h3 class="font-bold text-xl text-blue-700">3. Ingresso automático</h3>
-        <p>O ingresso com QR Code é enviado automaticamente após o pagamento.</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="text-center my-16 px-4">
-    <h2 class="text-3xl font-semibold mb-6 text-blue-700">Teste agora</h2>
-    <p class="text-gray-700 mb-6">Clique e veja como funciona em segundos.</p>
-    <a href="https://wa.me/5534999992747" class="inline-block bg-blue-700 text-white px-6 py-3 rounded-full text-lg hover:bg-blue-800 transition">
+  <!-- Hero -->
+  <section class="text-center px-6 py-10">
+    <h1 class="text-4xl md:text-5xl font-semibold mb-4">Venda de ingressos automatizada</h1>
+    <p class="text-lg text-gray-600 max-w-2xl mx-auto mb-8">
+      Com a IngressAI, seus eventos são divulgados, pagos e validados diretamente no WhatsApp. Simples, rápido e 100% digital.
+    </p>
+    <a href="https://wa.me/5534999992747" class="bg-blue-600 text-white px-6 py-3 rounded-full text-base hover:bg-blue-700 transition">
       Criar ingresso teste no WhatsApp
     </a>
-    <p class="mt-3 text-xs text-gray-500 max-w-md mx-auto">
-      Ao continuar, você autoriza a IngressAI a entrar em contato via WhatsApp com informações sobre eventos. Leia nossa
-      <a href="/privacidade.html" class="underline">Política de Privacidade</a>.
+    <p class="text-xs text-gray-400 mt-2">
+      Ao clicar, você autoriza o contato via WhatsApp. Leia a <a href="/privacidade.html" class="underline">Política de Privacidade</a>.
     </p>
   </section>
 
-  <footer class="text-center text-xs text-gray-500 mt-16 mb-6 space-y-1">
-    <div>© 2025 IngressAI. Todos os direitos reservados.</div>
-    <div>IngressAI Serviços Digitais Ltda • CNPJ 42.948.399/0001-87</div>
-    <div>
-      <a href="/privacidade.html" class="underline">Política de Privacidade</a> •
-      <a href="/termos.html" class="underline">Termos de Uso</a> •
-      <a href="mailto:contato@ingressai.chat" class="underline">Contato</a>
+  <!-- Como funciona -->
+  <section class="px-6 py-12 bg-gray-50 text-center">
+    <h2 class="text-2xl font-medium mb-8">Como funciona</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+      <div>
+        <h3 class="font-semibold text-lg mb-2">1. Crie o evento</h3>
+        <p class="text-sm text-gray-600">Preencha nome, valor e data. Você receberá um link exclusivo.</p>
+      </div>
+      <div>
+        <h3 class="font-semibold text-lg mb-2">2. Compartilhe</h3>
+        <p class="text-sm text-gray-600">Divulgue o link. O cliente paga por PIX, cartão ou débito.</p>
+      </div>
+      <div>
+        <h3 class="font-semibold text-lg mb-2">3. Envio automático</h3>
+        <p class="text-sm text-gray-600">Após o pagamento, o ingresso com QR Code é enviado via WhatsApp.</p>
+      </div>
     </div>
+  </section>
+
+  <!-- Eventos fictícios -->
+  <section class="px-6 py-12 text-center">
+    <h2 class="text-2xl font-medium mb-8">Eventos em destaque</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+      <div class="border rounded-lg p-6 shadow-sm">
+        <h3 class="font-semibold text-lg">Open Bar Universitário</h3>
+        <p class="text-sm text-gray-600">Sexta • 22h • R$40</p>
+        <button class="mt-4 text-blue-600 hover:underline">Saiba mais</button>
+      </div>
+      <div class="border rounded-lg p-6 shadow-sm">
+        <h3 class="font-semibold text-lg">Festa Neon República</h3>
+        <p class="text-sm text-gray-600">Sábado • 23h • R$35</p>
+        <button class="mt-4 text-blue-600 hover:underline">Saiba mais</button>
+      </div>
+      <div class="border rounded-lg p-6 shadow-sm">
+        <h3 class="font-semibold text-lg">Pagode do Terraço</h3>
+        <p class="text-sm text-gray-600">Domingo • 18h • R$25</p>
+        <button class="mt-4 text-blue-600 hover:underline">Saiba mais</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Rodapé -->
+  <footer class="text-center text-sm text-gray-500 py-10 border-t mt-10">
+    <div class="flex justify-center gap-6 mb-3 text-gray-600">
+      <a href="https://instagram.com/ingressai.oficial" target="_blank" aria-label="Instagram">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hover:text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 2H8a6 6 0 00-6 6v8a6 6 0 006 6h8a6 6 0 006-6V8a6 6 0 00-6-6z" />
+          <circle cx="12" cy="12" r="3.5" />
+        </svg>
+      </a>
+      <a href="mailto:contato@ingressai.chat" aria-label="E-mail">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hover:text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 4h16v16H4z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M22 6l-10 7L2 6" />
+        </svg>
+      </a>
+      <a href="https://wa.me/5534999992747" aria-label="WhatsApp">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hover:text-gray-800" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2a10 10 0 00-9.95 11.25L2 22l8.75-2.05A10 10 0 1012 2zm1.92 14.66c-2.89 0-5.33-2.44-5.33-5.33 0-.45.05-.89.16-1.31a.73.73 0 01.54-.54c.29-.07.6-.03.85.1l1.37.68a.73.73 0 01.34.93l-.23.62a4.07 4.07 0 002.1 2.1l.62-.23a.73.73 0 01.93.34l.68 1.37c.14.25.17.56.1.85a.73.73 0 01-.54.54c-.43.11-.86.16-1.31.16z"/>
+        </svg>
+      </a>
+    </div>
+    <p>IngressAI Serviços Digitais Ltda • CNPJ 42.948.399/0001-87</p>
+    <p><a href="/privacidade.html" class="underline">Política de Privacidade</a> • <a href="/termos.html" class="underline">Termos de Uso</a></p>
   </footer>
 </body>
 </html>
