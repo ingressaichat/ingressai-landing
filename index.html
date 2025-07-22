@@ -2,83 +2,167 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IngressAI – Ingressos automáticos no WhatsApp</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>IngressAI - Ingressos via WhatsApp</title>
+  <meta name="description" content="Venda e controle de ingressos automatizados via WhatsApp com inteligência artificial."/>
   <style>
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen;
+      background-color: #f9f9f9;
+      color: #111;
+    }
+
+    header {
+      text-align: center;
+      padding: 80px 20px 60px;
+      background-color: #fff;
+    }
+
+    header img {
+      width: 180px;
+      height: auto;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+
+    h2 {
+      font-size: 20px;
+      font-weight: 400;
+      margin-bottom: 34px;
+    }
+
+    .cta {
+      background-color: #111;
+      color: white;
+      padding: 21px 34px;
+      font-size: 16px;
+      border: none;
+      border-radius: 13px;
+      cursor: pointer;
+    }
+
+    section {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 55px 20px;
+    }
+
+    .vitrine {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 21px;
+      justify-content: center;
+      margin-top: 34px;
+    }
+
+    .card {
+      width: 250px;
+      height: 405px;
+      background-color: #fff;
+      border-radius: 21px;
+      box-shadow: 0 0 13px rgba(0,0,0,0.08);
+      padding: 21px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .card h3 {
+      font-size: 20px;
+      margin: 0 0 13px;
+    }
+
+    .card p {
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    footer {
+      text-align: center;
+      padding: 34px 20px;
+      background-color: #f0f0f0;
+      font-size: 12px;
+    }
+
+    footer a {
+      color: #111;
+      text-decoration: none;
+      margin: 0 13px;
+    }
+
+    footer .icons {
+      margin-top: 13px;
+    }
+
+    footer .icons a {
+      display: inline-block;
+      margin: 0 8px;
+      font-size: 18px;
+    }
+
+    @media (max-width: 600px) {
+      header {
+        padding: 55px 20px;
+      }
+
+      h1 {
+        font-size: 26px;
+      }
+
+      h2 {
+        font-size: 18px;
+      }
+
+      .card {
+        width: 90%;
+      }
     }
   </style>
 </head>
-<body class="bg-white text-gray-900">
-  <!-- Cabeçalho com logo -->
-  <header class="flex justify-center items-center py-8">
-    <img src="logo_ingressai.png" alt="Logo IngressAI" class="h-20">
+<body>
+  <header>
+    <img src="logo_ingressai.png" alt="IngressAI logo"/>
+    <h1>IngressAI</h1>
+    <h2>Venda e controle de ingressos via WhatsApp com inteligência artificial.</h2>
+    <a href="https://wa.me/5534999992747" target="_blank">
+      <button class="cta">Fale com o Bot</button>
+    </a>
   </header>
 
-  <!-- Seção de apresentação -->
-  <section class="max-w-3xl mx-auto px-6 text-center">
-    <h1 class="text-3xl md:text-4xl font-semibold mb-6">Venda e controle de ingressos direto no WhatsApp</h1>
-    <p class="text-lg text-gray-700 mb-6">
-      A IngressAI é uma plataforma automatizada que permite a qualquer organizador de eventos vender ingressos
-      e controlar entradas de forma inteligente, simples e segura, usando apenas o WhatsApp.
-    </p>
-    <a href="https://wa.me/5534999992747" target="_blank" class="bg-blue-600 text-white px-6 py-3 rounded-full text-lg hover:bg-blue-700 transition">
-      Falar com o Bot
-    </a>
-  </section>
-
-  <!-- Funcionalidades -->
-  <section class="max-w-4xl mx-auto px-6 py-16">
-    <h2 class="text-2xl font-semibold text-center mb-10">Como a IngressAI funciona</h2>
-    <div class="grid md:grid-cols-3 gap-8 text-center">
-      <div>
-        <h3 class="font-bold text-lg mb-2">Criação de Eventos</h3>
-        <p class="text-gray-600">Organizadores criam eventos direto pelo bot. Você preenche nome, data, local e valor do ingresso.</p>
+  <section>
+    <h2>Eventos em destaque</h2>
+    <div class="vitrine">
+      <div class="card">
+        <h3>Sunset República</h3>
+        <p>Uberaba - 02/08<br/>Open Bar + DJ<br/>Ingressos a partir de R$20</p>
       </div>
-      <div>
-        <h3 class="font-bold text-lg mb-2">Pagamento Seguro</h3>
-        <p class="text-gray-600">Receba via cartão, Pix ou boleto com intermediação automática. O cliente recebe o ingresso digital com QR Code.</p>
+      <div class="card">
+        <h3>Baile do Zero Grau</h3>
+        <p>Uberaba - 09/08<br/>Open Ice + Funk<br/>Ingressos via WhatsApp</p>
       </div>
-      <div>
-        <h3 class="font-bold text-lg mb-2">Validação Simples</h3>
-        <p class="text-gray-600">Na entrada do evento, o ingresso é validado com QR Code em segundos. Seguro, rápido e automático.</p>
+      <div class="card">
+        <h3>Glow Party</h3>
+        <p>Uberaba - 16/08<br/>Festa Neon com luz negra<br/>Pague por PIX e receba o ingresso na hora</p>
       </div>
     </div>
   </section>
 
-  <!-- Eventos fictícios -->
-  <section class="max-w-4xl mx-auto px-4 py-12">
-    <h2 class="text-2xl font-semibold text-center mb-8">Eventos em destaque</h2>
-    <div class="grid md:grid-cols-3 gap-6">
-      <div class="border rounded-xl p-4 shadow hover:shadow-md transition">
-        <h3 class="font-bold text-lg">Sunset Universitário</h3>
-        <p class="text-sm text-gray-600 mb-2">Sábado, 20h • Uberaba-MG</p>
-        <span class="inline-block bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded">Disponível em breve</span>
-      </div>
-      <div class="border rounded-xl p-4 shadow hover:shadow-md transition">
-        <h3 class="font-bold text-lg">Festa da República 011</h3>
-        <p class="text-sm text-gray-600 mb-2">Sexta, 23h • Uberaba-MG</p>
-        <span class="inline-block bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded">Aguardando liberação</span>
-      </div>
-      <div class="border rounded-xl p-4 shadow hover:shadow-md transition">
-        <h3 class="font-bold text-lg">Rave IngressAI</h3>
-        <p class="text-sm text-gray-600 mb-2">Data secreta • Local reservado</p>
-        <span class="inline-block bg-gray-200 text-gray-800 text-xs px-2 py-1 rounded">Exclusivo</span>
-      </div>
+  <footer>
+    <div>
+      <a href="politica.html">Política de Privacidade</a> |
+      <a href="excluir.html">Excluir Meus Dados</a>
     </div>
-  </section>
-
-  <!-- Rodapé com links -->
-  <footer class="text-center text-sm text-gray-500 py-10 border-t mt-10">
-    <div class="flex justify-center gap-6 mb-3 text-blue-600">
-      <a href="https://instagram.com/ingressai" target="_blank" class="hover:underline">Instagram</a>
-      <a href="mailto:contato@ingressai.chat" class="hover:underline">E-mail</a>
-      <a href="https://wa.me/5534999992747" class="hover:underline">Falar com o Bot</a>
+    <div class="icons">
+      <a href="https://www.instagram.com/ingressai" target="_blank">📷</a>
+      <a href="mailto:contato@ingressai.chat">✉️</a>
+      <a href="https://wa.me/5534999992747" target="_blank">🤖</a>
     </div>
-    <p>IngressAI Serviços Digitais Ltda • CNPJ 42.948.399/0001-87</p>
-    <p><a href="/politica.html" class="underline">Política de Privacidade</a> • <a href="/termos.html" class="underline">Termos de Uso</a></p>
+    <small>&copy; 2025 IngressAI</small>
   </footer>
 </body>
 </html>
