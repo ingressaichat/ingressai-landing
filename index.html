@@ -84,25 +84,49 @@
 
     footer {
       text-align: center;
-      padding: 34px 20px;
-      background-color: #f0f0f0;
-      font-size: 12px;
+      padding: 55px 20px;
+      background-color: #f5f5f7;
+      font-size: 13px;
+      color: #555;
     }
 
-    footer a {
-      color: #111;
+    .footer-links {
+      margin-bottom: 21px;
+    }
+
+    .footer-links a {
+      color: #0071e3;
       text-decoration: none;
-      margin: 0 13px;
-    }
-
-    footer .icons {
-      margin-top: 13px;
-    }
-
-    footer .icons a {
-      display: inline-block;
       margin: 0 8px;
+      font-weight: 500;
+    }
+
+    .footer-links a:hover {
+      text-decoration: underline;
+    }
+
+    .footer-links span {
+      color: #bbb;
+    }
+
+    .footer-icons {
+      margin-bottom: 21px;
+    }
+
+    .footer-icons button {
+      background-color: white;
+      border: 1px solid #ddd;
+      border-radius: 13px;
       font-size: 18px;
+      padding: 10px 14px;
+      margin: 0 6px;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+    }
+
+    .footer-icons button:hover {
+      background-color: #f0f0f0;
+      transform: scale(1.05);
     }
 
     @media (max-width: 600px) {
@@ -153,16 +177,27 @@
   </section>
 
   <footer>
-    <div>
-      <a href="politica.html">Política de Privacidade</a> |
+    <div class="footer-links">
+      <a href="politica.html">Política de Privacidade</a>
+      <span>·</span>
+      <a href="termos.html">Termos de Uso</a>
+      <span>·</span>
       <a href="excluir.html">Excluir Meus Dados</a>
     </div>
-    <div class="icons">
-      <a href="https://www.instagram.com/ingressai" target="_blank">📷</a>
-      <a href="mailto:contato@ingressai.chat">✉️</a>
-      <a href="https://wa.me/5534999992747" target="_blank">🤖</a>
+
+    <div class="footer-icons">
+      <a href="https://www.instagram.com/ingressai" target="_blank" aria-label="Instagram">
+        <button>📷</button>
+      </a>
+      <a href="mailto:contato@ingressai.chat" aria-label="E-mail">
+        <button>✉️</button>
+      </a>
+      <a href="https://wa.me/5534999992747" target="_blank" aria-label="Fale com o Bot">
+        <button>🤖</button>
+      </a>
     </div>
-    <small>&copy; 2025 IngressAI</small>
+
+    <small>&copy; 2025 IngressAI. Todos os direitos reservados.</small>
   </footer>
 </body>
 </html>
