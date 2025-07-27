@@ -1,160 +1,244 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IngressAI</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IngressAI - Plataforma de Ingressos Automatizada</title>
   <style>
-    html {
-      scroll-behavior: smooth;
-    }
     body {
-      font-family: 'Inter', sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: #f5f5f7;
+      color: #1c1c1e;
       margin: 0;
-      background-color: #f5f7fa;
-      color: #111;
+      padding: 0;
     }
     header {
-      padding: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      text-align: center;
+      padding: 40px 20px 10px;
     }
     header img {
-      height: 50px;
+      width: 120px;
     }
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
+    h1 {
+      font-size: 28px;
+      margin: 10px 0 30px;
     }
-    h2 {
-      font-size: 24px;
-      margin-bottom: 10px;
+    .ver-eventos {
+      display: inline-block;
+      background: #007aff;
+      color: #fff;
+      padding: 14px 28px;
+      font-size: 16px;
+      border-radius: 14px;
+      text-decoration: none;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+      transition: background 0.3s;
     }
-    .cards {
+    .ver-eventos:hover {
+      background: #005ecb;
+    }
+    .organizadores {
       display: flex;
-      gap: 20px;
-      flex-wrap: wrap;
       justify-content: center;
+      flex-wrap: wrap;
+      gap: 40px;
+      padding: 60px 20px;
     }
-    .card {
-      background: linear-gradient(145deg, #e6eef5, #ffffff);
+    .organizador-card {
+      background-color: #e4efff;
+      padding: 30px;
       border-radius: 24px;
-      padding: 20px;
-      width: 280px;
-      box-shadow: 4px 4px 12px #cfd8e3, -4px -4px 12px #ffffff;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
       text-align: center;
-      transition: all 0.3s ease-in-out;
-      cursor: pointer;
-      position: relative;
-      scroll-margin-top: 100px;
+      width: 260px;
+      transition: transform 0.3s;
     }
-    .card:hover {
+    .organizador-card:hover {
       transform: scale(1.03);
     }
-    .card img {
-      width: 80px;
-      margin-bottom: 10px;
+    .organizador-card img {
+      width: 100%;
+      border-radius: 16px;
+      margin-bottom: 15px;
     }
-    .card-title {
-      font-weight: 700;
-      margin-bottom: 6px;
+    .organizador-card h3 {
+      margin-top: 10px;
       font-size: 18px;
     }
-    .card-expand {
-      margin-top: 12px;
-      font-size: 13px;
-      color: #007bff;
+    .vitrine {
+      text-align: center;
+      padding: 40px 20px;
     }
-    .card-details {
-      margin-top: 15px;
-      display: none;
+    .vitrine h2 {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    .evento-card {
+      display: inline-block;
+      background-color: white;
+      border-radius: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      padding: 20px;
+      margin: 20px;
+      max-width: 300px;
       text-align: left;
+    }
+    .evento-card h3 {
+      margin-top: 0;
+      font-size: 18px;
+    }
+    .evento-card p {
       font-size: 14px;
-      background: #ffffff;
+      color: #555;
+    }
+    .ingresso-modelo {
+      max-width: 95%;
+      border-radius: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    .planos {
+      text-align: center;
+      padding: 60px 20px;
+    }
+    .planos h2 {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    .plano {
+      display: inline-block;
+      background: #fff;
       border-radius: 16px;
-      padding: 15px;
-      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
-      animation: fadeIn 0.4s ease-in-out;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .card-details p {
-      margin-bottom: 10px;
-    }
-    .event-section {
-      margin-top: 60px;
+      padding: 30px;
+      margin: 20px;
+      width: 280px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
       text-align: center;
     }
-    .event-card {
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-      padding: 20px;
-      margin: 20px auto;
-      max-width: 400px;
-      transition: all 0.3s ease-in-out;
-      scroll-margin-top: 100px;
+    .plano h3 {
+      font-size: 20px;
+      margin-bottom: 10px;
     }
-    .event-details {
-      display: none;
-      margin-top: 10px;
+    .plano p {
       font-size: 14px;
-      text-align: left;
-      animation: fadeIn 0.4s ease-in-out;
+      color: #444;
+      margin: 10px 0;
     }
-    .btn-vermais {
-      margin-top: 10px;
-      background-color: #e5f0ff;
-      color: #0044cc;
-      border: none;
+    .plano button {
+      margin-top: 15px;
       padding: 10px 20px;
-      font-weight: 600;
+      background: #007aff;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
       font-size: 14px;
-      border-radius: 12px;
       cursor: pointer;
-      transition: all 0.2s ease-in-out;
+      transition: background 0.3s;
     }
-    .btn-vermais:hover {
-      background-color: #d1e4ff;
+    .plano button:hover {
+      background: #005ecb;
+    }
+    footer {
+      text-align: center;
+      font-size: 12px;
+      padding: 40px 20px 20px;
+      color: #8e8e93;
+    }
+    footer a {
+      color: #007aff;
+      margin: 0 8px;
+      text-decoration: none;
+    }
+    footer a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
 <body>
-  <!-- conteúdo mantido -->
-  <script>
-    function toggleCard(card) {
-      const details = card.querySelector('.card-details');
-      const allCards = document.querySelectorAll('.card-details');
-      allCards.forEach(el => { if (el !== details) el.style.display = 'none'; });
-      details.style.display = details.style.display === 'block' ? 'none' : 'block';
-      if (details.style.display === 'block') card.scrollIntoView({ behavior: 'smooth' });
-    }
+  <header>
+    <img src="logo_ingressai.png" alt="Logo IngressAI">
+    <h1>IngressAI</h1>
+    <a href="#vitrine" class="ver-eventos">Ver eventos</a>
+  </header>
 
-    function toggleEvent(button, id) {
-      const card = document.getElementById(id);
-      const details = card.querySelector('.event-details');
-      const all = document.querySelectorAll('.event-details');
-      all.forEach(el => { if (el !== details) el.style.display = 'none'; });
-      details.style.display = details.style.display === 'block' ? 'none' : 'block';
-      if (details.style.display === 'block') card.scrollIntoView({ behavior: 'smooth' });
-    }
-  </script>
-<footer style="text-align: center; padding: 40px 20px 60px; font-size: 14px; color: #777;">
-  <div style="margin-bottom: 10px;">
-    <a href="https://instagram.com/ingressai" target="_blank" style="margin-right: 15px; text-decoration: none; color: #0044cc;">Instagram</a>
-    <a href="mailto:contato@ingressai.chat" style="text-decoration: none; color: #0044cc;">E-mail</a>
-  </div>
-  <div>
-    <a href="politica.html" style="margin-right: 15px; text-decoration: none; color: #999;">Política de Privacidade</a>
-    <a href="termos.html" style="margin-right: 15px; text-decoration: none; color: #999;">Termos de Uso</a>
-    <a href="excluir.html" style="text-decoration: none; color: #999;">Excluir Conta</a>
-  </div>
-  <p style="margin-top: 15px; font-size: 13px; color: #999;">CNPJ: 42.948.399/0001-87</p>
-</footer>
+  <section class="organizadores">
+    <div class="organizador-card">
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUg..." alt="Atléticas e Repúblicas">
+      <h3>Atléticas e Repúblicas</h3>
+    </div>
+    <div class="organizador-card">
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUg..." alt="Produtoras Independentes">
+      <h3>Produtoras Independentes</h3>
+    </div>
+    <div class="organizador-card">
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUg..." alt="Locais Independentes">
+      <h3>Locais Independentes</h3>
+    </div>
+  </section>
+
+  <section class="vitrine" id="vitrine">
+    <h2>Eventos em destaque</h2>
+
+    <div class="evento-card">
+      <h3>Open Bar Universitário</h3>
+      <p>Data: 10/08/2025</p>
+      <p>Local: República Alpha</p>
+      <p>Categoria: Atléticas</p>
+    </div>
+
+    <div class="evento-card">
+      <h3>Baile do Trap</h3>
+      <p>Data: 17/08/2025</p>
+      <p>Local: Arena Centro</p>
+      <p>Categoria: Produtoras</p>
+    </div>
+
+    <div class="evento-card">
+      <h3>Feira Cultural Independente</h3>
+      <p>Data: 24/08/2025</p>
+      <p>Local: Praça Uberaba</p>
+      <p>Categoria: Local Independente</p>
+    </div>
+
+    <div style="margin-top: 40px">
+      <h3 style="font-size: 20px; margin-bottom: 10px;">Modelo oficial de ingresso</h3>
+      <img src="ChatGPT Image 27 de jul. de 2025, 00_26_40.png" alt="Modelo de ingresso IngressAI" class="ingresso-modelo">
+    </div>
+  </section>
+
+  <section class="planos">
+    <h2>Planos para organizadores</h2>
+    <div class="plano">
+      <h3>Gratuito</h3>
+      <p>Crie eventos sem automação.</p>
+      <p>Você gera e envia o ingresso manualmente.</p>
+      <p>Receba o ingresso validável via QR Code no seu WhatsApp.</p>
+      <button>Clique e saiba mais</button>
+    </div>
+    <div class="plano">
+      <h3>Plano Atléticas & Repúblicas</h3>
+      <p>Automação total via WhatsApp.</p>
+      <p>Receba o valor na hora via Mercado Pago.</p>
+      <p>Taxa: 8%</p>
+      <button>Clique e saiba mais</button>
+    </div>
+    <div class="plano">
+      <h3>Plano Produtoras & Locais</h3>
+      <p>Automação total via WhatsApp.</p>
+      <p>Receba o valor na hora via Mercado Pago.</p>
+      <p>Taxa: 10%</p>
+      <button>Clique e saiba mais</button>
+    </div>
+  </section>
+
+  <footer>
+    <div>
+      <a href="https://instagram.com/ingressai" target="_blank">Instagram</a>
+      <a href="mailto:contato@ingressai.chat">E-mail</a>
+      <a href="/politica.html">Política</a>
+      <a href="/termos.html">Termos</a>
+      <a href="/excluir.html">Excluir Dados</a>
+    </div>
+    <div style="margin-top: 10px;">CNPJ: 42.948.399/0001-87</div>
+  </footer>
 </body>
 </html>
