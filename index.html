@@ -126,14 +126,20 @@
 </head>
 <body>
   <header>
+  <div style="text-align: center;">
     <img src="logo_ingressai.png" alt="Logo IngressAI" />
-  </header>
+    <h1 style="font-size: 28px; margin: 10px 0 5px; font-weight: 700;">IngressAI</h1>
+    <a href="#vitrine" style="text-decoration: none;">
+      <button style="margin-top: 10px; background-color: #e5f0ff; color: #0044cc; border: none; padding: 10px 20px; font-weight: 600; font-size: 14px; border-radius: 12px; cursor: pointer; transition: all 0.2s ease-in-out;">Ver eventos</button>
+    </a>
+  </div>
+</header>
 
   <div class="container">
     <h2>Organizadores</h2>
     <div class="cards">
       <div class="card" onclick="toggleCard(this)" id="card1">
-        <img src="/assets/atleticas.png" alt="Atléticas e Repúblicas" />
+        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAAXCAYAAAD+Unc0AAAAAXNSR0IArs4c6QAA..." alt="Atléticas e Repúblicas" />
         <div class="card-title">Atléticas e Repúblicas</div>
         <div class="card-expand">Clique e saiba mais</div>
         <div class="card-details">
@@ -145,7 +151,7 @@
         </div>
       </div>
       <div class="card" onclick="toggleCard(this)" id="card2">
-        <img src="/assets/produtoras.png" alt="Produtoras Independentes" />
+        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAAXCAYAAAD+Unc0AAAAAXNSR0IArs4c6QAA..." alt="Produtoras Independentes" />
         <div class="card-title">Produtoras Independentes</div>
         <div class="card-expand">Clique e saiba mais</div>
         <div class="card-details">
@@ -157,7 +163,7 @@
         </div>
       </div>
       <div class="card" onclick="toggleCard(this)" id="card3">
-        <img src="/assets/locais.png" alt="Locais Independentes" />
+        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAAXCAYAAAD+Unc0AAAAAXNSR0IArs4c6QAA..." alt="Locais Independentes" />
         <div class="card-title">Locais Independentes</div>
         <div class="card-expand">Clique e saiba mais</div>
         <div class="card-details">
@@ -170,7 +176,7 @@
       </div>
     </div>
 
-    <div class="event-section">
+    <div class="event-section" id="vitrine">
       <h2>Eventos em destaque</h2>
       <div class="event-card" id="event1">
         <h3>Festival Universitário</h3>
@@ -213,5 +219,17 @@
       if (details.style.display === 'block') card.scrollIntoView({ behavior: 'smooth' });
     }
   </script>
+<footer style="text-align: center; padding: 40px 20px 60px; font-size: 14px; color: #777;">
+  <div style="margin-bottom: 10px;">
+    <a href="https://instagram.com/ingressai" target="_blank" style="margin-right: 15px; text-decoration: none; color: #0044cc;">Instagram</a>
+    <a href="mailto:contato@ingressai.chat" style="text-decoration: none; color: #0044cc;">E-mail</a>
+  </div>
+  <div>
+    <a href="politica.html" style="margin-right: 15px; text-decoration: none; color: #999;">Política de Privacidade</a>
+    <a href="termos.html" style="margin-right: 15px; text-decoration: none; color: #999;">Termos de Uso</a>
+    <a href="excluir.html" style="text-decoration: none; color: #999;">Excluir Conta</a>
+  </div>
+<p style="margin-top: 15px; font-size: 13px; color: #999;">CNPJ: 42.948.399/0001-87</p>
+$1
 </body>
 </html>
