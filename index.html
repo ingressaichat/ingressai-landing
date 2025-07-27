@@ -3,232 +3,214 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="IngressAI é uma plataforma de venda de ingressos automatizada via WhatsApp com validação por QR Code. Ideal para Atléticas, Produtoras e Locais Independentes." />
-  <title>IngressAI — Ingressos Inteligentes via WhatsApp</title>
+  <title>IngressAI</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
   <style>
-    :root {
-      --azul: #0066ff;
-      --cinza: #f5f5f7;
-      --escuro: #111;
-      --branco: #fff;
-      --radius: 16px;
-    }
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    html {
+      scroll-behavior: smooth;
     }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen;
-      background: var(--cinza);
-      color: var(--escuro);
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      background-color: #f5f7fa;
+      color: #111;
     }
     header {
-      padding: 40px 20px 20px;
-      text-align: center;
-    }
-    .logo {
-      font-size: 2.4rem;
-      font-weight: bold;
-      color: var(--azul);
-    }
-    .subhead {
-      margin-top: 10px;
-      font-size: 1.2rem;
-      color: #555;
-    }
-    .organizers-section {
-      margin: 40px auto;
-      max-width: 960px;
-      padding: 0 20px;
-    }
-    .organizers-section h2 {
-      text-align: center;
-      font-size: 1.8rem;
-      margin-bottom: 20px;
-    }
-    .organizer-buttons {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 20px;
-    }
-    .organizer {
-      background: var(--branco);
-      border-radius: var(--radius);
       padding: 20px;
-      width: 280px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.07);
-      transition: all 0.3s ease;
-      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    .organizer:hover {
-      transform: translateY(-4px);
+    header img {
+      height: 50px;
     }
-    .organizer img {
-      width: 60px;
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h2 {
+      font-size: 24px;
       margin-bottom: 10px;
     }
-    .organizer h3 {
-      font-size: 1.2rem;
-      margin-bottom: 6px;
+    .cards {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
     }
-    .organizer p {
-      font-size: 0.9rem;
-      color: #666;
-    }
-    .expand-content {
-      display: none;
-      margin-top: 10px;
-      font-size: 0.9rem;
-      color: #333;
-    }
-    .organizer.active .expand-content {
-      display: block;
-    }
-    .cta-bot {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: var(--azul);
-      color: var(--branco);
-      border: none;
-      padding: 12px 20px;
-      border-radius: 40px;
-      margin-top: 14px;
-      text-decoration: none;
-      font-weight: 500;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.1);
-      transition: background 0.3s ease;
-    }
-    .cta-bot:hover {
-      background: #004dcc;
-    }
-    .cta-bot img {
-      width: 20px;
-      height: 20px;
-    }
-    .vitrine {
-      margin: 60px auto;
-      max-width: 960px;
-      padding: 0 20px;
-    }
-    .vitrine h2 {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-    .evento {
-      background: var(--branco);
-      border-radius: var(--radius);
+    .card {
+      background: linear-gradient(145deg, #e6eef5, #ffffff);
+      border-radius: 24px;
       padding: 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+      width: 280px;
+      box-shadow: 4px 4px 12px #cfd8e3, -4px -4px 12px #ffffff;
+      text-align: center;
+      transition: all 0.3s ease-in-out;
       cursor: pointer;
-      transition: all 0.3s ease;
+      position: relative;
+      scroll-margin-top: 100px;
     }
-    .evento:hover {
-      transform: scale(1.01);
+    .card:hover {
+      transform: scale(1.03);
     }
-    .evento h3 {
-      margin-bottom: 4px;
+    .card img {
+      width: 80px;
+      margin-bottom: 10px;
     }
-    .evento span {
-      font-size: 0.9rem;
-      color: #666;
+    .card-title {
+      font-weight: 700;
+      margin-bottom: 6px;
+      font-size: 18px;
     }
-    .evento .detalhes {
+    .card-expand {
+      margin-top: 12px;
+      font-size: 13px;
+      color: #007bff;
+    }
+    .card-details {
+      margin-top: 15px;
+      display: none;
+      text-align: left;
+      font-size: 14px;
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 15px;
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+      animation: fadeIn 0.4s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .card-details p {
+      margin-bottom: 10px;
+    }
+    .event-section {
+      margin-top: 60px;
+      text-align: center;
+    }
+    .event-card {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+      padding: 20px;
+      margin: 20px auto;
+      max-width: 400px;
+      transition: all 0.3s ease-in-out;
+      scroll-margin-top: 100px;
+    }
+    .event-details {
       display: none;
       margin-top: 10px;
+      font-size: 14px;
+      text-align: left;
+      animation: fadeIn 0.4s ease-in-out;
     }
-    .evento.active .detalhes {
-      display: block;
+    .btn-vermais {
+      margin-top: 10px;
+      background-color: #e5f0ff;
+      color: #0044cc;
+      border: none;
+      padding: 10px 20px;
+      font-weight: 600;
+      font-size: 14px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
     }
-    footer {
-      background: var(--branco);
-      color: #999;
-      text-align: center;
-      padding: 40px 20px 20px;
-      font-size: 0.9rem;
-    }
-    footer a {
-      color: #999;
-      margin: 0 8px;
-      text-decoration: none;
+    .btn-vermais:hover {
+      background-color: #d1e4ff;
     }
   </style>
 </head>
 <body>
   <header>
-    <div class="logo">IngressAI</div>
-    <div class="subhead">Ingressos Inteligentes via WhatsApp</div>
+    <img src="logo_ingressai.png" alt="Logo IngressAI" />
   </header>
 
-  <section class="organizers-section">
-    <h2>Soluções para Organizadores</h2>
-    <div class="organizer-buttons">
-      <div class="organizer" onclick="toggle(this)">
-        <img src="https://cdn-icons-png.flaticon.com/512/2991/2991115.png" alt="Atléticas">
-        <h3>Atléticas & Repúblicas</h3>
-        <p>Taxa de 8% • Repasse instantâneo</p>
-        <div class="expand-content">
-          Ideal para festas universitárias. Receba na hora via bot.<br>
-          <a class="cta-bot" href="https://wa.me/5534999992747?text=Quero%20criar%20um%20evento%20como%20Atlética">Criar agora <img src="https://cdn-icons-png.flaticon.com/512/11201/11201616.png"></a>
+  <div class="container">
+    <h2>Organizadores</h2>
+    <div class="cards">
+      <div class="card" onclick="toggleCard(this)" id="card1">
+        <img src="/assets/atleticas.png" alt="Atléticas e Repúblicas" />
+        <div class="card-title">Atléticas e Repúblicas</div>
+        <div class="card-expand">Clique e saiba mais</div>
+        <div class="card-details">
+          <p><strong>Taxa:</strong> 8%</p>
+          <p><strong>Automação via WhatsApp:</strong> Sim</p>
+          <p><strong>Público-alvo:</strong> Universitários e festas de repúblicas</p>
+          <p>Ideal para eventos entre amigos, jogos universitários e recepções calorosas.</p>
+          <button class="btn-vermais">Quero criar evento</button>
         </div>
       </div>
-      <div class="organizer" onclick="toggle(this)">
-        <img src="https://cdn-icons-png.flaticon.com/512/9647/9647415.png" alt="Produtoras">
-        <h3>Produtoras Independentes</h3>
-        <p>Taxa de 10% • Vitrine incluída</p>
-        <div class="expand-content">
-          Ideal para grandes eventos e line-ups. Receba automatizado.<br>
-          <a class="cta-bot" href="https://wa.me/5534999992747?text=Sou%20produtor%20e%20quero%20criar%20um%20evento">Criar agora <img src="https://cdn-icons-png.flaticon.com/512/11201/11201616.png"></a>
+      <div class="card" onclick="toggleCard(this)" id="card2">
+        <img src="/assets/produtoras.png" alt="Produtoras Independentes" />
+        <div class="card-title">Produtoras Independentes</div>
+        <div class="card-expand">Clique e saiba mais</div>
+        <div class="card-details">
+          <p><strong>Taxa:</strong> 10%</p>
+          <p><strong>Automação via WhatsApp:</strong> Sim</p>
+          <p><strong>Vitrine:</strong> Sim</p>
+          <p>Perfeito para produtoras que organizam eventos maiores e desejam profissionalismo e alcance.</p>
+          <button class="btn-vermais">Quero criar evento</button>
         </div>
       </div>
-      <div class="organizer" onclick="toggle(this)">
-        <img src="https://cdn-icons-png.flaticon.com/512/3082/3082032.png" alt="Locais">
-        <h3>Locais Independentes</h3>
-        <p>Taxa de 10% • Ideal para bares</p>
-        <div class="expand-content">
-          Automatize a venda do seu espaço de forma profissional.<br>
-          <a class="cta-bot" href="https://wa.me/5534999992747?text=Tenho%20um%20local%20e%20quero%20criar%20um%20evento">Criar agora <img src="https://cdn-icons-png.flaticon.com/512/11201/11201616.png"></a>
+      <div class="card" onclick="toggleCard(this)" id="card3">
+        <img src="/assets/locais.png" alt="Locais Independentes" />
+        <div class="card-title">Locais Independentes</div>
+        <div class="card-expand">Clique e saiba mais</div>
+        <div class="card-details">
+          <p><strong>Taxa:</strong> 10%</p>
+          <p><strong>Automação via WhatsApp:</strong> Sim</p>
+          <p><strong>Indicação:</strong> Bares, baladas e espaços de evento</p>
+          <p>Ideal para locais que desejam vender ingressos com rapidez e praticidade.</p>
+          <button class="btn-vermais">Quero criar evento</button>
         </div>
       </div>
     </div>
-  </section>
 
-  <section class="vitrine">
-    <h2>Eventos em Destaque</h2>
-    <div class="evento" onclick="toggle(this)">
-      <h3>Festa Neon Republicana</h3>
-      <span>12 de Agosto • República Orion</span>
-      <div class="detalhes">
-        <p>Open bar, DJs, estrutura completa. Ingressos limitados.</p>
-        <a class="cta-bot" href="https://wa.me/5534999992747?text=Quero%20comprar%20ingresso%20Festa%20Neon">Comprar ingresso <img src="https://cdn-icons-png.flaticon.com/512/11201/11201616.png"></a>
+    <div class="event-section">
+      <h2>Eventos em destaque</h2>
+      <div class="event-card" id="event1">
+        <h3>Festival Universitário</h3>
+        <p>Data: 12/08/2025<br>Local: Praça Central</p>
+        <button class="btn-vermais" onclick="toggleEvent(this, 'event1')">Ver mais</button>
+        <div class="event-details">
+          <p><strong>Categoria:</strong> Atléticas</p>
+          <p><strong>Link:</strong> <a href="https://maps.google.com" target="_blank">Ver no mapa</a></p>
+          <p><strong>Automação:</strong> Ingresso via WhatsApp com QR Code</p>
+        </div>
+      </div>
+      <div class="event-card" id="event2">
+        <h3>Festa do Branco</h3>
+        <p>Data: 25/08/2025<br>Local: Clube Novo Horizonte</p>
+        <button class="btn-vermais" onclick="toggleEvent(this, 'event2')">Ver mais</button>
+        <div class="event-details">
+          <p><strong>Categoria:</strong> Produtoras</p>
+          <p><strong>Link:</strong> <a href="https://maps.google.com" target="_blank">Ver no mapa</a></p>
+          <p><strong>Automação:</strong> Ingresso via WhatsApp com QR Code</p>
+        </div>
       </div>
     </div>
-    <div class="evento" onclick="toggle(this)">
-      <h3>Rolê da Produção</h3>
-      <span>18 de Agosto • Espaço Lounge 77</span>
-      <div class="detalhes">
-        <p>Evento open, artistas convidados e iluminação LED.</p>
-        <a class="cta-bot" href="https://wa.me/5534999992747?text=Quero%20ingresso%20Rolê%20da%20Produção">Comprar ingresso <img src="https://cdn-icons-png.flaticon.com/512/11201/11201616.png"></a>
-      </div>
-    </div>
-  </section>
-
-  <footer>
-    <p>&copy; 2025 IngressAI • CNPJ: 42.948.399/0001-87</p>
-    <p>
-      <a href="/politica.html">Política de Privacidade</a> |
-      <a href="/termos.html">Termos de Uso</a> |
-      <a href="/excluir.html">Excluir Dados</a>
-    </p>
-    <p>Siga no Instagram: <a href="https://instagram.com/ingressai" target="_blank">@ingressai</a></p>
-  </footer>
+  </div>
 
   <script>
-    function toggle(el) {
-      el.classList.toggle('active');
+    function toggleCard(card) {
+      const details = card.querySelector('.card-details');
+      const allCards = document.querySelectorAll('.card-details');
+      allCards.forEach(el => { if (el !== details) el.style.display = 'none'; });
+      details.style.display = details.style.display === 'block' ? 'none' : 'block';
+      if (details.style.display === 'block') card.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function toggleEvent(button, id) {
+      const card = document.getElementById(id);
+      const details = card.querySelector('.event-details');
+      const all = document.querySelectorAll('.event-details');
+      all.forEach(el => { if (el !== details) el.style.display = 'none'; });
+      details.style.display = details.style.display === 'block' ? 'none' : 'block';
+      if (details.style.display === 'block') card.scrollIntoView({ behavior: 'smooth' });
     }
   </script>
 </body>
