@@ -1,164 +1,129 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="IngressAI: Automatize sua venda de ingressos via WhatsApp com tecnologia inspirada na Apple. Descubra soluções para organizadores e veja eventos em destaque." />
-  <meta name="keywords" content="Ingressos, WhatsApp, Automação, Eventos, IngressAI, Atléticas, Produtoras, Locais, QR Code, Plataforma, Bot" />
-  <meta name="author" content="IngressAI" />
   <title>IngressAI - Sua nova forma de vender ingressos</title>
-  <link rel="icon" href="logo_ingressai.png" type="image/png">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap">
   <style>
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen;
-      background: #f8f9fb;
-      color: #1a1a1a;
-    }
-    header {
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #f9fbfd; color: #0a0a0a; line-height: 1.6; }
+    header { text-align: center; padding: 3rem 1rem 1rem; }
+    header img { width: 160px; margin-bottom: 1rem; }
+    h1 { font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; }
+    .section-title { text-align: center; font-size: 1.5rem; font-weight: 600; margin: 2rem 0 1rem; }
+    .organizers { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+    .organizer-button {
+      background: linear-gradient(#dbe9ff, #b6d5ff);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+      border-radius: 20px;
+      padding: 1rem;
+      width: 160px;
       text-align: center;
-      padding: 3rem 1rem 2rem;
-    }
-    header img {
-      width: 120px;
-    }
-    h1 {
-      font-size: 2rem;
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-    }
-    .subtitle {
-      font-size: 1.1rem;
-      color: #444;
-    }
-    .section {
-      padding: 2rem 1rem;
-      max-width: 900px;
-      margin: 0 auto;
-    }
-    .cards {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 1rem;
-    }
-    .card {
-      background: white;
-      border-radius: 1.5rem;
-      padding: 1.5rem;
-      width: 260px;
-      text-align: center;
-      box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+      cursor: pointer;
       transition: all 0.3s ease-in-out;
     }
-    .card:hover {
-      transform: scale(1.03);
+    .organizer-button img { width: 50px; margin-bottom: 0.5rem; }
+    .organizer-button:hover { transform: scale(1.05); }
+    .plan-content { display: none; background: #fff; border-radius: 10px; padding: 1rem; margin: 1rem auto; max-width: 400px; box-shadow: 0 0 10px rgba(0,0,0,0.05); }
+    .event-showcase { padding: 2rem 1rem; text-align: center; }
+    .event-card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 1rem;
+      margin: 1rem auto;
+      max-width: 360px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      transition: transform 0.3s;
     }
-    .card img {
-      width: 64px;
-      margin-bottom: 1rem;
-    }
-    .card h3 {
-      font-size: 1.2rem;
-    }
-    .card p {
-      font-size: 0.95rem;
-      color: #555;
-      margin: 0.5rem 0;
-    }
-    .botao-comprar {
-      background: #0066ff;
-      color: white;
-      font-weight: 600;
-      border: none;
-      padding: 1rem 1.5rem;
-      border-radius: 2rem;
+    .event-card:hover { transform: scale(1.02); }
+    .bot-button {
       margin-top: 1rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
+      background: #f0f5ff;
+      border: none;
+      padding: 1rem;
+      border-radius: 16px;
       font-size: 1rem;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      transition: all 0.3s;
-      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      cursor: pointer;
     }
-    .botao-comprar:hover {
-      background: #0055dd;
-      transform: translateY(-2px);
-    }
-    .botao-comprar img {
-      width: 24px;
-    }
+    .bot-button img { width: 24px; }
     footer {
-      background: #eef0f4;
-      padding: 2rem 1rem;
+      margin-top: 4rem;
       text-align: center;
-      font-size: 0.9rem;
+      padding: 1rem;
+      font-size: 0.85rem;
+      background: #f2f2f2;
     }
-    footer a {
-      color: #1a1a1a;
-      text-decoration: underline;
-      margin: 0 0.5rem;
-    }
+    footer a { margin: 0 0.5rem; color: #333; text-decoration: none; }
   </style>
 </head>
 <body>
   <header>
-    <img src="logo_ingressai.png" alt="IngressAI logo" />
+    <img src="logo_ingressai.png" alt="Logo IngressAI">
     <h1>IngressAI</h1>
-    <p class="subtitle">Automatize sua venda de ingressos via WhatsApp</p>
   </header>
 
-  <section class="section">
-    <h2 style="text-align: center; margin-bottom: 2rem;">Soluções para Organizadores</h2>
-    <div class="cards">
-      <div class="card">
-        <img src="icone_republicas.png" alt="Repúblicas e Atléticas">
-        <h3>Atléticas e Repúblicas</h3>
-        <p>Taxa de 8%. Receba via Mercado Pago e ingresse seu evento no mundo digital.</p>
-        <a class="botao-comprar" href="https://wa.me/5534999992747?text=Quero+criar+evento+como+Atlética"> <img src="bot_icon.png"> Criar evento </a>
-      </div>
-      <div class="card">
-        <img src="icone_produtoras.png" alt="Produtoras">
-        <h3>Produtoras Independentes</h3>
-        <p>Taxa de 10%. Solução completa com repasse instantâneo e vitrine exclusiva.</p>
-        <a class="botao-comprar" href="https://wa.me/5534999992747?text=Quero+criar+evento+como+Produtora"> <img src="bot_icon.png"> Criar evento </a>
-      </div>
-      <div class="card">
-        <img src="icone_locais.png" alt="Locais Independentes">
-        <h3>Locais Independentes</h3>
-        <p>Taxa de 10%. Faça seus eventos ganharem escala com automação inteligente.</p>
-        <a class="botao-comprar" href="https://wa.me/5534999992747?text=Quero+criar+evento+como+Local"> <img src="bot_icon.png"> Criar evento </a>
-      </div>
+  <div class="section-title">Soluções para Organizadores</div>
+  <div class="organizers">
+    <div class="organizer-button" onclick="togglePlan('plan1')">
+      <img src="icon_republicas.png" alt="Atléticas e Repúblicas">
+      <div>Atléticas e Repúblicas</div>
     </div>
-  </section>
+    <div class="organizer-button" onclick="togglePlan('plan2')">
+      <img src="icon_produtoras.png" alt="Produtoras">
+      <div>Produtoras Independentes</div>
+    </div>
+    <div class="organizer-button" onclick="togglePlan('plan3')">
+      <img src="icon_locais.png" alt="Locais">
+      <div>Locais Independentes</div>
+    </div>
+  </div>
 
-  <section class="section">
-    <h2 style="text-align: center; margin-bottom: 2rem;">Eventos em Destaque</h2>
-    <div class="cards">
-      <div class="card">
-        <h3>Sunset das Repúblicas</h3>
-        <p>28/08 às 17h - Arena Ura</p>
-        <p>Organizado por: Atlética BixoLoko</p>
-        <a class="botao-comprar" href="https://wa.me/5534999992747?text=Quero+comprar+ingresso+do+evento+Sunset+das+Repúblicas"> <img src="bot_icon.png"> Comprar ingresso agora</a>
-      </div>
-      <div class="card">
-        <h3>Baile do Flash</h3>
-        <p>02/09 às 21h - Palácio Hall</p>
-        <p>Organizado por: Flash Produções</p>
-        <a class="botao-comprar" href="https://wa.me/5534999992747?text=Quero+comprar+ingresso+do+evento+Baile+do+Flash"> <img src="bot_icon.png"> Comprar ingresso agora</a>
-      </div>
+  <div id="plan1" class="plan-content">
+    <strong>Plano Atléticas e Repúblicas</strong>
+    <p>Taxa de 8%. Receba via WhatsApp, emissão automática, repasse instantâneo via Mercado Pago.</p>
+    <a href="https://wa.me/5534999992747?text=Quero+criar+evento+como+Atlética" class="bot-button"><img src="bot_icon.png"> Criar evento</a>
+  </div>
+  <div id="plan2" class="plan-content">
+    <strong>Plano Produtoras</strong>
+    <p>Taxa de 10%. Repasse instantâneo e acesso à vitrine de eventos. Emissão e validação via QR Code.</p>
+    <a href="https://wa.me/5534999992747?text=Sou+produtora+e+quero+vender+ingressos" class="bot-button"><img src="bot_icon.png"> Criar evento</a>
+  </div>
+  <div id="plan3" class="plan-content">
+    <strong>Plano Locais Independentes</strong>
+    <p>Taxa de 10%. Ingressos digitais, link de compra, QR Code para entrada. Ideal para bares e lounges.</p>
+    <a href="https://wa.me/5534999992747?text=Sou+local+independente+e+quero+usar+a+IngressAI" class="bot-button"><img src="bot_icon.png"> Criar evento</a>
+  </div>
+
+  <div class="event-showcase">
+    <h2 class="section-title">Eventos em Destaque</h2>
+    <div class="event-card">
+      <h3>Festa Universitária Open Bar</h3>
+      <p>12 de Agosto · 22h · República XYZ</p>
+      <a href="https://wa.me/5534999992747?text=Quero+comprar+ingresso+da+Festa+Open+Bar" class="bot-button"><img src="bot_icon.png"> Comprar ingresso</a>
     </div>
-  </section>
+    <!-- + eventos -->
+  </div>
 
   <footer>
-    <p>&copy; 2025 IngressAI. Todos os direitos reservados.</p>
-    <p>
-      <a href="politica.html">Política de Privacidade</a> |
-      <a href="termos.html">Termos de Uso</a> |
-      <a href="excluir.html">Excluir meus dados</a>
-    </p>
-    <p>Siga no Instagram: <a href="https://instagram.com/ingressai" target="_blank">@ingressai</a></p>
+    <div>
+      <a href="politica.html">Política de Privacidade</a>
+      <a href="termos.html">Termos de Uso</a>
+      <a href="excluir.html">Excluir Meus Dados</a>
+    </div>
+    <div>Siga @ingressai no Instagram</div>
   </footer>
+
+  <script>
+    function togglePlan(id) {
+      document.querySelectorAll('.plan-content').forEach(el => el.style.display = 'none');
+      document.getElementById(id).style.display = 'block';
+    }
+  </script>
 </body>
 </html>
