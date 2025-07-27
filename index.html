@@ -1,189 +1,29 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="IngressAI - Venda automatizada de ingressos via WhatsApp" />
-  <title>IngressAI</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    }
-    body {
-      background: #f9fafb;
-      color: #0f172a;
-      padding: 32px;
-    }
-    header {
-      text-align: center;
-      margin-bottom: 48px;
-    }
-    header img {
-      width: 140px;
-      margin-bottom: 16px;
-    }
-    h1 {
-      font-size: 32px;
-      margin-bottom: 8px;
-    }
-    h2 {
-      font-size: 20px;
-      color: #475569;
-      margin-bottom: 32px;
-      text-align: center;
-    }
-    .planos {
-      display: flex;
-      gap: 24px;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-    .plano {
-      background: #e0edff;
-      border-radius: 24px;
-      padding: 24px;
-      width: 220px;
-      text-align: center;
-      box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-      cursor: pointer;
-      transition: 0.3s;
-    }
-    .plano:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 12px 24px rgba(0,0,0,0.08);
-    }
-    .plano-icon {
-      font-size: 48px;
-      margin-bottom: 12px;
-    }
-    .plano-title {
-      font-weight: bold;
-      font-size: 16px;
-    }
-    .plano-desc {
-      margin-top: 12px;
-      font-size: 14px;
-      color: #334155;
-    }
-    .botao-bot {
-      background: white;
-      border-radius: 24px;
-      padding: 20px;
-      text-align: center;
-      width: 100%;
-      max-width: 400px;
-      margin: 48px auto;
-      box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-    }
-    .botao-bot a {
-      text-decoration: none;
-      color: #0f172a;
-      font-weight: bold;
-      display: block;
-    }
-    .vitrine {
-      margin-top: 64px;
-    }
-    .vitrine h2 {
-      font-size: 24px;
-      margin-bottom: 16px;
-    }
-    .eventos {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 24px;
-    }
-    .evento {
-      background: white;
-      padding: 20px;
-      border-radius: 16px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
-      transition: 0.3s;
-    }
-    .evento:hover {
-      transform: scale(1.02);
-    }
-    .evento h3 {
-      font-size: 16px;
-      margin-bottom: 4px;
-    }
-    .evento p {
-      font-size: 14px;
-      color: #475569;
-    }
-    footer {
-      margin-top: 64px;
-      padding-top: 24px;
-      border-top: 1px solid #e2e8f0;
-      font-size: 14px;
-      text-align: center;
-      color: #64748b;
-    }
-    footer a {
-      color: #0f172a;
-      text-decoration: underline;
-      margin: 0 8px;
-    }
-  </style>
-</head>
-<body>
-  <header>
-    <img src="logo_ingressai.png" alt="Logo IngressAI" />
-    <h1>IngressAI</h1>
-    <h2>Soluções para organizadores</h2>
-    <div class="planos">
-      <div class="plano" onclick="window.location.href='https://wa.me/5534999992747?text=Quero+criar+evento+como+Atlética'">
-        <div class="plano-icon">🏅</div>
-        <div class="plano-title">Atléticas e Repúblicas</div>
-        <div class="plano-desc">8% de taxa | Valor direto para o organizador</div>
-      </div>
-      <div class="plano" onclick="window.location.href='https://wa.me/5534999992747?text=Quero+criar+evento+como+Produtora'">
-        <div class="plano-icon">🎬</div>
-        <div class="plano-title">Produtoras Independentes</div>
-        <div class="plano-desc">10% de taxa | Recebimento imediato via link</div>
-      </div>
-      <div class="plano" onclick="window.location.href='https://wa.me/5534999992747?text=Quero+criar+evento+como+Local+Independente'">
-        <div class="plano-icon">🌐</div>
-        <div class="plano-title">Locais Independentes</div>
-        <div class="plano-desc">10% de taxa | Ingresso digital e QR Code</div>
-      </div>
-    </div>
-  </header>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>chat-to-sale-magic</title>
+    <meta name="description" content="Lovable Generated Project" />
+    <meta name="author" content="Lovable" />
 
-  <div class="botao-bot">
-    <a href="https://wa.me/5534999992747">
-      🤖 Comprar ingresso agora<br />
-      <small>via nosso assistente inteligente (bot)</small>
-    </a>
-  </div>
+    <meta property="og:title" content="chat-to-sale-magic" />
+    <meta property="og:description" content="Lovable Generated Project" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://github.com/ingressaichat/ingressai-landing/blob/main/logo_ingressai.png" />
 
-  <section class="vitrine">
-    <h2>Eventos disponíveis</h2>
-    <div class="eventos">
-      <div class="evento">
-        <h3>Festa Universitária</h3>
-        <p>Data: 05/08 - Uberaba/MG</p>
-        <a href="https://wa.me/5534999992747?text=Quero+ingresso+para+Festa+Universitária">🎟️ Ver detalhes</a>
-      </div>
-      <div class="evento">
-        <h3>Sunset na Rep</h3>
-        <p>Data: 10/08 - República Solar</p>
-        <a href="https://wa.me/5534999992747?text=Quero+ingresso+para+Sunset+na+Rep">🎟️ Ver detalhes</a>
-      </div>
-    </div>
-  </section>
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@ingressai" />
+    <meta name="twitter:image" content="https://github.com/ingressaichat/ingressai-landing/blob/main/logo_ingressai.png" />
+    
+    <!-- Links importantes -->
+    <link rel="privacy-policy" href="https://github.com/ingressaichat/ingressai-landing/blob/main/politica.html" />
+    <link rel="data-deletion" href="https://github.com/ingressaichat/ingressai-landing/blob/main/excluir.html" />
+    <link rel="terms-of-service" href="https://github.com/ingressaichat/ingressai-landing/blob/main/termos.html" />
+  </head>
 
-  <footer>
-    <p>
-      <a href="politica.html">Política de Privacidade</a> |
-      <a href="termos.html">Termos de Uso</a> |
-      <a href="excluir.html">Excluir meus dados</a>
-    </p>
-    <p>Siga no Instagram: <a href="https://instagram.com/ingressai">@ingressai</a></p>
-    <p>© 2025 IngressAI. Todos os direitos reservados.</p>
-  </footer>
-</body>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>
