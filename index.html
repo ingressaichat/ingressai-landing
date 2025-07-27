@@ -3,218 +3,125 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IngressAI — Venda de Ingressos Automatizada</title>
+  <title>IngressAI - Plataforma de Ingressos Inteligente</title>
   <style>
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell;
-      background: #f9f9f9;
-      color: #111;
+    :root {
+      --azul: #2563eb;
+      --cinza-claro: #f5f7fa;
+      --cinza-medio: #d4d8dd;
+      --preto: #111827;
+      --radius: 20px;
+      --golden: 1.618;
     }
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 40px 80px;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Helvetica Neue', sans-serif;
+    }
+    body {
+      background: white;
+      color: var(--preto);
+      line-height: 1.6;
+      padding: 2rem;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 3rem;
     }
     .logo {
-      font-size: 2rem;
-      font-weight: 700;
-      color: #0066ff;
-    }
-    nav a {
-      margin-left: 20px;
-      text-decoration: none;
-      color: #444;
-      font-weight: 500;
-    }
-    .hero {
-      text-align: center;
-      padding: 80px 20px;
-    }
-    .hero h1 {
-      font-size: 3rem;
-      font-weight: 700;
-      max-width: 700px;
-      margin: 0 auto 20px;
-    }
-    .hero p {
-      font-size: 1.2rem;
-      max-width: 600px;
-      margin: 0 auto 40px;
-    }
-    .hero img {
-      width: 300px;
-      border-radius: 20px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.05);
-    }
-    .section {
-      padding: 80px 20px;
-      max-width: 1000px;
+      width: 100px;
       margin: auto;
     }
-    .section h2 {
+    .title {
+      font-size: 2rem;
+      margin-top: 1rem;
+    }
+    .categories {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      align-items: center;
+      margin: 3rem 0;
+    }
+    .category-card {
+      background: var(--cinza-claro);
+      border-radius: var(--radius);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      padding: 2rem;
+      width: 90%;
+      max-width: 320px;
       text-align: center;
-      font-size: 2.2rem;
-      margin-bottom: 40px;
-    }
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 40px;
-    }
-    .card {
-      background: #fff;
-      border-radius: 16px;
-      padding: 24px;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.05);
-      text-align: center;
-    }
-    .card img.icon {
-      width: 60px;
-      height: 60px;
-      margin-bottom: 16px;
-    }
-    .card h3 {
-      margin: 10px 0;
-      font-size: 1.2rem;
-    }
-    .card p {
-      font-size: 0.95rem;
-      color: #555;
-    }
-    .cta-button {
-      background: #0066ff;
-      color: #fff;
-      font-size: 1.1rem;
-      padding: 14px 28px;
-      border: none;
-      border-radius: 12px;
-      cursor: pointer;
       transition: all 0.3s ease;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+      cursor: pointer;
+    }
+    .category-card:hover {
+      transform: scale(1.03);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+    .category-icon {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .botao-bot {
       display: flex;
       align-items: center;
-      gap: 10px;
-      text-decoration: none;
       justify-content: center;
-    }
-    .cta-button:hover {
-      background: #004de0;
-    }
-    footer {
-      background: #fff;
+      flex-direction: column;
       text-align: center;
-      padding: 60px 20px 30px;
-      font-size: 0.9rem;
-      color: #888;
-    }
-    footer a {
-      color: #0066ff;
+      padding: 1.2rem;
+      background: var(--cinza-claro);
+      border-radius: var(--radius);
+      box-shadow: inset 0 0 4px rgba(0,0,0,0.1), 0 4px 12px rgba(0,0,0,0.06);
+      transition: all 0.25s ease;
+      width: 90%;
+      max-width: 350px;
+      margin: 2rem auto;
       text-decoration: none;
-      margin: 0 10px;
+      color: var(--preto);
     }
-    .bot-icon-img {
-      width: 24px;
-      height: 24px;
+    .botao-bot:hover {
+      transform: translateY(-2px);
+      box-shadow: inset 0 0 4px rgba(0,0,0,0.08), 0 6px 14px rgba(0,0,0,0.12);
+    }
+    .botao-bot img {
+      width: 48px;
+      margin-bottom: 0.5rem;
+    }
+    .botao-bot strong {
+      font-size: 1.2rem;
+    }
+    .botao-bot span {
+      font-size: 0.9rem;
+      color: #444;
     }
   </style>
 </head>
 <body>
-  <header>
-    <div class="logo">IngressAI</div>
-    <nav>
-      <a href="#planos">Planos</a>
-      <a href="#eventos">Eventos</a>
-      <a href="#comofunciona">Como funciona</a>
-    </nav>
-  </header>
+  <div class="header">
+    <img class="logo" src="logo_ingressai.png" alt="IngressAI Logo">
+    <h1 class="title">IngressAI</h1>
+  </div>
 
-  <section class="hero">
-    <h1>Venda de Ingressos 100% Automatizada</h1>
-    <p>Organize, venda e valide seus eventos com tecnologia integrada ao WhatsApp — repasse instantâneo, automação completa.</p>
-    <img src="https://cdn-icons-png.flaticon.com/512/4712/4712148.png" alt="Ingresso Exemplo">
-  </section>
-
-  <section class="section" id="planos">
-    <h2>Clique e conheça os planos</h2>
-    <div class="cards">
-      <div class="card">
-        <img class="icon" src="https://images.unsplash.com/photo-1711371310576-6d06fa6c5a93" alt="Atléticas e Repúblicas">
-        <h3>Atléticas & Repúblicas</h3>
-        <p>Automatização completa via bot com taxa de apenas 8%. Receba na hora.</p>
-        <a class="cta-button" href="https://wa.me/5534999992747" target="_blank">
-          <img class="bot-icon-img" src="https://cdn-icons-png.flaticon.com/512/4712/4712148.png" alt="Bot Icon" /> Saiba mais
-        </a>
-      </div>
-      <div class="card">
-        <img class="icon" src="https://images.unsplash.com/photo-1711371371423-489ddf10d56d" alt="Produtoras Independentes">
-        <h3>Produtoras</h3>
-        <p>Automação com vitrine destacada. Taxa de 10% com repasse automático.</p>
-        <a class="cta-button" href="https://wa.me/5534999992747" target="_blank">
-          <img class="bot-icon-img" src="https://cdn-icons-png.flaticon.com/512/4712/4712148.png" alt="Bot Icon" /> Saiba mais
-        </a>
-      </div>
-      <div class="card">
-        <img class="icon" src="https://images.unsplash.com/photo-1711371387750-89ce73447043" alt="Locais Independentes">
-        <h3>Locais Independentes</h3>
-        <p>Ideal para bares e espaços culturais. Tenha seu evento visível e automatizado.</p>
-        <a class="cta-button" href="https://wa.me/5534999992747" target="_blank">
-          <img class="bot-icon-img" src="https://cdn-icons-png.flaticon.com/512/4712/4712148.png" alt="Bot Icon" /> Saiba mais
-        </a>
-      </div>
+  <section class="categories">
+    <div class="category-card">
+      <div class="category-icon">🛡️</div>
+      <h2>Atléticas e Repúblicas</h2>
+    </div>
+    <div class="category-card">
+      <div class="category-icon">🎬</div>
+      <h2>Produtoras Independentes</h2>
+    </div>
+    <div class="category-card">
+      <div class="category-icon">✨</div>
+      <h2>Locais Independentes</h2>
     </div>
   </section>
 
-  <section class="section" id="eventos">
-    <h2>Eventos em Destaque</h2>
-    <div class="cards">
-      <div class="card">
-        <h3>Festa Universitária XYZ</h3>
-        <p>Data: 15/08 • Local: República Alpha</p>
-        <a class="cta-button" href="https://wa.me/5534999992747" target="_blank">
-          <img class="bot-icon-img" src="https://cdn-icons-png.flaticon.com/512/4712/4712148.png" alt="Bot Icon" /> Comprar ingresso
-        </a>
-      </div>
-      <div class="card">
-        <h3>Open Bar da Produção</h3>
-        <p>Data: 20/08 • Local: Espaço Urbano</p>
-        <a class="cta-button" href="https://wa.me/5534999992747" target="_blank">
-          <img class="bot-icon-img" src="https://cdn-icons-png.flaticon.com/512/4712/4712148.png" alt="Bot Icon" /> Comprar ingresso
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <section class="section" id="comofunciona">
-    <h2>Como Funciona</h2>
-    <div class="cards">
-      <div class="card">
-        <h3>Crie seu evento</h3>
-        <p>Via bot em segundos, categorizado e pronto para divulgação.</p>
-      </div>
-      <div class="card">
-        <h3>Venda automatizada</h3>
-        <p>O bot gera o ingresso, envia para o comprador e para o organizador.</p>
-      </div>
-      <div class="card">
-        <h3>Validação na entrada</h3>
-        <p>QR Code único para cada ingresso. Verificação rápida e segura.</p>
-      </div>
-    </div>
-  </section>
-
-  <footer>
-    <p>&copy; 2025 IngressAI — Todos os direitos reservados</p>
-    <p>
-      <a href="/politica.html">Política de Privacidade</a> •
-      <a href="/termos.html">Termos</a> •
-      <a href="/excluir.html">Excluir Conta</a>
-    </p>
-    <p>
-      Nos siga nas redes sociais:
-      <a href="https://instagram.com/ingressai" target="_blank">@ingressai</a>
-    </p>
-  </footer>
+  <a class="botao-bot" href="https://wa.me/5534999992747" target="_blank">
+    <img src="bot_ingressai.png" alt="Ícone do Bot">
+    <strong>Comprar ingresso agora</strong>
+    <span>via nosso assistente inteligente (bot)</span>
+  </a>
 </body>
 </html>
