@@ -1,133 +1,200 @@
-import React from 'react';
-import { Shield, Film, Globe } from 'lucide-react';
-import HeroSection from '@/components/HeroSection';
-import ExpandableCard from '@/components/ExpandableCard';
-import EventShowcase from '@/components/EventShowcase';
-import Footer from '@/components/Footer';
-
-const Index = () => {
-  const organizerTypes = [
-    {
-      type: 'athletics' as const,
-      title: 'Atléticas e Repúblicas',
-      description: 'Festas e eventos universitários',
-      icon: <Shield className="h-6 w-6 text-primary" />,
-      details: [
-        {
-          title: 'Eventos Universitários',
-          content: [
-            'Festas de repúblicas tradicionais',
-            'Eventos de atléticas e centros acadêmicos',
-            'Formaturas e confraternizações',
-            'Torneios esportivos universitários'
-          ]
-        },
-        {
-          title: 'Benefícios',
-          content: [
-            'Gestão automatizada de listas VIP',
-            'Controle de capacidade em tempo real',
-            'Pagamento via PIX integrado',
-            'Relatórios detalhados de vendas'
-          ]
-        }
-      ]
-    },
-    {
-      type: 'producers' as const,
-      title: 'Produtoras Independentes',
-      description: 'Shows, festivais e eventos culturais',
-      icon: <Film className="h-6 w-6 text-primary" />,
-      details: [
-        {
-          title: 'Eventos Culturais',
-          content: [
-            'Shows de música nacional e internacional',
-            'Festivais de arte e cultura',
-            'Espetáculos teatrais',
-            'Eventos gastronômicos'
-          ]
-        },
-        {
-          title: 'Recursos Avançados',
-          content: [
-            'Múltiplos tipos de ingresso (VIP, comum, etc)',
-            'Desconto para grupos e antecipados',
-            'Check-in automatizado via QR Code',
-            'Dashboard com analytics em tempo real'
-          ]
-        }
-      ]
-    },
-    {
-      type: 'venues' as const,
-      title: 'Locais Independentes',
-      description: 'Bares, casas noturnas e espaços culturais',
-      icon: <Globe className="h-6 w-6 text-primary" />,
-      details: [
-        {
-          title: 'Estabelecimentos',
-          content: [
-            'Bares e pubs com programação',
-            'Casas noturnas e clubs',
-            'Espaços culturais multifuncionais',
-            'Restaurantes com eventos'
-          ]
-        },
-        {
-          title: 'Soluções Integradas',
-          content: [
-            'Integração com sistema de comandas',
-            'Gestão de mesas e reservas',
-            'Programa de fidelidade automático',
-            'Comunicação direta com clientes'
-          ]
-        }
-      ]
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IngressAI — Venda de Ingressos Automatizada</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell;
+      background: #f9f9f9;
+      color: #111;
     }
-  ];
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 40px 80px;
+    }
+    .logo {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #0066ff;
+    }
+    nav a {
+      margin-left: 20px;
+      text-decoration: none;
+      color: #444;
+      font-weight: 500;
+    }
+    .hero {
+      text-align: center;
+      padding: 80px 20px;
+    }
+    .hero h1 {
+      font-size: 3rem;
+      font-weight: 700;
+      max-width: 700px;
+      margin: 0 auto 20px;
+    }
+    .hero p {
+      font-size: 1.2rem;
+      max-width: 600px;
+      margin: 0 auto 40px;
+    }
+    .hero img {
+      width: 300px;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.05);
+    }
+    .section {
+      padding: 80px 20px;
+      max-width: 1000px;
+      margin: auto;
+    }
+    .section h2 {
+      text-align: center;
+      font-size: 2.2rem;
+      margin-bottom: 40px;
+    }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 40px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.05);
+      text-align: center;
+    }
+    .card svg {
+      width: 60px;
+      height: 60px;
+      margin-bottom: 16px;
+      fill: #0066ff;
+    }
+    .card h3 {
+      margin: 10px 0;
+      font-size: 1.2rem;
+    }
+    .card p {
+      font-size: 0.95rem;
+      color: #555;
+    }
+    .cta-button {
+      background: #0066ff;
+      color: #fff;
+      font-size: 1.1rem;
+      padding: 14px 28px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .cta-button:hover {
+      background: #004de0;
+    }
+    footer {
+      background: #fff;
+      text-align: center;
+      padding: 60px 20px 30px;
+      font-size: 0.9rem;
+      color: #888;
+    }
+    .bot-icon {
+      width: 24px;
+      height: 24px;
+      background: #0066ff;
+      border-radius: 50%;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">IngressAI</div>
+    <nav>
+      <a href="#planos">Planos</a>
+      <a href="#eventos">Eventos</a>
+      <a href="#comofunciona">Como funciona</a>
+    </nav>
+  </header>
 
-  return (
-    <div className="min-h-screen bg-background">
-      <HeroSection />
-      
-      {/* Organizers Section */}
-      <section className="py-golden-xl px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-golden-lg">
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
-              Para Todos os Tipos de Organizadores
-            </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Nossa plataforma se adapta às necessidades específicas de cada tipo de evento e organizador
-            </p>
-          </div>
-          
-          <div className="grid gap-golden md:grid-cols-1 lg:grid-cols-1 max-w-4xl mx-auto">
-            {organizerTypes.map((organizer) => (
-              <ExpandableCard
-                key={organizer.type}
-                type={organizer.type}
-                title={organizer.title}
-                description={organizer.description}
-                icon={organizer.icon}
-                details={organizer.details}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
+  <section class="hero">
+    <h1>Venda de Ingressos 100% Automatizada</h1>
+    <p>Organize, venda e valide seus eventos com tecnologia integrada ao WhatsApp — repasse instantâneo, automação completa.</p>
+    <img src="https://cdn-icons-png.flaticon.com/512/4712/4712148.png" alt="Ingresso Exemplo">
+  </section>
 
-      {/* Events Showcase */}
-      <section className="py-golden-xl px-4 bg-secondary/30">
-        <div className="max-w-6xl mx-auto">
-          <EventShowcase />
-        </div>
-      </section>
-
-      <Footer />
+  <section class="section" id="planos">
+    <h2>Planos para Organizadores</h2>
+    <div class="cards">
+      <div class="card">
+        <svg viewBox="0 0 24 24"><path d="M12 2l4 4-4 4-4-4z" /></svg>
+        <h3>Atléticas & Repúblicas</h3>
+        <p>Automatização completa via bot com taxa de apenas 8%. Receba na hora.</p>
+        <button class="cta-button"><span class="bot-icon"></span> Saiba mais</button>
+      </div>
+      <div class="card">
+        <svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z" /></svg>
+        <h3>Produtoras</h3>
+        <p>Automação com vitrine destacada. Taxa de 10% com repasse automático.</p>
+        <button class="cta-button"><span class="bot-icon"></span> Saiba mais</button>
+      </div>
+      <div class="card">
+        <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20z" /></svg>
+        <h3>Locais Independentes</h3>
+        <p>Ideal para bares e espaços culturais. Tenha seu evento visível e automatizado.</p>
+        <button class="cta-button"><span class="bot-icon"></span> Saiba mais</button>
+      </div>
     </div>
-  );
-};
+  </section>
 
-export default Index;
+  <section class="section" id="eventos">
+    <h2>Eventos em Destaque</h2>
+    <div class="cards">
+      <div class="card">
+        <h3>Festa Universitária XYZ</h3>
+        <p>Data: 15/08 • Local: República Alpha</p>
+        <button class="cta-button"><span class="bot-icon"></span> Comprar ingresso</button>
+      </div>
+      <div class="card">
+        <h3>Open Bar da Produção</h3>
+        <p>Data: 20/08 • Local: Espaço Urbano</p>
+        <button class="cta-button"><span class="bot-icon"></span> Comprar ingresso</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="comofunciona">
+    <h2>Como Funciona</h2>
+    <div class="cards">
+      <div class="card">
+        <h3>Crie seu evento</h3>
+        <p>Via bot em segundos, categorizado e pronto para divulgação.</p>
+      </div>
+      <div class="card">
+        <h3>Venda automatizada</h3>
+        <p>O bot gera o ingresso, envia para o comprador e para o organizador.</p>
+      </div>
+      <div class="card">
+        <h3>Validação na entrada</h3>
+        <p>QR Code único para cada ingresso. Verificação rápida e segura.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>&copy; 2025 IngressAI — Todos os direitos reservados</p>
+    <p>CNPJ: 42.948.399/0001-87</p>
+    <p><a href="/politica.html">Política de Privacidade</a> • <a href="/termos.html">Termos de Uso</a> • <a href="/excluir.html">Excluir Conta</a></p>
+  </footer>
+</body>
+</html>
