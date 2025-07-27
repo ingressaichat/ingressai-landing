@@ -1,220 +1,189 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IngressAI - Plataforma Inteligente</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="IngressAI - Venda automatizada de ingressos via WhatsApp" />
+  <title>IngressAI</title>
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     }
     body {
-      background: #f6f7fb;
-      color: #1c1c1e;
-      line-height: 1.5;
-      padding: 2rem;
+      background: #f9fafb;
+      color: #0f172a;
+      padding: 32px;
     }
     header {
       text-align: center;
-      margin-bottom: 3rem;
+      margin-bottom: 48px;
     }
     header img {
-      height: 64px;
-      margin-bottom: 1rem;
+      width: 140px;
+      margin-bottom: 16px;
     }
-    header h1 {
-      font-size: 2rem;
-      font-weight: 600;
+    h1 {
+      font-size: 32px;
+      margin-bottom: 8px;
     }
-    .organizadores {
+    h2 {
+      font-size: 20px;
+      color: #475569;
+      margin-bottom: 32px;
       text-align: center;
-      margin-bottom: 2rem;
     }
-    .organizadores h2 {
-      font-size: 1.5rem;
-      margin-bottom: 1rem;
-    }
-    .botoes-container {
+    .planos {
       display: flex;
+      gap: 24px;
       justify-content: center;
       flex-wrap: wrap;
-      gap: 1rem;
     }
-    .botao-organizador {
-      background: linear-gradient(to bottom, #eaf2fc, #d0e4fc);
+    .plano {
+      background: #e0edff;
       border-radius: 24px;
-      padding: 1.5rem;
-      width: 200px;
-      height: 240px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+      padding: 24px;
+      width: 220px;
+      text-align: center;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.05);
       cursor: pointer;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      transition: 0.3s;
     }
-    .botao-organizador:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+    .plano:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.08);
     }
-    .botao-organizador img {
-      width: 60px;
-      margin-bottom: 1rem;
+    .plano-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
     }
-    .botao-organizador strong {
-      font-size: 1rem;
+    .plano-title {
+      font-weight: bold;
+      font-size: 16px;
     }
-    .plano-expansao {
-      display: none;
-      margin-top: 1rem;
-      padding: 1rem;
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-      text-align: left;
-      max-width: 320px;
-      margin-left: auto;
-      margin-right: auto;
+    .plano-desc {
+      margin-top: 12px;
+      font-size: 14px;
+      color: #334155;
     }
-    .plano-expansao p {
-      margin-bottom: 0.5rem;
+    .botao-bot {
+      background: white;
+      border-radius: 24px;
+      padding: 20px;
+      text-align: center;
+      width: 100%;
+      max-width: 400px;
+      margin: 48px auto;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.05);
     }
-    .plano-expansao a {
-      display: inline-block;
-      margin-top: 1rem;
-      padding: 0.5rem 1rem;
-      background: #007aff;
-      color: white;
-      border-radius: 10px;
+    .botao-bot a {
       text-decoration: none;
-      font-weight: 500;
-      transition: background 0.3s ease;
-    }
-    .plano-expansao a:hover {
-      background: #005dc0;
+      color: #0f172a;
+      font-weight: bold;
+      display: block;
     }
     .vitrine {
-      margin-top: 3rem;
+      margin-top: 64px;
     }
     .vitrine h2 {
-      text-align: center;
-      font-size: 1.5rem;
-      margin-bottom: 1rem;
+      font-size: 24px;
+      margin-bottom: 16px;
+    }
+    .eventos {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 24px;
     }
     .evento {
-      background: #fff;
+      background: white;
+      padding: 20px;
       border-radius: 16px;
-      padding: 1rem;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-      margin-bottom: 1rem;
-      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+      transition: 0.3s;
     }
     .evento:hover {
-      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+      transform: scale(1.02);
     }
     .evento h3 {
-      margin-bottom: 0.5rem;
+      font-size: 16px;
+      margin-bottom: 4px;
     }
     .evento p {
-      margin-bottom: 0.3rem;
-      font-size: 0.95rem;
-    }
-    .evento a {
-      display: inline-block;
-      margin-top: 0.5rem;
-      color: #007aff;
-      text-decoration: none;
-      font-weight: 500;
+      font-size: 14px;
+      color: #475569;
     }
     footer {
-      margin-top: 3rem;
+      margin-top: 64px;
+      padding-top: 24px;
+      border-top: 1px solid #e2e8f0;
+      font-size: 14px;
       text-align: center;
-      font-size: 0.85rem;
+      color: #64748b;
     }
     footer a {
-      color: #007aff;
-      text-decoration: none;
-      margin: 0 0.5rem;
+      color: #0f172a;
+      text-decoration: underline;
+      margin: 0 8px;
     }
   </style>
 </head>
 <body>
   <header>
-    <img src="logo_ingressai.png" alt="Logo IngressAI">
+    <img src="logo_ingressai.png" alt="Logo IngressAI" />
     <h1>IngressAI</h1>
+    <h2>Soluções para organizadores</h2>
+    <div class="planos">
+      <div class="plano" onclick="window.location.href='https://wa.me/5534999992747?text=Quero+criar+evento+como+Atlética'">
+        <div class="plano-icon">🏅</div>
+        <div class="plano-title">Atléticas e Repúblicas</div>
+        <div class="plano-desc">8% de taxa | Valor direto para o organizador</div>
+      </div>
+      <div class="plano" onclick="window.location.href='https://wa.me/5534999992747?text=Quero+criar+evento+como+Produtora'">
+        <div class="plano-icon">🎬</div>
+        <div class="plano-title">Produtoras Independentes</div>
+        <div class="plano-desc">10% de taxa | Recebimento imediato via link</div>
+      </div>
+      <div class="plano" onclick="window.location.href='https://wa.me/5534999992747?text=Quero+criar+evento+como+Local+Independente'">
+        <div class="plano-icon">🌐</div>
+        <div class="plano-title">Locais Independentes</div>
+        <div class="plano-desc">10% de taxa | Ingresso digital e QR Code</div>
+      </div>
+    </div>
   </header>
 
-  <section class="organizadores">
-    <h2>Soluções para organizadores</h2>
-    <div class="botoes-container">
-      <div class="botao-organizador" onclick="togglePlano('plano1')">
-        <img src="https://img.icons8.com/external-flatart-icons-outline-flatarticons/64/external-republic-education-flatart-icons-outline-flatarticons.png" alt="Atléticas">
-        <strong>Atléticas e Repúblicas</strong>
-      </div>
-      <div class="botao-organizador" onclick="togglePlano('plano2')">
-        <img src="https://img.icons8.com/ios/100/movie-projector--v1.png" alt="Produtoras">
-        <strong>Produtoras Independentes</strong>
-      </div>
-      <div class="botao-organizador" onclick="togglePlano('plano3')">
-        <img src="https://img.icons8.com/ios/100/disco-ball--v1.png" alt="Locais">
-        <strong>Locais Independentes</strong>
-      </div>
-    </div>
-    <div id="plano1" class="plano-expansao">
-      <p><strong>Plano Atléticas e Repúblicas</strong></p>
-      <p>Taxa: 8% por ingresso</p>
-      <p>Pagamento instantâneo via WhatsApp</p>
-      <a href="https://wa.me/5534999992747">Criar evento nesse plano</a>
-    </div>
-    <div id="plano2" class="plano-expansao">
-      <p><strong>Plano Produtoras</strong></p>
-      <p>Taxa: 10% por ingresso</p>
-      <p>Pagamento instantâneo via WhatsApp</p>
-      <a href="https://wa.me/5534999992747">Criar evento nesse plano</a>
-    </div>
-    <div id="plano3" class="plano-expansao">
-      <p><strong>Plano Locais</strong></p>
-      <p>Taxa: 10% por ingresso</p>
-      <p>Pagamento instantâneo via WhatsApp</p>
-      <a href="https://wa.me/5534999992747">Criar evento nesse plano</a>
-    </div>
-  </section>
+  <div class="botao-bot">
+    <a href="https://wa.me/5534999992747">
+      🤖 Comprar ingresso agora<br />
+      <small>via nosso assistente inteligente (bot)</small>
+    </a>
+  </div>
 
   <section class="vitrine">
     <h2>Eventos disponíveis</h2>
-    <div class="evento">
-      <h3>Open Bar dos Bixos</h3>
-      <p>Data: 10/08/2025</p>
-      <p>Local: República Resenha</p>
-      <a href="https://wa.me/5534999992747">Comprar ingresso</a>
-    </div>
-    <div class="evento">
-      <h3>Festival Universitário</h3>
-      <p>Data: 17/08/2025</p>
-      <p>Local: Parque Universitário</p>
-      <a href="https://wa.me/5534999992747">Comprar ingresso</a>
+    <div class="eventos">
+      <div class="evento">
+        <h3>Festa Universitária</h3>
+        <p>Data: 05/08 - Uberaba/MG</p>
+        <a href="https://wa.me/5534999992747?text=Quero+ingresso+para+Festa+Universitária">🎟️ Ver detalhes</a>
+      </div>
+      <div class="evento">
+        <h3>Sunset na Rep</h3>
+        <p>Data: 10/08 - República Solar</p>
+        <a href="https://wa.me/5534999992747?text=Quero+ingresso+para+Sunset+na+Rep">🎟️ Ver detalhes</a>
+      </div>
     </div>
   </section>
 
   <footer>
     <p>
-      <a href="/politica.html">Política de Privacidade</a> |
-      <a href="/termos.html">Termos de Uso</a> |
-      <a href="/excluir.html">Excluir meus dados</a>
+      <a href="politica.html">Política de Privacidade</a> |
+      <a href="termos.html">Termos de Uso</a> |
+      <a href="excluir.html">Excluir meus dados</a>
     </p>
     <p>Siga no Instagram: <a href="https://instagram.com/ingressai">@ingressai</a></p>
+    <p>© 2025 IngressAI. Todos os direitos reservados.</p>
   </footer>
-
-  <script>
-    function togglePlano(id) {
-      const planos = document.querySelectorAll('.plano-expansao');
-      planos.forEach(p => p.style.display = 'none');
-      document.getElementById(id).style.display = 'block';
-    }
-  </script>
 </body>
 </html>
