@@ -1,29 +1,133 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>chat-to-sale-magic</title>
-    <meta name="description" content="Lovable Generated Project" />
-    <meta name="author" content="Lovable" />
+import React from 'react';
+import { Shield, Film, Globe } from 'lucide-react';
+import HeroSection from '@/components/HeroSection';
+import ExpandableCard from '@/components/ExpandableCard';
+import EventShowcase from '@/components/EventShowcase';
+import Footer from '@/components/Footer';
 
-    <meta property="og:title" content="chat-to-sale-magic" />
-    <meta property="og:description" content="Lovable Generated Project" />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://github.com/ingressaichat/ingressai-landing/blob/main/logo_ingressai.png" />
+const Index = () => {
+  const organizerTypes = [
+    {
+      type: 'athletics' as const,
+      title: 'Atléticas e Repúblicas',
+      description: 'Festas e eventos universitários',
+      icon: <Shield className="h-6 w-6 text-primary" />,
+      details: [
+        {
+          title: 'Eventos Universitários',
+          content: [
+            'Festas de repúblicas tradicionais',
+            'Eventos de atléticas e centros acadêmicos',
+            'Formaturas e confraternizações',
+            'Torneios esportivos universitários'
+          ]
+        },
+        {
+          title: 'Benefícios',
+          content: [
+            'Gestão automatizada de listas VIP',
+            'Controle de capacidade em tempo real',
+            'Pagamento via PIX integrado',
+            'Relatórios detalhados de vendas'
+          ]
+        }
+      ]
+    },
+    {
+      type: 'producers' as const,
+      title: 'Produtoras Independentes',
+      description: 'Shows, festivais e eventos culturais',
+      icon: <Film className="h-6 w-6 text-primary" />,
+      details: [
+        {
+          title: 'Eventos Culturais',
+          content: [
+            'Shows de música nacional e internacional',
+            'Festivais de arte e cultura',
+            'Espetáculos teatrais',
+            'Eventos gastronômicos'
+          ]
+        },
+        {
+          title: 'Recursos Avançados',
+          content: [
+            'Múltiplos tipos de ingresso (VIP, comum, etc)',
+            'Desconto para grupos e antecipados',
+            'Check-in automatizado via QR Code',
+            'Dashboard com analytics em tempo real'
+          ]
+        }
+      ]
+    },
+    {
+      type: 'venues' as const,
+      title: 'Locais Independentes',
+      description: 'Bares, casas noturnas e espaços culturais',
+      icon: <Globe className="h-6 w-6 text-primary" />,
+      details: [
+        {
+          title: 'Estabelecimentos',
+          content: [
+            'Bares e pubs com programação',
+            'Casas noturnas e clubs',
+            'Espaços culturais multifuncionais',
+            'Restaurantes com eventos'
+          ]
+        },
+        {
+          title: 'Soluções Integradas',
+          content: [
+            'Integração com sistema de comandas',
+            'Gestão de mesas e reservas',
+            'Programa de fidelidade automático',
+            'Comunicação direta com clientes'
+          ]
+        }
+      ]
+    }
+  ];
 
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@ingressai" />
-    <meta name="twitter:image" content="https://github.com/ingressaichat/ingressai-landing/blob/main/logo_ingressai.png" />
-    
-    <!-- Links importantes -->
-    <link rel="privacy-policy" href="https://github.com/ingressaichat/ingressai-landing/blob/main/politica.html" />
-    <link rel="data-deletion" href="https://github.com/ingressaichat/ingressai-landing/blob/main/excluir.html" />
-    <link rel="terms-of-service" href="https://github.com/ingressaichat/ingressai-landing/blob/main/termos.html" />
-  </head>
+  return (
+    <div className="min-h-screen bg-background">
+      <HeroSection />
+      
+      {/* Organizers Section */}
+      <section className="py-golden-xl px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-golden-lg">
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
+              Para Todos os Tipos de Organizadores
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Nossa plataforma se adapta às necessidades específicas de cada tipo de evento e organizador
+            </p>
+          </div>
+          
+          <div className="grid gap-golden md:grid-cols-1 lg:grid-cols-1 max-w-4xl mx-auto">
+            {organizerTypes.map((organizer) => (
+              <ExpandableCard
+                key={organizer.type}
+                type={organizer.type}
+                title={organizer.title}
+                description={organizer.description}
+                icon={organizer.icon}
+                details={organizer.details}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
 
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
+      {/* Events Showcase */}
+      <section className="py-golden-xl px-4 bg-secondary/30">
+        <div className="max-w-6xl mx-auto">
+          <EventShowcase />
+        </div>
+      </section>
+
+      <Footer />
+    </div>
+  );
+};
+
+export default Index;
