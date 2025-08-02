@@ -130,8 +130,13 @@
   box-shadow: 0 8px 20px rgba(0,0,0,0.12);
 }
 .vitrine-card h3 {
-  font-size: 18px;
-  margin: 0 0 10px;
+  font-size: 20px;
+  margin: 0 0 12px;
+  font-weight: 600;
+  color: #1c1c1e;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 .vitrine-card p {
   font-size: 14px;
@@ -148,13 +153,15 @@
 }
 .vitrine-card .comprar {
   display: inline-block;
-  margin-top: 12px;
-  padding: 10px 20px;
+  margin-top: 16px;
+  padding: 12px 22px;
   background: #007aff;
   color: #fff;
-  border-radius: 12px;
+  border-radius: 14px;
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 600;
+  transition: background 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.1);
 }
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(6px); }
@@ -223,27 +230,27 @@
     <div style="margin-top: 10px;">CNPJ: 42.948.399/0001-87</div>
   <section id="vitrine" class="vitrine-section">
   <div class="vitrine-card" onclick="expandCard(this)">
-    <h3>Sunset Universitário</h3>
+    <h3>🎫 Evento Genérico 01</h3>
     <p>Data: 20/08/2025<br>Local: Clube Social</p>
     <div class="evento-detalhes">
       <p>Categoria: Atlética</p>
-      <a href="https://wa.me/5534999992747?text=Quero%20comprar%20ingresso%20para%20Sunset%20Universitário" target="_blank" class="comprar">Comprar ingresso</a>
+      <a href="https://wa.me/5534999992747?text=Quero%20comprar%20ingresso%20para%20Evento%20Genérico%2001" target="_blank" class="comprar">Comprar ingresso</a>
     </div>
   </div>
   <div class="vitrine-card" onclick="expandCard(this)">
-    <h3>Festa Open Bar</h3>
+    <h3>🎉 Evento Genérico 02</h3>
     <p>Data: 30/08/2025<br>Local: Mansão Morada Nova</p>
     <div class="evento-detalhes">
       <p>Categoria: Produtora</p>
-      <a href="https://wa.me/5534999992747?text=Quero%20comprar%20ingresso%20para%20Festa%20Open%20Bar" target="_blank" class="comprar">Comprar ingresso</a>
+      <a href="https://wa.me/5534999992747?text=Quero%20comprar%20ingresso%20para%20Evento%20Genérico%2002" target="_blank" class="comprar">Comprar ingresso</a>
     </div>
   </div>
   <div class="vitrine-card" onclick="expandCard(this)">
-    <h3>Pagode na Piscina</h3>
+    <h3>🎶 Evento Genérico 03</h3>
     <p>Data: 07/09/2025<br>Local: Bar do Zeca</p>
     <div class="evento-detalhes">
       <p>Categoria: Local Independente</p>
-      <a href="https://wa.me/5534999992747?text=Quero%20comprar%20ingresso%20para%20Pagode%20na%20Piscina" target="_blank" class="comprar">Comprar ingresso</a>
+      <a href="https://wa.me/5534999992747?text=Quero%20comprar%20ingresso%20para%20Evento%20Genérico%2003" target="_blank" class="comprar">Comprar ingresso</a>
     </div>
   </div>
 </section>
@@ -254,6 +261,14 @@
     });
     card.classList.toggle('expanded');
   }
+  document.querySelectorAll('.comprar').forEach(btn => {
+    btn.addEventListener('mouseenter', () => {
+      btn.style.transform = 'scale(1.03)';
+    });
+    btn.addEventListener('mouseleave', () => {
+      btn.style.transform = 'scale(1)';
+    });
+  });
 </script>
 </footer>
 </body>
