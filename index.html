@@ -47,36 +47,38 @@
     }
     .organizador-card {
       background-color: #e4efff;
-      padding: 30px;
       border-radius: 24px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
-      text-align: center;
-      width: 260px;
-      transition: transform 0.3s, box-shadow 0.3s;
-      position: relative;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.1);
+      width: 220px;
+      padding: 20px;
+      transition: all 0.3s ease;
       cursor: pointer;
+      text-align: center;
     }
     .organizador-card:hover {
-      transform: scale(1.05);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+      transform: scale(1.04);
     }
     .organizador-card img {
       width: 100%;
+      height: auto;
       border-radius: 16px;
-      margin-bottom: 15px;
     }
-    .organizador-card h3 {
-      margin-top: 10px;
-      font-size: 18px;
-    }
-    .organizador-expandido {
+    .organizador-detalhes {
       display: none;
-      background-color: #fff;
-      padding: 20px;
-      border-radius: 16px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
       margin-top: 10px;
       font-size: 14px;
+      color: #444;
+    }
+    .organizador-card.active .organizador-detalhes {
+      display: block;
+    }
+    .vitrine {
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .vitrine h2 {
+      font-size: 24px;
+      margin-bottom: 20px;
     }
     .evento-card {
       display: inline-block;
@@ -91,13 +93,15 @@
       cursor: pointer;
     }
     .evento-card:hover {
-      transform: scale(1.03);
-      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+      transform: scale(1.05);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.1);
     }
     .evento-detalhes {
       display: none;
       margin-top: 10px;
-      font-size: 14px;
+    }
+    .evento-card.active .evento-detalhes {
+      display: block;
     }
     footer {
       text-align: center;
@@ -114,6 +118,20 @@
       text-decoration: underline;
     }
   </style>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      document.querySelectorAll('.organizador-card').forEach(card => {
+        card.addEventListener('click', () => {
+          card.classList.toggle('active');
+        });
+      });
+      document.querySelectorAll('.evento-card').forEach(card => {
+        card.addEventListener('click', () => {
+          card.classList.toggle('active');
+        });
+      });
+    });
+  </script>
 </head>
 <body>
   <header>
@@ -123,49 +141,52 @@
   </header>
 
   <section class="organizadores">
-    <div class="organizador-card" onclick="toggleInfo(this)">
-      <img src="img/organizador_atleticas.jpeg" alt="Atléticas e Repúblicas">
-      <h3>Atléticas e Repúblicas</h3>
-      <div class="organizador-expandido">
-        Ideal para eventos universitários com automação completa. Receba na hora, ingresso via WhatsApp.
-      </div>
+    <div class="organizador-card">
+      <img src="img/card_atleticas_atualizado.png" alt="Atléticas e Repúblicas">
+      <div class="organizador-detalhes">Ideal para eventos universitários com repasse automático na hora.</div>
     </div>
-    <div class="organizador-card" onclick="toggleInfo(this)">
-      <img src="img/organizador_produtoras.jpeg" alt="Produtoras Independentes">
-      <h3>Produtoras Independentes</h3>
-      <div class="organizador-expandido">
-        Automatize sua produção de eventos com praticidade. Validação rápida e sem complicações.
-      </div>
+    <div class="organizador-card">
+      <img src="img/card_produtoras_atualizado.png" alt="Produtoras Independentes">
+      <div class="organizador-detalhes">Automação para produtoras que desejam escalabilidade e controle.</div>
     </div>
-    <div class="organizador-card" onclick="toggleInfo(this)">
-      <img src="img/organizador_locais.jpeg" alt="Locais Independentes">
-      <h3>Locais Independentes</h3>
-      <div class="organizador-expandido">
-        Ideal para bares, festas, clubes. Ingressos digitais em segundos com QR Code.
-      </div>
+    <div class="organizador-card">
+      <img src="img/card_locais_atualizado.png" alt="Locais Independentes">
+      <div class="organizador-detalhes">Para bares e espaços que queiram vender ingressos automaticamente.</div>
     </div>
-    <div class="organizador-card" onclick="toggleInfo(this)">
-      <img src="img/organizador_free.jpeg" alt="Plano Gratuito">
-      <h3>Plano Gratuito</h3>
-      <div class="organizador-expandido">
-        Você mesmo gera, envia e valida os ingressos. Ideal para testes e eventos simples.
-      </div>
+    <div class="organizador-card">
+      <img src="img/card_free_atualizado.png" alt="Plano Gratuito">
+      <div class="organizador-detalhes">Você cria o evento e envia manualmente, sem taxas e com QR Code pronto.</div>
     </div>
   </section>
 
   <section class="vitrine" id="vitrine">
     <h2>Eventos em destaque</h2>
-    <div class="evento-card" onclick="toggleEvento(this)">
+    <div class="evento-card">
       <h3>Evento Genérico 1</h3>
-      <p class="evento-detalhes">Data: 10/08/2025<br>Local: Local Genérico<br>Categoria: Atléticas<br><a href="https://wa.me/5534999992747?text=Quero%20comprar%20o%20ingresso%20do%20Evento%201" target="_blank">Comprar ingresso</a></p>
+      <div class="evento-detalhes">
+        <p>Data: 10/08/2025</p>
+        <p>Local: Local Genérico</p>
+        <p>Categoria: Atléticas</p>
+        <p><a href="https://wa.me/553499999999?text=Quero+comprar+ingresso+para+Evento+Genérico+1" target="_blank">Comprar ingresso</a></p>
+      </div>
     </div>
-    <div class="evento-card" onclick="toggleEvento(this)">
+    <div class="evento-card">
       <h3>Evento Genérico 2</h3>
-      <p class="evento-detalhes">Data: 17/08/2025<br>Local: Local Genérico<br>Categoria: Produtoras<br><a href="https://wa.me/5534999992747?text=Quero%20comprar%20o%20ingresso%20do%20Evento%202" target="_blank">Comprar ingresso</a></p>
+      <div class="evento-detalhes">
+        <p>Data: 17/08/2025</p>
+        <p>Local: Local Genérico</p>
+        <p>Categoria: Produtoras</p>
+        <p><a href="https://wa.me/553499999999?text=Quero+comprar+ingresso+para+Evento+Genérico+2" target="_blank">Comprar ingresso</a></p>
+      </div>
     </div>
-    <div class="evento-card" onclick="toggleEvento(this)">
+    <div class="evento-card">
       <h3>Evento Genérico 3</h3>
-      <p class="evento-detalhes">Data: 24/08/2025<br>Local: Local Genérico<br>Categoria: Local Independente<br><a href="https://wa.me/5534999992747?text=Quero%20comprar%20o%20ingresso%20do%20Evento%203" target="_blank">Comprar ingresso</a></p>
+      <div class="evento-detalhes">
+        <p>Data: 24/08/2025</p>
+        <p>Local: Local Genérico</p>
+        <p>Categoria: Local Independente</p>
+        <p><a href="https://wa.me/553499999999?text=Quero+comprar+ingresso+para+Evento+Genérico+3" target="_blank">Comprar ingresso</a></p>
+      </div>
     </div>
   </section>
 
@@ -179,20 +200,5 @@
     </div>
     <div style="margin-top: 10px;">CNPJ: 42.948.399/0001-87</div>
   </footer>
-
-  <script>
-    function toggleInfo(card) {
-      const info = card.querySelector('.organizador-expandido');
-      const open = document.querySelectorAll('.organizador-expandido');
-      open.forEach(el => { if (el !== info) el.style.display = 'none'; });
-      info.style.display = info.style.display === 'block' ? 'none' : 'block';
-    }
-    function toggleEvento(card) {
-      const detalhes = card.querySelector('.evento-detalhes');
-      const abertos = document.querySelectorAll('.evento-detalhes');
-      abertos.forEach(el => { if (el !== detalhes) el.style.display = 'none'; });
-      detalhes.style.display = detalhes.style.display === 'block' ? 'none' : 'block';
-    }
-  </script>
 </body>
 </html>
