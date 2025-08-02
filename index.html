@@ -1,29 +1,27 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>IngressAI - Plataforma de Ingressos Automatizada</title>
-  <meta name="description" content="IngressAI é a plataforma mais inteligente para vender e validar ingressos por WhatsApp. Automação completa, QR Code, pagamento instantâneo." />
-  <meta property="og:title" content="IngressAI - Ingressos automatizados via WhatsApp" />
-  <meta property="og:description" content="Venda e valide ingressos com um clique. Sem burocracia, sem apps, direto no WhatsApp." />
-  <meta property="og:image" content="https://ingressai.chat/og-image.jpg" />
-  <meta property="og:url" content="https://ingressai.chat" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <link rel="icon" href="/favicon.ico" type="image/x-icon" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <meta name="description" content="IngressAI é a plataforma mais inteligente para vender e validar ingressos por WhatsApp. Automação completa, QR Code, pagamento instantâneo.">
+  <meta property="og:title" content="IngressAI - Ingressos automatizados via WhatsApp">
+  <meta property="og:description" content="Venda e valide ingressos com um clique. Sem burocracia, sem apps, direto no WhatsApp.">
+  <meta property="og:image" content="https://ingressai.chat/og-image.jpg">
+  <meta property="og:url" content="https://ingressai.chat">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
+    html { scroll-behavior: smooth; }
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      font-family: 'Inter', sans-serif;
       background-color: #f5f5f7;
       color: #1c1c1e;
       margin: 0;
       padding: 0;
-    }
-    html {
-      scroll-behavior: smooth;
     }
     nav {
       position: sticky;
@@ -33,7 +31,7 @@
       display: flex;
       justify-content: center;
       gap: 30px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
       z-index: 999;
     }
     nav a {
@@ -42,16 +40,12 @@
       font-weight: 600;
       font-size: 14px;
     }
-    nav a:hover {
-      color: #007aff;
-    }
+    nav a:hover { color: #007aff; }
     header {
       text-align: center;
       padding: 40px 20px 10px;
     }
-    header img {
-      width: 120px;
-    }
+    header img { width: 120px; }
     h1 {
       font-size: 28px;
       margin: 10px 0 30px;
@@ -64,12 +58,10 @@
       font-size: 16px;
       border-radius: 14px;
       text-decoration: none;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.1);
       transition: background 0.3s;
     }
-    .ver-eventos:hover {
-      background: #005ecb;
-    }
+    .ver-eventos:hover { background: #005ecb; }
     .floating-whatsapp {
       position: fixed;
       bottom: 24px;
@@ -77,162 +69,192 @@
       background: #007aff;
       border-radius: 50%;
       padding: 16px;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.2);
       z-index: 1000;
     }
     .floating-whatsapp img {
       width: 32px;
       height: 32px;
     }
-    .benefits-section {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
+    .cards-section {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 30px;
       padding: 60px 20px;
-      gap: 40px;
       background-color: #ffffff;
+      justify-items: center;
     }
-    .benefit-card {
-      background: #eef4ff;
-      border-radius: 20px;
+    .card {
+      background: #e2ecfb;
+      border-radius: 24px;
       padding: 30px;
-      width: 280px;
       text-align: center;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-      transition: transform 0.3s;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+      transition: all 0.3s;
       cursor: pointer;
     }
-    .benefit-card:hover {
-      transform: translateY(-6px);
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.12);
     }
-    .benefit-icon {
-      font-size: 40px;
+    .card img {
+      width: 60px;
       margin-bottom: 16px;
-      color: #007aff;
     }
-    .benefit-card h3 {
+    .card h3 {
       font-size: 18px;
       margin-bottom: 10px;
     }
-    .benefit-card p {
+    .card p {
       font-size: 14px;
       color: #444;
     }
-    footer {
-      text-align: center;
-      padding: 40px 20px 20px;
-    }
-    footer a {
-      margin: 0 10px;
-      color: #007aff;
-      text-decoration: none;
-    }
-    footer a:hover {
-      text-decoration: underline;
-    }
-  </style>
+  .vitrine-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 30px;
+  padding: 60px 20px;
+  background-color: #f8faff;
+}
+.vitrine-card {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+}
+.vitrine-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+}
+.vitrine-card h3 {
+  font-size: 18px;
+  margin: 0 0 10px;
+}
+.vitrine-card p {
+  font-size: 14px;
+  color: #444;
+  margin: 0;
+}
+.vitrine-card .evento-detalhes {
+  display: none;
+  margin-top: 12px;
+}
+.vitrine-card.expanded .evento-detalhes {
+  display: block;
+  animation: fadeIn 0.3s ease-in-out;
+}
+.vitrine-card .comprar {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 10px 20px;
+  background: #007aff;
+  color: #fff;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 500;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 </head>
 <body>
   <nav>
     <a href="#topo">Início</a>
+    <a href="#organizadores">Organizadores</a>
     <a href="#vitrine">Eventos</a>
     <a href="#como-funciona">Como funciona</a>
     <a href="https://wa.me/5534999992747" target="_blank">Fale com o bot</a>
   </nav>
-
   <header id="topo">
-    <img src="logo_ingressai.png" alt="Logo IngressAI" />
+    <img src="logo_ingressai.png" alt="Logo IngressAI">
     <h1>IngressAI</h1>
     <a href="#vitrine" class="ver-eventos">Ver eventos</a>
   </header>
 
   <a href="https://wa.me/5534999992747" class="floating-whatsapp" target="_blank">
-    <img src="bot_icon.png" alt="Bot IngressAI" />
+    <img src="bot_icon.png" alt="Bot IngressAI">
   </a>
 
-  <!-- Seção de Benefícios -->
-  <section class="benefits-section">
-    <div class="benefit-card">
-      <div class="benefit-icon">⚙️</div>
-      <h3>Automação via WhatsApp</h3>
-      <p>Criação, venda e envio de ingressos de forma automática e instantânea.</p>
-    </div>
-    <div class="benefit-card">
-      <div class="benefit-icon">💸</div>
-      <h3>Receba na hora</h3>
-      <p>O valor dos ingressos vai direto para a conta do organizador sem intermediários.</p>
-    </div>
-    <div class="benefit-card">
-      <div class="benefit-icon">🔐</div>
-      <h3>QR Code validável</h3>
-      <p>Todos os ingressos gerados possuem QR Code exclusivo para controle seguro.</p>
-    </div>
-  </section>
+  <section id="organizadores" class="cards-section">
+  <div class="card">
+    <svg width="60" height="60" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="32" cy="32" r="30" fill="#e6f0ff" />
+      <path d="M32 16L24 48L32 40L40 48L32 16Z" fill="#007aff" />
+    </svg>
+    <h3>Atléticas e Repúblicas</h3>
+    <p>Automatize festas universitárias e receba na hora.</p>
+  </div>
+  <div class="card">
+    <svg width="60" height="60" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="32" cy="32" r="30" fill="#e6f0ff" />
+      <path d="M24 20H40V24H24V20ZM24 28H40V32H24V28ZM24 36H40V40H24V36Z" fill="#007aff" />
+    </svg>
+    <h3>Produtoras Independentes</h3>
+    <p>Venda e valide ingressos direto pelo WhatsApp.</p>
+  </div>
+  <div class="card">
+    <svg width="60" height="60" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="32" cy="32" r="30" fill="#e6f0ff" />
+      <path d="M20 44H44V48H20V44ZM24 20H40V40H24V20Z" fill="#007aff" />
+    </svg>
+    <h3>Locais Independentes</h3>
+    <p>Gerencie entradas e evite filas com QR Code seguro.</p>
+  </div>
+  <div class="card">
+    <svg width="60" height="60" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="4" y="4" width="56" height="56" rx="12" fill="#e6f0ff" />
+      <text x="50%" y="50%" text-anchor="middle" dominant-baseline="central" font-size="20" fill="#007aff">FREE</text>
+    </svg>
+    <h3>Plano Gratuito</h3>
+    <p>Valide sua ideia com ingressos manuais e QR Code ativo.</p>
+  </div>
+</section>
 
-  <!-- Vitrine de Eventos -->
-  <section class="benefits-section" id="vitrine">
-    <div class="benefit-card" onclick="expandCard(this)">
-      <h3>Sunset Universitário</h3>
-      <p>Data: 20/08/2025<br>Local: Clube Social</p>
-      <div class="evento-detalhes" style="display:none; margin-top: 10px;">
-        <p>Categoria: Atlética</p>
-        <a href="https://wa.me/5534999992747?text=Quero%20comprar%20ingresso%20para%20Sunset%20Universitário" target="_blank" style="display:inline-block;margin-top:10px;padding:10px 20px;background:#007aff;color:#fff;border-radius:12px;text-decoration:none;">Comprar ingresso</a>
-      </div>
-    </div>
-    <div class="benefit-card" onclick="expandCard(this)">
-      <h3>Festa Open Bar</h3>
-      <p>Data: 30/08/2025<br>Local: Mansão Morada Nova</p>
-      <div class="evento-detalhes" style="display:none; margin-top: 10px;">
-        <p>Categoria: Produtora</p>
-        <a href="https://wa.me/5534999992747?text=Quero%20comprar%20ingresso%20para%20Festa%20Open%20Bar" target="_blank" style="display:inline-block;margin-top:10px;padding:10px 20px;background:#007aff;color:#fff;border-radius:12px;text-decoration:none;">Comprar ingresso</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- Como Funciona -->
-  <section class="benefits-section" id="como-funciona">
-    <div class="benefit-card">
-      <div class="benefit-icon">1️⃣</div>
-      <h3>Crie seu evento</h3>
-      <p>Você envia os dados no WhatsApp. O sistema gera tudo automático.</p>
-    </div>
-    <div class="benefit-card">
-      <div class="benefit-icon">2️⃣</div>
-      <h3>Venda com link direto</h3>
-      <p>Compartilhe o link e o bot cuida de tudo: CPF, pagamento e ingresso.</p>
-    </div>
-    <div class="benefit-card">
-      <div class="benefit-icon">3️⃣</div>
-      <h3>Valide por QR Code</h3>
-      <p>No dia do evento, você só bip o ingresso com segurança e controle total.</p>
-    </div>
-  </section>
-
-  <footer>
+  <footer style="text-align:center;padding:40px 20px 10px;">
     <a href="https://instagram.com/ingressai" target="_blank">Instagram</a>
     <a href="mailto:contato@ingressai.chat">E-mail</a>
     <a href="/politica.html">Política</a>
     <a href="/termos.html">Termos</a>
     <a href="/excluir.html">Excluir Dados</a>
     <div style="margin-top: 10px;">CNPJ: 42.948.399/0001-87</div>
-  </footer>
-
-  <script>
-    function expandCard(el) {
-      const all = document.querySelectorAll('.evento-detalhes');
-      all.forEach(d => { if (d !== el.querySelector('.evento-detalhes')) d.style.display = 'none'; });
-      const target = el.querySelector('.evento-detalhes');
-      target.style.display = target.style.display === 'block' ? 'none' : 'block';
-    }
-  </script>
-
-  <!-- Google Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){ dataLayer.push(arguments); }
-    gtag('js', new Date());
-    gtag('config', 'G-XXXXXXXXXX');
-  </script>
+  <section id="vitrine" class="vitrine-section">
+  <div class="vitrine-card" onclick="expandCard(this)">
+    <h3>Sunset Universitário</h3>
+    <p>Data: 20/08/2025<br>Local: Clube Social</p>
+    <div class="evento-detalhes">
+      <p>Categoria: Atlética</p>
+      <a href="https://wa.me/5534999992747?text=Quero%20comprar%20ingresso%20para%20Sunset%20Universitário" target="_blank" class="comprar">Comprar ingresso</a>
+    </div>
+  </div>
+  <div class="vitrine-card" onclick="expandCard(this)">
+    <h3>Festa Open Bar</h3>
+    <p>Data: 30/08/2025<br>Local: Mansão Morada Nova</p>
+    <div class="evento-detalhes">
+      <p>Categoria: Produtora</p>
+      <a href="https://wa.me/5534999992747?text=Quero%20comprar%20ingresso%20para%20Festa%20Open%20Bar" target="_blank" class="comprar">Comprar ingresso</a>
+    </div>
+  </div>
+  <div class="vitrine-card" onclick="expandCard(this)">
+    <h3>Pagode na Piscina</h3>
+    <p>Data: 07/09/2025<br>Local: Bar do Zeca</p>
+    <div class="evento-detalhes">
+      <p>Categoria: Local Independente</p>
+      <a href="https://wa.me/5534999992747?text=Quero%20comprar%20ingresso%20para%20Pagode%20na%20Piscina" target="_blank" class="comprar">Comprar ingresso</a>
+    </div>
+  </div>
+</section>
+<script>
+  function expandCard(card) {
+    document.querySelectorAll('.vitrine-card').forEach(el => {
+      if (el !== card) el.classList.remove('expanded');
+    });
+    card.classList.toggle('expanded');
+  }
+</script>
+</footer>
 </body>
 </html>
