@@ -3,142 +3,190 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IngressAI - Ingressos por WhatsApp</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <title>IngressAI - Plataforma de Ingressos Automatizada</title>
+  <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
   <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Inter', sans-serif;
-      margin: 0;
-      padding: 0;
-      background: #f9f9fb;
+      background: #f5f5f7;
       color: #1c1c1e;
     }
-    header, nav, footer {
+    header {
       text-align: center;
-      padding: 20px;
+      padding: 40px 20px 20px;
     }
-    nav a {
-      margin: 0 12px;
-      text-decoration: none;
-      color: #007aff;
-      font-weight: 600;
-    }
-    h1 { font-size: 24px; margin: 10px 0 6px; }
-    .button {
+    header img { width: 120px; }
+    h1 { font-size: 28px; margin-top: 12px; }
+    .ver-eventos {
       display: inline-block;
       background: #007aff;
-      color: #fff;
-      padding: 12px 20px;
+      color: white;
+      padding: 12px 24px;
       margin-top: 20px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: 500;
-    }
-    .cards {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 20px;
-      padding: 20px;
-    }
-    .card {
-      background: #fff;
-      border: 1px solid #e0e0e0;
       border-radius: 12px;
+      text-decoration: none;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .vitrine-section {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 24px;
+      padding: 60px 20px;
+    }
+    .vitrine-card {
+      background: white;
+      border-radius: 18px;
       padding: 20px;
-      width: 250px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      transition: 0.3s;
+      cursor: pointer;
     }
-    .card h3 {
-      margin-top: 0;
-      font-size: 16px;
+    .vitrine-card:hover {
+      transform: translateY(-5px);
     }
-    .whatsapp {
-      position: fixed;
-      right: 16px;
-      bottom: 16px;
+    .vitrine-card h3 { font-size: 20px; margin-bottom: 10px; }
+    .vitrine-card p { font-size: 14px; color: #444; }
+    .evento-detalhes {
+      display: none;
+      margin-top: 12px;
+      font-size: 13px;
+    }
+    .vitrine-card.expanded .evento-detalhes {
+      display: block;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    .comprar {
+      display: inline-block;
       background: #007aff;
-      padding: 12px;
-      border-radius: 50%;
+      color: white;
+      padding: 10px 20px;
+      margin-top: 10px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 600;
     }
-    .whatsapp img {
-      width: 28px;
-      height: 28px;
+    footer {
+      background: #f8f8f8;
+      padding: 40px 20px;
+      text-align: center;
+      font-size: 14px;
+      color: #888;
     }
     footer a {
+      color: #007aff;
       margin: 0 8px;
       text-decoration: none;
-      color: #007aff;
-      font-size: 14px;
     }
-    footer p {
-      margin: 6px 0;
-      font-size: 14px;
+    .contatos {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 100;
     }
-    .logo {
-      width: 100px;
-      margin-bottom: 10px;
+    .contatos a {
+      background: #007aff;
+      border-radius: 50%;
+      padding: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .contatos img { width: 24px; height: 24px; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
 <body>
 
-<header>
-  <img src="logo_ingressai.png" alt="Logo IngressAI" class="logo" />
-  <h1>IngressAI</h1>
-  <p>Venda e valide ingressos direto no WhatsApp</p>
-  <a href="#eventos" class="button">Ver Eventos</a>
-</header>
+  <header>
+    <img src="logo_ingressai.png" alt="IngressAI" />
+    <h1>IngressAI</h1>
+    <a href="#vitrine" class="ver-eventos">Ver eventos</a>
+  </header>
 
-<nav>
-  <a href="#organizadores">Organizadores</a>
-  <a href="#eventos">Eventos</a>
-  <a href="https://wa.me/5534999992747" target="_blank">Fale com o Bot</a>
-</nav>
+  <section id="organizadores" class="vitrine-section">
+    <div class="vitrine-card" onclick="expandCard(this)">
+      <h3>🎓 Atléticas & Repúblicas</h3>
+      <p>Automação via WhatsApp com repasse instantâneo e taxa reduzida de 8%.</p>
+      <div class="evento-detalhes">
+        <p>Ideal para repúblicas e atléticas que querem modernizar a venda de ingressos.</p>
+        <a href="https://wa.me/5534999992747?text=Quero%20criar%20evento%20como%20Atlética%20ou%20República" class="comprar">Criar Evento</a>
+      </div>
+    </div>
+    <div class="vitrine-card" onclick="expandCard(this)">
+      <h3>🎧 Produtoras Independentes</h3>
+      <p>Venda automatizada e vitrine destacada. Taxa de 10% com suporte completo.</p>
+      <div class="evento-detalhes">
+        <p>Perfeito para festas, shows e eventos culturais.</p>
+        <a href="https://wa.me/5534999992747?text=Quero%20criar%20evento%20como%20Produtora" class="comprar">Criar Evento</a>
+      </div>
+    </div>
+    <div class="vitrine-card" onclick="expandCard(this)">
+      <h3>🏠 Locais Independentes</h3>
+      <p>Soluções para bares e espaços com validação por QR Code.</p>
+      <div class="evento-detalhes">
+        <p>Taxa de 10%. Ingresso enviado direto para o organizador e comprador.</p>
+        <a href="https://wa.me/5534999992747?text=Quero%20criar%20evento%20como%20Local" class="comprar">Criar Evento</a>
+      </div>
+    </div>
+  </section>
 
-<section id="organizadores" class="cards">
-  <div class="card">
-    <h3>Atléticas e Repúblicas</h3>
-    <p>Automatize festas universitárias e receba instantaneamente.</p>
-  </div>
-  <div class="card">
-    <h3>Produtoras</h3>
-    <p>Venda ingressos com link personalizado e QR Code seguro.</p>
-  </div>
-  <div class="card">
-    <h3>Locais Independentes</h3>
-    <p>Gerencie entradas com controle e praticidade.</p>
-  </div>
-</section>
+  <section id="vitrine" class="vitrine-section">
+    <div class="vitrine-card" onclick="expandCard(this)">
+      <h3>🎫 Evento Genérico 01</h3>
+      <p>Data: 20/08/2025<br>Local: Clube Social</p>
+      <div class="evento-detalhes">
+        <p>Categoria: Atlética</p>
+        <a href="https://wa.me/5534999992747?text=Quero%20comprar%20ingresso%20para%20Evento%2001" class="comprar">Comprar ingresso</a>
+      </div>
+    </div>
+    <div class="vitrine-card" onclick="expandCard(this)">
+      <h3>🎉 Evento Genérico 02</h3>
+      <p>Data: 30/08/2025<br>Local: Mansão Morada Nova</p>
+      <div class="evento-detalhes">
+        <p>Categoria: Produtora</p>
+        <a href="https://wa.me/5534999992747?text=Quero%20comprar%20ingresso%20para%20Evento%2002" class="comprar">Comprar ingresso</a>
+      </div>
+    </div>
+    <div class="vitrine-card" onclick="expandCard(this)">
+      <h3>🎶 Evento Genérico 03</h3>
+      <p>Data: 07/09/2025<br>Local: Bar do Zeca</p>
+      <div class="evento-detalhes">
+        <p>Categoria: Local Independente</p>
+        <a href="https://wa.me/5534999992747?text=Quero%20comprar%20ingresso%20para%20Evento%2003" class="comprar">Comprar ingresso</a>
+      </div>
+    </div>
+  </section>
 
-<section id="eventos" class="cards">
-  <div class="card">
-    <h3>Evento Genérico 01</h3>
-    <p>Data: 20/08/2025<br>Local: Clube</p>
-    <a class="button" href="https://wa.me/5534999992747?text=Quero%20comprar%20para%20Evento%2001" target="_blank">Comprar ingresso</a>
+  <div class="contatos">
+    <a href="https://wa.me/5534999992747" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" alt="WhatsApp" /></a>
+    <a href="https://instagram.com/ingressai" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram" /></a>
   </div>
-  <div class="card">
-    <h3>Evento Genérico 02</h3>
-    <p>Data: 30/08/2025<br>Local: Salão</p>
-    <a class="button" href="https://wa.me/5534999992747?text=Quero%20comprar%20para%20Evento%2002" target="_blank">Comprar ingresso</a>
-  </div>
-</section>
 
-<footer>
-  <p>
-    <a href="https://instagram.com/ingressai" target="_blank">Instagram</a> |
-    <a href="mailto:contato@ingressai.chat">E-mail</a> |
-    <a href="/politica.html">Política</a> |
-    <a href="/termos.html">Termos</a> |
-    <a href="/excluir.html">Excluir Dados</a>
-  </p>
-  <p>CNPJ: 42.948.399/0001-87</p>
-  <p>&copy; 2025 IngressAI</p>
-</footer>
+  <footer>
+    <p>
+      <a href="/politica.html">Política</a>
+      <a href="/termos.html">Termos</a>
+      <a href="/excluir.html">Excluir Dados</a>
+    </p>
+    <p>CNPJ: 42.948.399/0001-87</p>
+    <p>© 2025 IngressAI. Todos os direitos reservados.</p>
+  </footer>
 
-<a href="https://wa.me/5534999992747" class="whatsapp" target="_blank">
-  <img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" alt="Bot IngressAI" />
-</a>
+  <script>
+    function expandCard(card) {
+      document.querySelectorAll('.vitrine-card').forEach(el => {
+        if (el !== card) el.classList.remove('expanded');
+      });
+      card.classList.toggle('expanded');
+    }
+  </script>
 
 </body>
 </html>
