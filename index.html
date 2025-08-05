@@ -6,51 +6,116 @@
   <title>IngressAI</title>
   <link rel="icon" type="image/png" href="logo_ingressai.png" />
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvetica Neue', sans-serif; }
-    body { background: #f9f9f9; color: #111; }
-    header { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 2rem; background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-    header img { height: 40px; }
-    header button { padding: 0.7rem 1.2rem; background: #111; color: #fff; border: none; border-radius: 12px; cursor: pointer; }
-    h1 { font-size: 2.5rem; text-align: center; margin: 2rem 0; }
-    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 2rem; padding: 0 2rem 4rem; }
-    .card {
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Helvetica Neue', sans-serif;
+    }
+    body {
+      background: #f9f9f9;
+      color: #111;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.2rem;
       background: #fff;
-      border-radius: 20px;
-      padding: 2rem;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.07);
-      transition: 0.3s ease;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+    header img {
+      height: 36px;
+    }
+    header button {
+      padding: 0.6rem 1rem;
+      background: #111;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.9rem;
       cursor: pointer;
     }
-    .card:hover { transform: scale(1.02); }
-    .card svg { width: 60px; height: 60px; margin-bottom: 1rem; }
-    .card h3 { font-size: 1.3rem; margin-bottom: 1rem; }
-    .card p { font-size: 0.95rem; line-height: 1.4; color: #333; }
-    .eventos { padding: 2rem; background: #fff; }
-    .event-card {
-      background: #f1f1f1;
-      padding: 1.5rem;
-      margin-bottom: 1rem;
-      border-radius: 14px;
-      display: flex;
-      flex-direction: column;
+    h1 {
+      font-size: 1.8rem;
+      text-align: center;
+      margin: 2rem 1rem 1rem;
     }
-    .event-card h4 { font-size: 1.1rem; margin-bottom: 0.5rem; }
-    .event-card span { font-size: 0.9rem; color: #444; margin-bottom: 1rem; }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
+      padding: 1rem;
+    }
+    .card {
+      background: #fff;
+      border-radius: 18px;
+      padding: 1.5rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+      transition: 0.3s ease;
+      cursor: pointer;
+      text-align: center;
+    }
+    .card:hover {
+      transform: scale(1.02);
+    }
+    .card svg {
+      width: 60px;
+      height: 60px;
+      margin-bottom: 1rem;
+    }
+    .card h3 {
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
+    }
+    .card p {
+      font-size: 0.95rem;
+      color: #333;
+    }
+    .eventos {
+      padding: 1rem;
+    }
+    .eventos h2 {
+      text-align: center;
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .event-card {
+      background: #fff;
+      padding: 1.2rem;
+      margin-bottom: 1rem;
+      border-radius: 12px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.04);
+    }
+    .event-card h4 {
+      font-size: 1.1rem;
+      margin-bottom: 0.4rem;
+    }
+    .event-card span {
+      font-size: 0.9rem;
+      color: #444;
+      display: block;
+      margin-bottom: 0.8rem;
+    }
     .event-card a {
-      align-self: flex-start;
       padding: 0.5rem 1rem;
       background: #007aff;
       color: white;
       border-radius: 10px;
       text-decoration: none;
+      font-size: 0.9rem;
     }
     footer {
-      padding: 2rem;
+      padding: 1.5rem 1rem;
       text-align: center;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       color: #666;
     }
-    footer a { margin: 0 0.5rem; color: #007aff; text-decoration: none; }
+    footer a {
+      margin: 0 0.4rem;
+      color: #007aff;
+      text-decoration: none;
+    }
     .floating-icons {
       position: fixed;
       bottom: 20px;
@@ -68,6 +133,7 @@
       justify-content: center;
       color: white;
       text-decoration: none;
+      font-size: 1.2rem;
     }
   </style>
 </head>
@@ -81,22 +147,36 @@
 
   <section class="cards">
     <div class="card">
-      <svg><!-- Ícone de escudo com A --></svg>
+      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="32" cy="32" r="30" stroke="#007aff" stroke-width="4" />
+        <text x="32" y="40" text-anchor="middle" font-size="24" fill="#007aff" font-weight="bold">A</text>
+      </svg>
       <h3>Atléticas & Repúblicas</h3>
       <p>Automação via WhatsApp com repasse instantâneo e taxa reduzida para eventos universitários.</p>
     </div>
     <div class="card">
-      <svg><!-- Ícone de engrenagem com nota musical --></svg>
+      <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="32" cy="32" r="28" fill="#007aff" opacity="0.1" />
+        <path d="M32 12v40M20 32h24" stroke="#007aff" stroke-width="4" stroke-linecap="round" />
+        <path d="M24 44c6-8 10-8 16 0" stroke="#007aff" stroke-width="3" stroke-linecap="round" />
+      </svg>
       <h3>Produtoras Independentes</h3>
       <p>Controle total de vendas, emissão automática e validação com QR Code para produtoras.</p>
     </div>
     <div class="card">
-      <svg><!-- Ícone de globo de festa --></svg>
+      <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="32" cy="32" r="30" fill="#f0f8ff" stroke="#007aff" stroke-width="3" />
+        <circle cx="32" cy="32" r="5" fill="#007aff" />
+        <path d="M20 32a12 12 0 0 1 24 0" stroke="#007aff" stroke-width="2" fill="none" />
+      </svg>
       <h3>Locais Independentes</h3>
       <p>Perfeito para bares e espaços que desejam realizar eventos com facilidade e segurança.</p>
     </div>
     <div class="card">
-      <svg><!-- Ícone de ingresso com "FREE" --></svg>
+      <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+        <rect x="8" y="20" width="48" height="24" rx="6" fill="#007aff" />
+        <text x="32" y="38" text-anchor="middle" font-size="16" fill="white" font-weight="bold">FREE</text>
+      </svg>
       <h3>Plano Gratuito</h3>
       <p>Emita ingressos manualmente e valide por QR Code. Ideal para validar seu primeiro evento.</p>
     </div>
