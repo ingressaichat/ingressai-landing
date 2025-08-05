@@ -25,86 +25,70 @@
       color: var(--color-text);
       line-height: 1.6;
     }
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: calc(1rem * var(--golden-ratio));
-      background: white;
-      box-shadow: var(--shadow);
-    }
-    header img {
-      height: 40px;
-    }
-    header button {
-      padding: 0.6rem 1.2rem;
-      background: var(--color-text);
-      color: white;
-      border: none;
-      border-radius: var(--radius);
-      font-size: 1rem;
-      cursor: pointer;
-    }
-    h1 {
-      font-size: 2rem;
-      text-align: center;
-      margin: 2rem 1rem 1rem;
-    }
-    .cards {
+    .container {
+      padding: 1rem;
       display: flex;
       flex-direction: column;
-      gap: 1.5rem;
-      padding: 1rem;
+      gap: 2rem;
     }
-    .card {
+    .card-block {
       background: white;
       border-radius: var(--radius);
-      padding: 1.2rem;
+      padding: 1.5rem;
       box-shadow: var(--shadow);
-      transition: 0.3s ease;
-      cursor: pointer;
+    }
+    .card-block h2 {
+      font-size: 1.4rem;
+      margin-bottom: 1rem;
       text-align: center;
+    }
+    .card-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+    .card {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 1rem;
+      box-shadow: var(--shadow);
+      text-align: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
     }
     .card svg {
-      width: 60px;
-      height: 60px;
-      margin-bottom: 0.8rem;
+      width: 50px;
+      height: 50px;
+      margin: 0 auto 0.6rem;
     }
     .card h3 {
-      font-size: 1.3rem;
+      font-size: 1.1rem;
+      margin-bottom: 0.4rem;
     }
-    .card-content {
+    .card p {
+      font-size: 0.9rem;
+      color: #444;
       display: none;
-      margin-top: 1rem;
-      font-size: 0.95rem;
-      color: #333;
     }
-    .card.active .card-content {
+    .card.active p {
       display: block;
-    }
-    .eventos {
-      padding: 2rem 1rem 1rem;
-    }
-    .eventos h2 {
-      text-align: center;
-      font-size: 1.5rem;
-      margin-bottom: 1rem;
+      margin-top: 0.5rem;
     }
     .event-card {
       background: white;
-      padding: 1rem;
       border-radius: var(--radius);
-      margin-bottom: 1rem;
+      padding: 1rem;
       box-shadow: var(--shadow);
     }
     .event-card h4 {
       font-size: 1.1rem;
+      margin-bottom: 0.3rem;
     }
     .event-card span {
-      font-size: 0.9rem;
       display: block;
-      margin: 0.4rem 0 0.8rem;
-      color: #444;
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 0.8rem;
     }
     .event-card a {
       display: inline-block;
@@ -116,15 +100,15 @@
       font-size: 0.9rem;
     }
     footer {
-      padding: 2rem 1rem;
       text-align: center;
       font-size: 0.8rem;
       color: #666;
+      padding: 2rem 1rem;
     }
     footer a {
-      margin: 0 0.4rem;
       color: var(--color-primary);
       text-decoration: none;
+      margin: 0 0.5rem;
     }
     .floating-icons {
       position: fixed;
@@ -157,49 +141,60 @@
   </script>
 </head>
 <body>
-  <header>
-    <img src="logo_ingressai.png" alt="IngressAI Logo" />
-    <button>Ver eventos</button>
+  <header class="card-block">
+    <div style="display:flex; align-items:center; justify-content:space-between;">
+      <img src="logo_ingressai.png" alt="IngressAI Logo" style="height:40px;">
+      <button style="background:#111; color:#fff; border:none; padding:0.6rem 1rem; border-radius:var(--radius); font-size:0.9rem;">Ver eventos</button>
+    </div>
   </header>
 
-  <h1>Automatize seu evento com IngressAI</h1>
+  <main class="container">
+    <section class="card-block">
+      <h2>Automatize seu evento com IngressAI</h2>
+    </section>
 
-  <section class="cards">
-    <div class="card">
-      <svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" stroke="#007aff" stroke-width="4" /><text x="32" y="40" text-anchor="middle" font-size="24" fill="#007aff" font-weight="bold">A</text></svg>
-      <h3>Atléticas & Repúblicas</h3>
-      <div class="card-content">Automação via WhatsApp com repasse instantâneo e taxa reduzida para eventos universitários.</div>
-    </div>
-    <div class="card">
-      <svg viewBox="0 0 64 64"><path d="M32 12v40M20 32h24" stroke="#007aff" stroke-width="4" stroke-linecap="round" /><path d="M24 44c6-8 10-8 16 0" stroke="#007aff" stroke-width="3" stroke-linecap="round" /></svg>
-      <h3>Produtoras Independentes</h3>
-      <div class="card-content">Controle total de vendas, emissão automática e validação com QR Code para produtoras.</div>
-    </div>
-    <div class="card">
-      <svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#f0f8ff" stroke="#007aff" stroke-width="3" /><circle cx="32" cy="32" r="5" fill="#007aff" /><path d="M20 32a12 12 0 0 1 24 0" stroke="#007aff" stroke-width="2" fill="none" /></svg>
-      <h3>Locais Independentes</h3>
-      <div class="card-content">Perfeito para bares e espaços que desejam realizar eventos com facilidade e segurança.</div>
-    </div>
-    <div class="card">
-      <svg viewBox="0 0 64 64"><rect x="8" y="20" width="48" height="24" rx="6" fill="#007aff" /><text x="32" y="38" text-anchor="middle" font-size="16" fill="white" font-weight="bold">FREE</text></svg>
-      <h3>Plano Gratuito</h3>
-      <div class="card-content">Emita ingressos manualmente e valide por QR Code. Ideal para validar seu primeiro evento.</div>
-    </div>
-  </section>
+    <section class="card-block">
+      <h2>Tipos de organizadores</h2>
+      <div class="card-grid">
+        <div class="card">
+          <svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" stroke="#007aff" stroke-width="4" /><text x="32" y="40" text-anchor="middle" font-size="24" fill="#007aff" font-weight="bold">A</text></svg>
+          <h3>Atléticas & Repúblicas</h3>
+          <p>Automação via WhatsApp com repasse instantâneo e taxa reduzida para eventos universitários.</p>
+        </div>
+        <div class="card">
+          <svg viewBox="0 0 64 64"><path d="M32 12v40M20 32h24" stroke="#007aff" stroke-width="4" stroke-linecap="round" /><path d="M24 44c6-8 10-8 16 0" stroke="#007aff" stroke-width="3" stroke-linecap="round" /></svg>
+          <h3>Produtoras Independentes</h3>
+          <p>Controle total de vendas, emissão automática e validação com QR Code para produtoras.</p>
+        </div>
+        <div class="card">
+          <svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#f0f8ff" stroke="#007aff" stroke-width="3" /><circle cx="32" cy="32" r="5" fill="#007aff" /><path d="M20 32a12 12 0 0 1 24 0" stroke="#007aff" stroke-width="2" fill="none" /></svg>
+          <h3>Locais Independentes</h3>
+          <p>Perfeito para bares e espaços que desejam realizar eventos com facilidade e segurança.</p>
+        </div>
+        <div class="card">
+          <svg viewBox="0 0 64 64"><rect x="8" y="20" width="48" height="24" rx="6" fill="#007aff" /><text x="32" y="38" text-anchor="middle" font-size="16" fill="white" font-weight="bold">FREE</text></svg>
+          <h3>Plano Gratuito</h3>
+          <p>Emita ingressos manualmente e valide por QR Code. Ideal para validar seu primeiro evento.</p>
+        </div>
+      </div>
+    </section>
 
-  <section class="eventos">
-    <h2>Eventos em destaque</h2>
-    <div class="event-card">
-      <h4>Sunset na Rep</h4>
-      <span>12/08 · 17h · República Atlântida</span>
-      <a href="https://wa.me/5534999992747?text=Quero%20comprar%20ingresso%20para%20Sunset%20na%20Rep">Comprar ingresso</a>
-    </div>
-    <div class="event-card">
-      <h4>Baile Funk no Pub</h4>
-      <span>16/08 · 23h · Pub Universitário</span>
-      <a href="https://wa.me/5534999992747?text=Quero%20comprar%20ingresso%20para%20Baile%20Funk%20no%20Pub">Comprar ingresso</a>
-    </div>
-  </section>
+    <section class="card-block">
+      <h2>Eventos em destaque</h2>
+      <div class="card-grid">
+        <div class="event-card">
+          <h4>Sunset na Rep</h4>
+          <span>12/08 · 17h · República Atlântida</span>
+          <a href="https://wa.me/5534999992747?text=Quero%20comprar%20ingresso%20para%20Sunset%20na%20Rep">Comprar ingresso</a>
+        </div>
+        <div class="event-card">
+          <h4>Baile Funk no Pub</h4>
+          <span>16/08 · 23h · Pub Universitário</span>
+          <a href="https://wa.me/5534999992747?text=Quero%20comprar%20ingresso%20para%20Baile%20Funk%20no%20Pub">Comprar ingresso</a>
+        </div>
+      </div>
+    </section>
+  </main>
 
   <footer>
     <p>CNPJ 42.948.399/0001-87 · <a href="politica.html">Política</a> · <a href="termos.html">Termos</a> · <a href="excluir.html">Excluir dados</a></p>
