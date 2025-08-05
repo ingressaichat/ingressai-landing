@@ -3,16 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IngressAI</title>
+  <title>IngressAI — Ingressos via WhatsApp</title>
   <link rel="icon" type="image/png" href="logo_ingressai.png" />
   <style>
     :root {
-      --golden-ratio: 1.618;
-      --color-primary: #007aff;
-      --color-bg: #f9f9f9;
-      --color-text: #111;
+      --primary: #007aff;
+      --bg: #fefefe;
+      --text: #111;
       --radius: 16px;
-      --shadow: 0 6px 24px rgba(0, 0, 0, 0.06);
+      --shadow: 0 4px 20px rgba(0,0,0,0.06);
     }
     * {
       margin: 0;
@@ -21,96 +20,102 @@
       font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
     }
     body {
-      background: var(--color-bg);
-      color: var(--color-text);
-      line-height: 1.6;
+      background: var(--bg);
+      color: var(--text);
     }
-    .container {
-      padding: 1rem;
+    header {
       display: flex;
-      flex-direction: column;
-      gap: 2rem;
-    }
-    .card-block {
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.2rem 2rem;
       background: white;
-      border-radius: var(--radius);
-      padding: 1.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
       box-shadow: var(--shadow);
     }
-    .card-block h2 {
-      font-size: 1.4rem;
-      margin-bottom: 1rem;
+    header img {
+      height: 40px;
+    }
+    header nav a {
+      margin-left: 1rem;
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 500;
+    }
+    .hero {
+      padding: 4rem 2rem 3rem;
       text-align: center;
     }
-    .card-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 1.2rem;
+    .hero h1 {
+      font-size: 2.4rem;
+      margin-bottom: 1rem;
+    }
+    .hero p {
+      font-size: 1.1rem;
+      color: #444;
+      margin-bottom: 2rem;
+    }
+    .hero a {
+      padding: 0.8rem 1.6rem;
+      background: var(--primary);
+      color: white;
+      border-radius: var(--radius);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .section {
+      padding: 2.5rem 1.5rem;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    .section h2 {
+      text-align: center;
+      font-size: 1.6rem;
+      margin-bottom: 1.5rem;
+    }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
     }
     .card {
-      background: #fff;
+      background: white;
+      padding: 1.5rem;
       border-radius: var(--radius);
-      padding: 1rem;
       box-shadow: var(--shadow);
       text-align: center;
-      transition: all 0.3s ease;
-      cursor: pointer;
+      transition: 0.3s;
+    }
+    .card:hover {
+      transform: translateY(-4px);
     }
     .card svg {
       width: 50px;
       height: 50px;
-      margin: 0 auto 0.6rem;
+      margin-bottom: 1rem;
     }
     .card h3 {
       font-size: 1.1rem;
-      margin-bottom: 0.4rem;
+      margin-bottom: 0.5rem;
     }
     .card p {
-      font-size: 0.9rem;
-      color: #444;
-      display: none;
-    }
-    .card.active p {
-      display: block;
-      margin-top: 0.5rem;
-    }
-    .event-card {
-      background: white;
-      border-radius: var(--radius);
-      padding: 1rem;
-      box-shadow: var(--shadow);
-    }
-    .event-card h4 {
-      font-size: 1.1rem;
-      margin-bottom: 0.3rem;
-    }
-    .event-card span {
-      display: block;
-      font-size: 0.9rem;
-      color: #666;
-      margin-bottom: 0.8rem;
-    }
-    .event-card a {
-      display: inline-block;
-      padding: 0.5rem 1rem;
-      background: var(--color-primary);
-      color: white;
-      border-radius: var(--radius);
-      text-decoration: none;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
+      color: #555;
     }
     footer {
-      text-align: center;
-      font-size: 0.8rem;
-      color: #666;
+      background: #f5f5f5;
       padding: 2rem 1rem;
+      font-size: 0.85rem;
+      color: #666;
+      text-align: center;
     }
     footer a {
-      color: var(--color-primary);
+      color: var(--primary);
+      margin: 0 0.6rem;
       text-decoration: none;
-      margin: 0 0.5rem;
     }
-    .floating-icons {
+    .floating {
       position: fixed;
       bottom: 20px;
       right: 20px;
@@ -118,91 +123,101 @@
       flex-direction: column;
       gap: 12px;
     }
-    .floating-icons a {
-      background: var(--color-primary);
+    .floating a {
+      background: var(--primary);
       padding: 0.8rem;
       border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       color: white;
       text-decoration: none;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       font-size: 1.2rem;
     }
   </style>
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      document.querySelectorAll(".card").forEach(card => {
-        card.addEventListener("click", () => {
-          card.classList.toggle("active");
-        });
-      });
-    });
-  </script>
 </head>
 <body>
-  <header class="card-block">
-    <div style="display:flex; align-items:center; justify-content:space-between;">
-      <img src="logo_ingressai.png" alt="IngressAI Logo" style="height:40px;">
-      <button style="background:#111; color:#fff; border:none; padding:0.6rem 1rem; border-radius:var(--radius); font-size:0.9rem;">Ver eventos</button>
-    </div>
+  <header>
+    <img src="logo_ingressai.png" alt="IngressAI logo">
+    <nav>
+      <a href="#eventos">Ver eventos</a>
+      <a href="#organizar">Quero vender</a>
+    </nav>
   </header>
 
-  <main class="container">
-    <section class="card-block">
-      <h2>Automatize seu evento com IngressAI</h2>
-    </section>
+  <section class="hero">
+    <h1>Venda ingressos pelo WhatsApp</h1>
+    <p>Automatize todo o processo de emissão, pagamento e validação com a plataforma IngressAI.</p>
+    <a href="https://wa.me/5534999992747">Começar agora</a>
+  </section>
 
-    <section class="card-block">
-      <h2>Tipos de organizadores</h2>
-      <div class="card-grid">
-        <div class="card">
-          <svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" stroke="#007aff" stroke-width="4" /><text x="32" y="40" text-anchor="middle" font-size="24" fill="#007aff" font-weight="bold">A</text></svg>
-          <h3>Atléticas & Repúblicas</h3>
-          <p>Automação via WhatsApp com repasse instantâneo e taxa reduzida para eventos universitários.</p>
-        </div>
-        <div class="card">
-          <svg viewBox="0 0 64 64"><path d="M32 12v40M20 32h24" stroke="#007aff" stroke-width="4" stroke-linecap="round" /><path d="M24 44c6-8 10-8 16 0" stroke="#007aff" stroke-width="3" stroke-linecap="round" /></svg>
-          <h3>Produtoras Independentes</h3>
-          <p>Controle total de vendas, emissão automática e validação com QR Code para produtoras.</p>
-        </div>
-        <div class="card">
-          <svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#f0f8ff" stroke="#007aff" stroke-width="3" /><circle cx="32" cy="32" r="5" fill="#007aff" /><path d="M20 32a12 12 0 0 1 24 0" stroke="#007aff" stroke-width="2" fill="none" /></svg>
-          <h3>Locais Independentes</h3>
-          <p>Perfeito para bares e espaços que desejam realizar eventos com facilidade e segurança.</p>
-        </div>
-        <div class="card">
-          <svg viewBox="0 0 64 64"><rect x="8" y="20" width="48" height="24" rx="6" fill="#007aff" /><text x="32" y="38" text-anchor="middle" font-size="16" fill="white" font-weight="bold">FREE</text></svg>
-          <h3>Plano Gratuito</h3>
-          <p>Emita ingressos manualmente e valide por QR Code. Ideal para validar seu primeiro evento.</p>
-        </div>
+  <section class="section">
+    <h2>Por que usar IngressAI?</h2>
+    <div class="cards">
+      <div class="card">
+        <h3>Repasse Instantâneo</h3>
+        <p>Receba o valor do ingresso diretamente na sua conta sem intermediações.</p>
       </div>
-    </section>
+      <div class="card">
+        <h3>Ingressos com QR Code</h3>
+        <p>Envio automático de ingressos personalizados com validação via QR Code.</p>
+      </div>
+      <div class="card">
+        <h3>Automação total</h3>
+        <p>Bot no WhatsApp que realiza todo o processo, 24h por dia, de forma automática.</p>
+      </div>
+      <div class="card">
+        <h3>Zero burocracia</h3>
+        <p>Sem necessidade de aprovações, cadastros longos ou sistemas complicados.</p>
+      </div>
+    </div>
+  </section>
 
-    <section class="card-block">
-      <h2>Eventos em destaque</h2>
-      <div class="card-grid">
-        <div class="event-card">
-          <h4>Sunset na Rep</h4>
-          <span>12/08 · 17h · República Atlântida</span>
-          <a href="https://wa.me/5534999992747?text=Quero%20comprar%20ingresso%20para%20Sunset%20na%20Rep">Comprar ingresso</a>
-        </div>
-        <div class="event-card">
-          <h4>Baile Funk no Pub</h4>
-          <span>16/08 · 23h · Pub Universitário</span>
-          <a href="https://wa.me/5534999992747?text=Quero%20comprar%20ingresso%20para%20Baile%20Funk%20no%20Pub">Comprar ingresso</a>
-        </div>
+  <section class="section" id="organizar">
+    <h2>Tipos de organizadores</h2>
+    <div class="cards">
+      <div class="card">
+        <h3>Atléticas & Repúblicas</h3>
+        <p>Taxa reduzida, automação completa e vitrine disponível.</p>
       </div>
-    </section>
-  </main>
+      <div class="card">
+        <h3>Produtoras Independentes</h3>
+        <p>Alta performance com vitrine de eventos, ingressos e controle total.</p>
+      </div>
+      <div class="card">
+        <h3>Locais Autônomos</h3>
+        <p>Bares, pubs e espaços que querem praticidade e vendas instantâneas.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Planos disponíveis</h2>
+    <div class="cards">
+      <div class="card">
+        <h3>Gratuito</h3>
+        <p>Envio e validação manual pelo organizador. Ideal para começar.</p>
+      </div>
+      <div class="card">
+        <h3>Automático</h3>
+        <p>Bot envia e valida ingressos com repasse automático. Taxa de 8~10%.</p>
+      </div>
+    </div>
+  </section>
 
   <footer>
-    <p>CNPJ 42.948.399/0001-87 · <a href="politica.html">Política</a> · <a href="termos.html">Termos</a> · <a href="excluir.html">Excluir dados</a></p>
+    <p>CNPJ 42.948.399/0001-87 · IngressAI</p>
+    <p>
+      <a href="politica.html">Política de Privacidade</a> ·
+      <a href="termos.html">Termos de Uso</a> ·
+      <a href="excluir.html">Excluir Dados</a> ·
+      <a href="mailto:contato@ingressai.chat">Contato</a>
+    </p>
   </footer>
 
-  <div class="floating-icons">
-    <a href="https://wa.me/5534999992747" target="_blank">🤖</a>
-    <a href="https://instagram.com/ingressai" target="_blank">📸</a>
+  <div class="floating">
+    <a href="https://wa.me/5534999992747">🤖</a>
+    <a href="https://instagram.com/ingressai">📸</a>
   </div>
 </body>
 </html>
