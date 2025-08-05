@@ -6,74 +6,84 @@
   <title>IngressAI</title>
   <link rel="icon" type="image/png" href="logo_ingressai.png" />
   <style>
+    :root {
+      --golden-ratio: 1.618;
+      --color-primary: #007aff;
+      --color-bg: #f9f9f9;
+      --color-text: #111;
+      --radius: 16px;
+      --shadow: 0 6px 24px rgba(0, 0, 0, 0.06);
+    }
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: 'Helvetica Neue', sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
     }
     body {
-      background: #f9f9f9;
-      color: #111;
+      background: var(--color-bg);
+      color: var(--color-text);
+      line-height: 1.6;
     }
     header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 1.2rem;
-      background: #fff;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      padding: calc(1rem * var(--golden-ratio));
+      background: white;
+      box-shadow: var(--shadow);
     }
     header img {
-      height: 36px;
+      height: 40px;
     }
     header button {
-      padding: 0.6rem 1rem;
-      background: #111;
-      color: #fff;
+      padding: 0.6rem 1.2rem;
+      background: var(--color-text);
+      color: white;
       border: none;
-      border-radius: 10px;
-      font-size: 0.9rem;
+      border-radius: var(--radius);
+      font-size: 1rem;
       cursor: pointer;
     }
     h1 {
-      font-size: 1.8rem;
+      font-size: 2rem;
       text-align: center;
       margin: 2rem 1rem 1rem;
     }
     .cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      display: flex;
+      flex-direction: column;
       gap: 1.5rem;
       padding: 1rem;
     }
     .card {
-      background: #fff;
-      border-radius: 18px;
-      padding: 1.5rem;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+      background: white;
+      border-radius: var(--radius);
+      padding: 1.2rem;
+      box-shadow: var(--shadow);
       transition: 0.3s ease;
       cursor: pointer;
       text-align: center;
     }
-    .card:hover {
-      transform: scale(1.02);
-    }
     .card svg {
       width: 60px;
       height: 60px;
-      margin-bottom: 1rem;
+      margin-bottom: 0.8rem;
     }
     .card h3 {
-      font-size: 1.2rem;
-      margin-bottom: 0.5rem;
+      font-size: 1.3rem;
     }
-    .card p {
+    .card-content {
+      display: none;
+      margin-top: 1rem;
       font-size: 0.95rem;
       color: #333;
     }
+    .card.active .card-content {
+      display: block;
+    }
     .eventos {
-      padding: 1rem;
+      padding: 2rem 1rem 1rem;
     }
     .eventos h2 {
       text-align: center;
@@ -81,39 +91,39 @@
       margin-bottom: 1rem;
     }
     .event-card {
-      background: #fff;
-      padding: 1.2rem;
+      background: white;
+      padding: 1rem;
+      border-radius: var(--radius);
       margin-bottom: 1rem;
-      border-radius: 12px;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.04);
+      box-shadow: var(--shadow);
     }
     .event-card h4 {
       font-size: 1.1rem;
-      margin-bottom: 0.4rem;
     }
     .event-card span {
       font-size: 0.9rem;
-      color: #444;
       display: block;
-      margin-bottom: 0.8rem;
+      margin: 0.4rem 0 0.8rem;
+      color: #444;
     }
     .event-card a {
+      display: inline-block;
       padding: 0.5rem 1rem;
-      background: #007aff;
+      background: var(--color-primary);
       color: white;
-      border-radius: 10px;
+      border-radius: var(--radius);
       text-decoration: none;
       font-size: 0.9rem;
     }
     footer {
-      padding: 1.5rem 1rem;
+      padding: 2rem 1rem;
       text-align: center;
       font-size: 0.8rem;
       color: #666;
     }
     footer a {
       margin: 0 0.4rem;
-      color: #007aff;
+      color: var(--color-primary);
       text-decoration: none;
     }
     .floating-icons {
@@ -125,7 +135,7 @@
       gap: 12px;
     }
     .floating-icons a {
-      background: #007aff;
+      background: var(--color-primary);
       padding: 0.8rem;
       border-radius: 50%;
       display: flex;
@@ -136,6 +146,15 @@
       font-size: 1.2rem;
     }
   </style>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      document.querySelectorAll(".card").forEach(card => {
+        card.addEventListener("click", () => {
+          card.classList.toggle("active");
+        });
+      });
+    });
+  </script>
 </head>
 <body>
   <header>
@@ -147,38 +166,24 @@
 
   <section class="cards">
     <div class="card">
-      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="32" cy="32" r="30" stroke="#007aff" stroke-width="4" />
-        <text x="32" y="40" text-anchor="middle" font-size="24" fill="#007aff" font-weight="bold">A</text>
-      </svg>
+      <svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" stroke="#007aff" stroke-width="4" /><text x="32" y="40" text-anchor="middle" font-size="24" fill="#007aff" font-weight="bold">A</text></svg>
       <h3>Atléticas & Repúblicas</h3>
-      <p>Automação via WhatsApp com repasse instantâneo e taxa reduzida para eventos universitários.</p>
+      <div class="card-content">Automação via WhatsApp com repasse instantâneo e taxa reduzida para eventos universitários.</div>
     </div>
     <div class="card">
-      <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="32" cy="32" r="28" fill="#007aff" opacity="0.1" />
-        <path d="M32 12v40M20 32h24" stroke="#007aff" stroke-width="4" stroke-linecap="round" />
-        <path d="M24 44c6-8 10-8 16 0" stroke="#007aff" stroke-width="3" stroke-linecap="round" />
-      </svg>
+      <svg viewBox="0 0 64 64"><path d="M32 12v40M20 32h24" stroke="#007aff" stroke-width="4" stroke-linecap="round" /><path d="M24 44c6-8 10-8 16 0" stroke="#007aff" stroke-width="3" stroke-linecap="round" /></svg>
       <h3>Produtoras Independentes</h3>
-      <p>Controle total de vendas, emissão automática e validação com QR Code para produtoras.</p>
+      <div class="card-content">Controle total de vendas, emissão automática e validação com QR Code para produtoras.</div>
     </div>
     <div class="card">
-      <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="32" cy="32" r="30" fill="#f0f8ff" stroke="#007aff" stroke-width="3" />
-        <circle cx="32" cy="32" r="5" fill="#007aff" />
-        <path d="M20 32a12 12 0 0 1 24 0" stroke="#007aff" stroke-width="2" fill="none" />
-      </svg>
+      <svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#f0f8ff" stroke="#007aff" stroke-width="3" /><circle cx="32" cy="32" r="5" fill="#007aff" /><path d="M20 32a12 12 0 0 1 24 0" stroke="#007aff" stroke-width="2" fill="none" /></svg>
       <h3>Locais Independentes</h3>
-      <p>Perfeito para bares e espaços que desejam realizar eventos com facilidade e segurança.</p>
+      <div class="card-content">Perfeito para bares e espaços que desejam realizar eventos com facilidade e segurança.</div>
     </div>
     <div class="card">
-      <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-        <rect x="8" y="20" width="48" height="24" rx="6" fill="#007aff" />
-        <text x="32" y="38" text-anchor="middle" font-size="16" fill="white" font-weight="bold">FREE</text>
-      </svg>
+      <svg viewBox="0 0 64 64"><rect x="8" y="20" width="48" height="24" rx="6" fill="#007aff" /><text x="32" y="38" text-anchor="middle" font-size="16" fill="white" font-weight="bold">FREE</text></svg>
       <h3>Plano Gratuito</h3>
-      <p>Emita ingressos manualmente e valide por QR Code. Ideal para validar seu primeiro evento.</p>
+      <div class="card-content">Emita ingressos manualmente e valide por QR Code. Ideal para validar seu primeiro evento.</div>
     </div>
   </section>
 
