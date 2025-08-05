@@ -5,31 +5,42 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>IngressAI — Ingressos via WhatsApp</title>
   <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
-      background: #fefefe;
+    :root {
+      --primary: #007aff;
+      --bg: #fefefe;
+      --text: #111;
+      --radius: 16px;
+      --shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+      --card-bg: #ffffff;
+    }
+    * {
       margin: 0;
       padding: 0;
-      color: #111;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
     }
     header {
-      background: white;
-      padding: 1rem 2rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      padding: 1.2rem 2rem;
+      background: white;
       position: sticky;
       top: 0;
       z-index: 100;
+      box-shadow: var(--shadow);
     }
     header img {
       height: 40px;
     }
     header nav a {
       margin-left: 1rem;
-      color: #111;
       text-decoration: none;
+      color: var(--text);
       font-weight: 500;
     }
     .hero {
@@ -47,55 +58,68 @@
     }
     .hero a {
       padding: 0.8rem 1.6rem;
-      background: #007aff;
+      background: var(--primary);
       color: white;
-      border-radius: 16px;
+      border-radius: var(--radius);
       text-decoration: none;
       font-weight: 500;
     }
     .section {
+      padding: 2rem 1.5rem;
       max-width: 960px;
       margin: 0 auto;
-      padding: 2rem 1.5rem;
+    }
+    .section h2 {
+      text-align: center;
+      font-size: 1.6rem;
+      margin-bottom: 1.5rem;
     }
     .cards {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       gap: 1.5rem;
     }
-    .org-card {
-      background: white;
-      border-radius: 16px;
-      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+    .event-card, .org-card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
       padding: 1.5rem;
       text-align: center;
-      transition: transform 0.3s ease;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
       cursor: pointer;
     }
-    .org-card:hover {
-      transform: scale(1.02);
+    .event-card:hover, .org-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 32px rgba(0, 0, 0, 0.12);
     }
-    .org-card svg {
-      margin-bottom: 1rem;
+    .event-card h3, .org-card h3 {
+      font-size: 1.2rem;
+      margin-bottom: 0.4rem;
     }
-    .org-card h3 {
-      margin: 0.5rem 0;
-      font-size: 1.1rem;
-    }
-    .org-card p {
+    .event-card span {
       font-size: 0.95rem;
-      color: #444;
+      color: #555;
     }
-    .org-card .botao {
+    .event-card .desc, .org-card .desc, .org-card .botao {
+      display: none;
+      font-size: 0.9rem;
+      color: #444;
       margin-top: 1rem;
     }
-    .org-card a {
-      padding: 0.6rem 1.2rem;
-      background: #007aff;
+    .event-card .buy, .org-card .botao a {
+      display: none;
+      padding: 0.6rem 1rem;
+      background: var(--primary);
       color: white;
-      border-radius: 16px;
+      border-radius: var(--radius);
       text-decoration: none;
       font-size: 0.9rem;
+    }
+    .event-card.active .desc,
+    .event-card.active .buy,
+    .org-card.active .desc,
+    .org-card.active .botao a {
+      display: block;
     }
     footer {
       background: #f5f5f5;
@@ -105,43 +129,92 @@
       color: #666;
     }
     footer a {
+      color: var(--primary);
       margin: 0 0.6rem;
       text-decoration: none;
       padding: 0.4rem 0.8rem;
-      border-radius: 12px;
+      border-radius: var(--radius);
       background: white;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-      color: #007aff;
+      box-shadow: var(--shadow);
+      display: inline-block;
+    }
+    .footer-icons {
+      margin-bottom: 1rem;
+    }
+    .footer-icons a {
+      margin: 0 0.5rem;
+      font-size: 1.4rem;
+      color: var(--primary);
+      text-decoration: none;
     }
   </style>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      document.querySelectorAll(".event-card, .org-card").forEach(card => {
+        card.addEventListener("click", () => {
+          card.classList.toggle("active");
+        });
+      });
+    });
+  </script>
 </head>
 <body>
   <header>
     <img src="logo_ingressai.png" alt="IngressAI logo">
     <nav>
+      <a href="#vitrine">Ver eventos</a>
       <a href="#organizadores">Quero vender</a>
     </nav>
   </header>
 
   <section class="hero">
     <h1>Venda ingressos pelo WhatsApp</h1>
-    <p>Automatize pagamentos, emissão e validação de forma simples e rápida.</p>
-    <a href="#organizadores">Criar Evento</a>
+    <p>Automatize todo o processo de emissão, pagamento e validação com a plataforma IngressAI.</p>
+    <a href="#vitrine">Ver eventos</a>
+  </section>
+
+  <section class="section" id="vitrine">
+    <h2>Eventos em destaque</h2>
+    <div class="cards">
+      <div class="event-card">
+        <h3>Sunset na Rep</h3>
+        <span>12/08 · 17h · República Atlântida</span>
+        <p class="desc">Festa universitária com música ao vivo, open bar e ambiente ao ar livre.</p>
+        <a class="buy" href="https://wa.me/5534999992747?text=Quero%20comprar%20ingresso%20para%20Sunset%20na%20Rep">Comprar ingresso</a>
+      </div>
+      <div class="event-card">
+        <h3>Baile Funk no Pub</h3>
+        <span>16/08 · 23h · Pub Universitário</span>
+        <p class="desc">Line-up com DJs convidados, pista de dança liberada e promoções especiais.</p>
+        <a class="buy" href="https://wa.me/5534999992747?text=Quero%20comprar%20ingresso%20para%20Baile%20Funk%20no%20Pub">Comprar ingresso</a>
+      </div>
+      <div class="event-card">
+        <h3>Pagodinho na Praça</h3>
+        <span>20/08 · 18h · Praça Central</span>
+        <p class="desc">Roda de samba e pagode com bar e foodtrucks. Ambiente familiar e animado.</p>
+        <a class="buy" href="https://wa.me/5534999992747?text=Quero%20comprar%20ingresso%20para%20Pagodinho%20na%20Praça">Comprar ingresso</a>
+      </div>
+      <div class="event-card">
+        <h3>Festa da Cerveja</h3>
+        <span>24/08 · 20h · Arena Bierplatz</span>
+        <p class="desc">Degustação de rótulos artesanais, DJ ao vivo e gastronomia regional.</p>
+        <a class="buy" href="https://wa.me/5534999992747?text=Quero%20comprar%20ingresso%20para%20Festa%20da%20Cerveja">Comprar ingresso</a>
+      </div>
+    </div>
   </section>
 
   <section class="section" id="organizadores">
-    <h2 style="text-align:center; margin-bottom: 2rem;">Soluções para Organizadores</h2>
+    <h2>Soluções para Organizadores</h2>
     <div class="cards">
-      <!-- Cards com ícones SVG -->
-      <!-- (Conteúdo do canvas mantido, já está atualizado com todos os cards) -->
+      <!-- Cards já atualizados com SVGs no canvas -->
       {{canvas}}
     </div>
   </section>
 
   <footer>
     <div class="footer-icons">
-      <a href="https://instagram.com/ingressai">Instagram</a>
-      <a href="mailto:contato@ingressai.chat">Contato</a>
+      <a href="https://instagram.com/ingressai">📸</a>
+      <a href="mailto:contato@ingressai.chat">✉️</a>
     </div>
     <a href="politica.html">Política de Privacidade</a>
     <a href="termos.html">Termos de Uso</a>
