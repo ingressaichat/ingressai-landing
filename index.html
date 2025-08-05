@@ -1,17 +1,16 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>IngressAI — Ingressos via WhatsApp</title>
   <style>
     :root {
       --primary: #007aff;
-      --bg: #fefefe;
+      --bg: #ffffff;
       --text: #111;
       --radius: 16px;
       --shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
-      --card-bg: #ffffff;
     }
     * {
       margin: 0;
@@ -24,45 +23,16 @@
       color: var(--text);
     }
     header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1.2rem 2rem;
-      background: white;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: var(--shadow);
+      text-align: center;
+      padding: 2rem 1rem 1rem;
     }
     header img {
-      height: 40px;
+      height: 60px;
+      margin-bottom: 1rem;
     }
-    header nav a {
-      margin-left: 1rem;
-      text-decoration: none;
-      color: var(--text);
-      font-weight: 500;
-    }
-    .hero {
-      padding: 3rem 1.5rem 2rem;
-      text-align: center;
-    }
-    .hero h1 {
-      font-size: 2.2rem;
-      margin-bottom: 0.5rem;
-    }
-    .hero p {
-      font-size: 1.1rem;
-      color: #444;
-      margin-bottom: 1.5rem;
-    }
-    .hero a {
-      padding: 0.8rem 1.6rem;
-      background: var(--primary);
-      color: white;
-      border-radius: var(--radius);
-      text-decoration: none;
-      font-weight: 500;
+    header h1 {
+      font-size: 2rem;
+      font-weight: 600;
     }
     .section {
       padding: 2rem 1.5rem;
@@ -79,8 +49,8 @@
       grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       gap: 1.5rem;
     }
-    .event-card, .org-card {
-      background: var(--card-bg);
+    .card {
+      background: white;
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       padding: 1.5rem;
@@ -88,38 +58,39 @@
       transition: transform 0.3s ease, box-shadow 0.3s ease;
       cursor: pointer;
     }
-    .event-card:hover, .org-card:hover {
+    .card:hover {
       transform: translateY(-4px);
       box-shadow: 0 16px 32px rgba(0, 0, 0, 0.12);
     }
-    .event-card h3, .org-card h3 {
+    .card svg {
+      margin-bottom: 1rem;
+    }
+    .card h3 {
       font-size: 1.2rem;
       margin-bottom: 0.4rem;
     }
-    .event-card span {
+    .card span {
       font-size: 0.95rem;
       color: #555;
     }
-    .event-card .desc, .org-card .desc, .org-card .botao {
+    .card .desc, .card .buy {
       display: none;
       font-size: 0.9rem;
       color: #444;
       margin-top: 1rem;
     }
-    .event-card .buy, .org-card .botao a {
-      display: none;
+    .card.active .desc, .card.active .buy {
+      display: block;
+    }
+    .card a {
+      display: inline-block;
+      margin-top: 0.8rem;
       padding: 0.6rem 1rem;
       background: var(--primary);
       color: white;
       border-radius: var(--radius);
       text-decoration: none;
       font-size: 0.9rem;
-    }
-    .event-card.active .desc,
-    .event-card.active .buy,
-    .org-card.active .desc,
-    .org-card.active .botao a {
-      display: block;
     }
     footer {
       background: #f5f5f5;
@@ -150,7 +121,7 @@
   </style>
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      document.querySelectorAll(".event-card, .org-card").forEach(card => {
+      document.querySelectorAll(".card").forEach(card => {
         card.addEventListener("click", () => {
           card.classList.toggle("active");
         });
@@ -161,53 +132,43 @@
 <body>
   <header>
     <img src="logo_ingressai.png" alt="IngressAI logo">
-    <nav>
-      <a href="#vitrine">Ver eventos</a>
-      <a href="#organizadores">Quero vender</a>
-    </nav>
+    <h1>IngressAI</h1>
   </header>
 
-  <section class="hero">
-    <h1>Venda ingressos pelo WhatsApp</h1>
-    <p>Automatize todo o processo de emissão, pagamento e validação com a plataforma IngressAI.</p>
-    <a href="#vitrine">Ver eventos</a>
+  <section class="section">
+    <h2>Soluções para Organizadores</h2>
+    <div class="cards">
+      {{canvas}}
+    </div>
   </section>
 
-  <section class="section" id="vitrine">
+  <section class="section">
     <h2>Eventos em destaque</h2>
     <div class="cards">
-      <div class="event-card">
+      <div class="card">
         <h3>Sunset na Rep</h3>
         <span>12/08 · 17h · República Atlântida</span>
         <p class="desc">Festa universitária com música ao vivo, open bar e ambiente ao ar livre.</p>
         <a class="buy" href="https://wa.me/5534999992747?text=Quero%20comprar%20ingresso%20para%20Sunset%20na%20Rep">Comprar ingresso</a>
       </div>
-      <div class="event-card">
+      <div class="card">
         <h3>Baile Funk no Pub</h3>
         <span>16/08 · 23h · Pub Universitário</span>
         <p class="desc">Line-up com DJs convidados, pista de dança liberada e promoções especiais.</p>
         <a class="buy" href="https://wa.me/5534999992747?text=Quero%20comprar%20ingresso%20para%20Baile%20Funk%20no%20Pub">Comprar ingresso</a>
       </div>
-      <div class="event-card">
+      <div class="card">
         <h3>Pagodinho na Praça</h3>
         <span>20/08 · 18h · Praça Central</span>
         <p class="desc">Roda de samba e pagode com bar e foodtrucks. Ambiente familiar e animado.</p>
         <a class="buy" href="https://wa.me/5534999992747?text=Quero%20comprar%20ingresso%20para%20Pagodinho%20na%20Praça">Comprar ingresso</a>
       </div>
-      <div class="event-card">
+      <div class="card">
         <h3>Festa da Cerveja</h3>
         <span>24/08 · 20h · Arena Bierplatz</span>
         <p class="desc">Degustação de rótulos artesanais, DJ ao vivo e gastronomia regional.</p>
         <a class="buy" href="https://wa.me/5534999992747?text=Quero%20comprar%20ingresso%20para%20Festa%20da%20Cerveja">Comprar ingresso</a>
       </div>
-    </div>
-  </section>
-
-  <section class="section" id="organizadores">
-    <h2>Soluções para Organizadores</h2>
-    <div class="cards">
-      <!-- Cards já atualizados com SVGs no canvas -->
-      {{canvas}}
     </div>
   </section>
 
