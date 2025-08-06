@@ -1,213 +1,197 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IngressAI — Ingressos via WhatsApp</title>
+  <title>IngressAI</title>
   <style>
-    :root {
-      --primary: #007aff;
-      --bg: #ffffff;
-      --text: #111;
-      --radius: 16px;
-      --shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
-    }
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
-    }
     body {
-      background: var(--bg);
-      color: var(--text);
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen;
+      background: #f9f9f9;
+      color: #111;
     }
+
     header {
       text-align: center;
       padding: 2rem 1rem 1rem;
     }
+
     header img {
-      height: 60px;
-      margin-bottom: 1rem;
+      height: 80px;
     }
-    header h1 {
+
+    h1 {
       font-size: 2rem;
       font-weight: 600;
+      margin-top: 1rem;
     }
-    .section {
-      padding: 2rem 1.5rem;
-      max-width: 960px;
+
+    .main-btn {
+      display: inline-block;
+      margin-top: 1rem;
+      padding: 0.8rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 500;
+      background: #007aff;
+      color: white;
+      border-radius: 12px;
+      text-decoration: none;
+      transition: background 0.3s;
+    }
+
+    .main-btn:hover {
+      background: #005bb5;
+    }
+
+    section {
+      padding: 2rem 1rem;
+      max-width: 1200px;
       margin: 0 auto;
     }
-    .section h2 {
+
+    .section-title {
       text-align: center;
       font-size: 1.6rem;
-      margin-bottom: 1.5rem;
+      margin-bottom: 2rem;
     }
-    .cards {
+
+    .card-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 1.5rem;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 2rem;
     }
+
     .card {
       background: white;
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 1.5rem;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+      padding: 2rem 1.5rem;
       text-align: center;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      cursor: pointer;
+      transition: transform 0.3s;
     }
+
     .card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 16px 32px rgba(0, 0, 0, 0.12);
+      transform: translateY(-5px);
     }
+
     .card svg {
+      width: 64px;
+      height: 64px;
       margin-bottom: 1rem;
     }
+
     .card h3 {
       font-size: 1.2rem;
-      margin-bottom: 0.4rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
     }
-    .card span {
+
+    .card p {
       font-size: 0.95rem;
       color: #555;
     }
-    .card .desc, .card .buy {
-      display: none;
-      font-size: 0.9rem;
-      color: #444;
-      margin-top: 1rem;
-    }
-    .card.active .desc, .card.active .buy {
-      display: block;
-    }
-    .card a {
-      display: inline-block;
-      margin-top: 0.8rem;
-      padding: 0.6rem 1rem;
-      background: var(--primary);
-      color: white;
-      border-radius: var(--radius);
-      text-decoration: none;
-      font-size: 0.9rem;
-    }
+
     footer {
-      background: #f5f5f5;
-      padding: 2rem 1rem 1rem;
+      background: #f1f1f1;
+      padding: 2rem 1rem;
       text-align: center;
-      font-size: 0.85rem;
-      color: #666;
     }
+
     footer a {
-      color: var(--primary);
-      margin: 0 0.6rem;
       text-decoration: none;
-      padding: 0.4rem 0.8rem;
-      border-radius: var(--radius);
-      background: white;
-      box-shadow: var(--shadow);
-      display: inline-block;
+      color: #007aff;
+      font-size: 0.9rem;
+      margin: 0 1rem;
     }
-    .footer-icons {
+
+    .socials {
       margin-bottom: 1rem;
     }
-    .footer-icons a {
+
+    .socials a {
+      display: inline-block;
       margin: 0 0.5rem;
-      font-size: 1.4rem;
-      color: var(--primary);
-      text-decoration: none;
     }
   </style>
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      document.querySelectorAll(".card").forEach(card => {
-        card.addEventListener("click", () => {
-          card.classList.toggle("active");
-        });
-      });
-    });
-  </script>
 </head>
+
 <body>
   <header>
-    <img src="logo_ingressai.png" alt="IngressAI logo">
+    <img src="logo_ingressai.png" alt="IngressAI logo" />
     <h1>IngressAI</h1>
+    <a href="#eventos" class="main-btn">Ver eventos</a>
   </header>
 
-  <section class="section">
-    <h2>Soluções para Organizadores</h2>
-    <div class="cards">
-      <!-- ÍCONES INSERIDOS DIRETAMENTE AQUI -->
+  <section id="organizadores">
+    <h2 class="section-title">Soluções para Organizadores</h2>
+    <div class="card-grid">
       <div class="card">
-  <svg width="100%" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" style="border-radius:16px; margin-bottom:1rem;"><rect width="64" height="64" rx="16" fill="#007AFF"/><path d="M32 16L44 24V40L32 48L20 40V24L32 16Z" fill="#CDE6FF"/><text x="32" y="38" fill="#007AFF" font-size="16" font-weight="bold" text-anchor="middle">A</text></svg>
-  <h3>Atléticas e Repúblicas</h3>
-  <p class="desc">Automação via bot com taxa reduzida de 8%. Ideal para eventos universitários.</p>
-  <a class="buy" href="https://wa.me/5534999992747?text=Quero%20criar%20evento%20como%20Atlética">Criar evento</a>
-</div>
-
-<div class="card">
-  <svg width="100%" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" style="border-radius:16px; margin-bottom:1rem;"><rect width="64" height="64" rx="16" fill="#007AFF"/><circle cx="32" cy="32" r="12" fill="#CDE6FF"/><path d="M28 28 L36 24 L36 40 L28 36 Z" fill="#007AFF"/></svg>
-  <h3>Produtoras Independentes</h3>
-  <p class="desc">Gestão completa com taxa de 10%. Ideal para produtoras de médio porte.</p>
-  <a class="buy" href="https://wa.me/5534999992747?text=Quero%20criar%20evento%20como%20Produtora">Criar evento</a>
-</div>
-
-<div class="card">
-  <svg width="100%" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" style="border-radius:16px; margin-bottom:1rem;"><rect width="64" height="64" rx="16" fill="#007AFF"/><circle cx="32" cy="32" r="10" stroke="#CDE6FF" stroke-width="2" fill="none"/><circle cx="22" cy="24" r="1.5" fill="#CDE6FF"/><circle cx="42" cy="40" r="1.5" fill="#CDE6FF"/></svg>
-  <h3>Locais Independentes</h3>
-  <p class="desc">Perfeito para bares, lanchonetes e espaços pequenos. Taxa de 10%.</p>
-  <a class="buy" href="https://wa.me/5534999992747?text=Quero%20criar%20evento%20como%20Local">Criar evento</a>
-</div>
-
-<div class="card">
-  <svg width="100%" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" style="border-radius:16px; margin-bottom:1rem;"><rect width="64" height="64" rx="16" fill="#007AFF"/><rect x="18" y="26" width="28" height="12" rx="4" fill="#CDE6FF"/><text x="32" y="35" fill="#007AFF" font-size="14" font-weight="bold" text-anchor="middle">FREE</text></svg>
-  <h3>Plano Gratuito</h3>
-  <p class="desc">Emita ingressos gratuitamente com envio manual. Sem taxas.</p>
-  <a class="buy" href="https://wa.me/5534999992747?text=Quero%20criar%20evento%20no%20Plano%20Gratuito">Criar evento</a>
-</div>
+        <!-- Ícone SVG do card Atléticas e Repúblicas -->
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><rect width="64" height="64" rx="16" fill="#007AFF"/><path d="M32 16L44 24V40L32 48L20 40V24L32 16Z" fill="#CDE6FF"/><text x="32" y="38" fill="#007AFF" font-size="16" font-weight="bold" text-anchor="middle">A</text></svg>
+        <h3>Atléticas & Repúblicas</h3>
+        <p>Automação total com taxa reduzida para entidades estudantis.</p>
+      </div>
+      <div class="card">
+        <!-- Ícone SVG do card Produtoras -->
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><rect width="64" height="64" rx="16" fill="#007AFF"/><circle cx="32" cy="32" r="12" fill="#CDE6FF"/><path d="M28 28 L36 24 L36 40 L28 36 Z" fill="#007AFF"/></svg>
+        <h3>Produtoras Independentes</h3>
+        <p>Venda facilitada e controle completo de ingressos.</p>
+      </div>
+      <div class="card">
+        <!-- Ícone SVG do card Locais -->
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><rect width="64" height="64" rx="16" fill="#007AFF"/><circle cx="32" cy="32" r="10" stroke="#CDE6FF" stroke-width="2" fill="none"/><circle cx="22" cy="24" r="1.5" fill="#CDE6FF"/><circle cx="42" cy="40" r="1.5" fill="#CDE6FF"/></svg>
+        <h3>Locais Independentes</h3>
+        <p>Transforme seu bar, espaço ou clube em um ponto de venda.</p>
+      </div>
+      <div class="card">
+        <!-- Ícone SVG do card Plano Gratuito -->
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><rect width="64" height="64" rx="16" fill="#007AFF"/><rect x="18" y="26" width="28" height="12" rx="4" fill="#CDE6FF"/><text x="32" y="35" fill="#007AFF" font-size="14" font-weight="bold" text-anchor="middle">FREE</text></svg>
+        <h3>Plano Gratuito</h3>
+        <p>Comece agora mesmo sem custos. Ideal para testes e eventos menores.</p>
+      </div>
     </div>
   </section>
 
-  <section class="section">
-    <h2>Eventos em destaque</h2>
-    <div class="cards">
+  <section id="eventos">
+    <h2 class="section-title">Próximos Eventos</h2>
+    <div class="card-grid">
       <div class="card">
-        <h3>Sunset na Rep</h3>
-        <span>12/08 · 17h · República Atlântida</span>
-        <p class="desc">Festa universitária com música ao vivo, open bar e ambiente ao ar livre.</p>
-        <a class="buy" href="https://wa.me/5534999992747?text=Quero%20comprar%20ingresso%20para%20Sunset%20na%20Rep">Comprar ingresso</a>
+        <h3>Festa Universitária</h3>
+        <p>Data: 10/09/2025</p>
+        <a class="main-btn" href="https://wa.me/5534999999999?text=Quero+ingresso+para+Festa+Universitária">Comprar ingresso</a>
       </div>
       <div class="card">
-        <h3>Baile Funk no Pub</h3>
-        <span>16/08 · 23h · Pub Universitário</span>
-        <p class="desc">Line-up com DJs convidados, pista de dança liberada e promoções especiais.</p>
-        <a class="buy" href="https://wa.me/5534999992747?text=Quero%20comprar%20ingresso%20para%20Baile%20Funk%20no%20Pub">Comprar ingresso</a>
+        <h3>Sunset Eletrônico</h3>
+        <p>Data: 14/09/2025</p>
+        <a class="main-btn" href="https://wa.me/5534999999999?text=Quero+ingresso+para+Sunset+Eletrônico">Comprar ingresso</a>
       </div>
       <div class="card">
-        <h3>Pagodinho na Praça</h3>
-        <span>20/08 · 18h · Praça Central</span>
-        <p class="desc">Roda de samba e pagode com bar e foodtrucks. Ambiente familiar e animado.</p>
-        <a class="buy" href="https://wa.me/5534999992747?text=Quero%20comprar%20ingresso%20para%20Pagodinho%20na%20Praça">Comprar ingresso</a>
+        <h3>Pagode do Bem</h3>
+        <p>Data: 20/09/2025</p>
+        <a class="main-btn" href="https://wa.me/5534999999999?text=Quero+ingresso+para+Pagode+do+Bem">Comprar ingresso</a>
       </div>
       <div class="card">
-        <h3>Festa da Cerveja</h3>
-        <span>24/08 · 20h · Arena Bierplatz</span>
-        <p class="desc">Degustação de rótulos artesanais, DJ ao vivo e gastronomia regional.</p>
-        <a class="buy" href="https://wa.me/5534999992747?text=Quero%20comprar%20ingresso%20para%20Festa%20da%20Cerveja">Comprar ingresso</a>
+        <h3>Baile da IngressAI</h3>
+        <p>Data: 28/09/2025</p>
+        <a class="main-btn" href="https://wa.me/5534999999999?text=Quero+ingresso+para+Baile+da+IngressAI">Comprar ingresso</a>
       </div>
     </div>
   </section>
 
   <footer>
-    <div class="footer-icons">
-      <a href="https://instagram.com/ingressai">📸</a>
-      <a href="mailto:contato@ingressai.chat">✉️</a>
+    <div class="socials">
+      <a href="https://instagram.com/ingressai" target="_blank">Instagram</a>
+      <a href="mailto:contato@ingressai.chat">E-mail</a>
     </div>
-    <a href="politica.html">Política de Privacidade</a>
-    <a href="termos.html">Termos de Uso</a>
-    <a href="excluir.html">Excluir Dados</a>
-    <p style="margin-top:1rem">CNPJ 42.948.399/0001-87 · IngressAI</p>
+    <div>
+      <a href="politica.html">Política de Privacidade</a>
+      <a href="termos.html">Termos de Uso</a>
+      <a href="excluir.html">Excluir Dados</a>
+    </div>
+    <p>CNPJ 42.948.399/0001-87</p>
   </footer>
 </body>
+
 </html>
