@@ -58,56 +58,56 @@
     .container{max-width:var(--container-max);margin:0 auto;padding:0 var(--s3)}
     .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
     .subtle{color:var(--muted)}
-    /* âncoras com header fixo */
+    .is-hidden{display:none !important}
     :where(section,[id]){scroll-margin-top:96px}
 
     /* Header */
     header{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid #e7eefb;transition:box-shadow var(--t-fast),border-color var(--t-fast),background-color var(--t-fast)}
     header.is-scrolled{box-shadow:var(--shadow);border-color:#e1e9fb}
-    header.logo-hidden .brand{height:0;padding:0;margin:0;overflow:hidden;opacity:0;transform:translateY(-8px)}
     .nav{display:flex;flex-direction:column;align-items:center;gap:var(--s1);padding:var(--s1) 0}
-    .brand{display:flex;flex-direction:column;align-items:center;gap:calc(var(--s0))}
-    .brand img{width:calc(56px * var(--phi));height:calc(56px * var(--phi));border-radius:14px;box-shadow:0 10px 28px rgba(47,125,217,.20);transition:transform .22s ease,opacity .22s ease,box-shadow .22s ease}
-    .tagline{margin:0;text-align:center;font-weight:800;letter-spacing:.2px;font-size:clamp(1rem,2.8vw,1.15rem);line-height:var(--lh-compact)}
-    .tagline strong{color:var(--blue-2)}
 
     /* Hero */
     .hero{padding:var(--s4) 0;opacity:calc(1 - var(--hero-p,0));transform:translateY(calc(-6px * var(--hero-p,0)));transition:opacity var(--t-fast) linear,transform var(--t-fast) linear}
     .hero.is-hidden{opacity:0;height:0;padding:0;margin:0;overflow:hidden}
     .hero h1{font-size: clamp(calc(1.25rem * var(--phi)), 6.2vw, calc(1.25rem * var(--phi) * var(--phi)));line-height:var(--lh-compact);margin:0 0 var(--s2) 0;font-weight:850;text-align:center}
-    .hero .lead{font-size: clamp(1rem, 2.6vw, calc(var(--fs-0) * 1.08));color:var(--muted);margin:0 0 var(--s2) 0;text-align:center}
     .hero-cta{display:grid;grid-template-columns:1fr;gap:var(--s1);justify-items:center}
-    @media(min-width:600px){.hero-cta{grid-template-columns:max-content max-content}}
+
+    /* Brand + badges */
+    .hero-brand{display:grid;gap:var(--s1);place-items:center;margin-bottom:var(--s2)}
+    .brand-title{margin:0;font-weight:800;letter-spacing:.2px;font-size:clamp(1rem,2.8vw,1.1rem);color:var(--ink);text-transform:none}
+    .badges{display:flex;gap:calc(var(--s1)*1.4);align-items:center;justify-content:center;flex-wrap:wrap;margin-top:6px}
+    .badge{display:inline-flex;align-items:center;gap:.55rem;padding:0;border:0;background:transparent;border-radius:0;box-shadow:none;font-weight:700;cursor:default;user-select:none;opacity:.88}
+    .badge img{height:18px;width:auto;display:block;filter:grayscale(.85);opacity:.85}
+    .badge span{color:#61708a;font-weight:600}
 
     /* Buttons */
     .btn{min-height:var(--btn-h);padding:0 var(--s2);border-radius:var(--radius-pill);border:1px solid #d6e4ff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;letter-spacing:.2px;gap:10px}
-    .btn--primary{background:var(--blue-2);color:#fff;box-shadow:0 10px 24px rgba(47,125,217,.25)}
     .btn--secondary{background:#fff;color:var(--ink);box-shadow:var(--shadow-soft)}
-    .btn.buy{background:var(--blue-soft);color:var(--blue-3);border-color:rgba(27,95,179,.35);box-shadow:0 6px 16px rgba(47,125,217,.18), 0 2px 6px rgba(11,18,32,.10);transform:translateY(0);transition:transform .08s, box-shadow var(--t-fast)}
+    .btn--ghost{background:#f2f4f8;border-color:#d9e2f2;box-shadow:0 10px 24px rgba(11,18,32,.12);min-height:40px;padding:.4rem 1rem;color:#2d3b50}
+    .btn--ghost:hover{transform:translateY(-1px);box-shadow:0 12px 28px rgba(11,18,32,.16)}
 
     /* Click micro-animations */
     .btn, .toggle{will-change:transform}
     @keyframes btn-press{0%{transform:translateY(0) scale(1)}50%{transform:translateY(1px) scale(.98)}100%{transform:translateY(0) scale(1)}}
     .btn-press{animation:btn-press var(--t-fast) ease}
 
-    /* PROVAS (4 cards) */
-    .proofs{padding: var(--s3) 0 var(--s4)}
-    .features{display:grid;gap:var(--s1);grid-template-columns:repeat(2,minmax(0,1fr))}
+    /* PROVAS (4 cards informativos) */
+    .proofs{padding: var(--s2) 0 var(--s3)}
+    .features{display:grid;gap:var(--s0);grid-template-columns:repeat(2,minmax(0,1fr))}
     @media(min-width:900px){.features{grid-template-columns:repeat(4,minmax(0,1fr))}}
-    .feature{background:#fff;border:1px solid #eaf1ff;border-radius:calc(var(--s2));padding:calc(var(--s1));display:flex;flex-direction:column;align-items:center;gap:calc(var(--s0) * var(--phi));box-shadow:var(--shadow)}
-    .feature svg{color:#000;stroke:currentColor;stroke-width:1.15;fill:none;stroke-linecap:round;stroke-linejoin:round;width:var(--ico);height:var(--ico);filter:drop-shadow(0 8px 20px rgba(47,125,217,.10)) drop-shadow(0 2px 6px rgba(11,18,32,.08))}
+    .feature{background:#fff;border:1px solid #e5ecff;border-radius:12px;padding:calc(var(--s0)*1.25);display:flex;flex-direction:column;align-items:center;gap:var(--s0);box-shadow:none;filter:none;cursor:default}
+    .feature svg{color:#000;stroke:currentColor;stroke-width:1.1;fill:none;stroke-linecap:round;stroke-linejoin:round;width:clamp(28px,8vw,36px);height:clamp(28px,8vw,36px)}
     .feature .bolt{fill:currentColor;stroke:none}
     .feature .cut{fill:var(--card);stroke:none}
     .feature .qr-fill{fill:currentColor;stroke:none}
     .feature .meta{display:flex;flex-direction:column;gap:calc(var(--s0)/var(--phi));align-items:center}
-    .feature strong{font-weight:800;font-size:calc(var(--fs-1));line-height:1.22;text-align:center}
-    .feature small{color:var(--muted);font-size:calc(var(--fs--1) * 1.12);line-height:1.45;text-align:center}
+    .feature strong{font-weight:800;font-size:calc(var(--fs-0) * 1.02);line-height:1.2;text-align:center}
+    .feature small{color:var(--muted);font-size:calc(var(--fs--1));line-height:1.4;text-align:center}
 
-    /* Seções */
+    /* Seções e vitrine */
     .section{padding: calc(var(--s4) * 1.1) 0}
     .section h2{font-size: clamp(calc(1rem * var(--phi)), 3.8vw, calc(1.1rem * var(--phi) * var(--phi))); margin:0 0 var(--s2) 0;font-weight:800}
 
-    /* Filtros */
     .filters{display:grid;grid-template-columns:1fr;gap:var(--s1);margin:0 0 var(--s1) 0}
     @media(min-width:680px){.filters{grid-template-columns:1fr max-content}}
     .search input{width:100%;border:1px solid #e5ecff;border-radius:999px;padding:.8rem 1rem;font:inherit;box-shadow:var(--shadow-soft)}
@@ -116,10 +116,10 @@
     .chip:focus-visible{box-shadow:var(--ring)}
     .chip[aria-selected="true"]{background:var(--blue-2);color:#fff;border-color:rgba(27,95,179,.35);box-shadow:0 6px 14px rgba(47,125,217,.25)}
 
-    /* Vitrine cards */
     .cards{display:grid;grid-template-columns:repeat(1,minmax(0,1fr));gap:var(--s1);overflow-anchor:none}
     @media(min-width:700px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(min-width:1000px){.cards{grid-template-columns:repeat(3,minmax(0,1fr))}}
+    #lista-eventos.cards{grid-template-columns:repeat(2,minmax(0,1fr))}
 
     .card{background:var(--card);border-radius:calc(var(--s2));box-shadow:var(--shadow);padding:var(--s2);border:1px solid #eaf1ff;display:flex;flex-direction:column;gap:var(--s1);transition:transform .12s, box-shadow var(--t-fast);position:relative;content-visibility:auto;contain-intrinsic-size:300px}
     .card:hover{transform:translateY(-2px);box-shadow:0 14px 36px rgba(47,125,217,.16), 0 3px 8px rgba(11,18,32,.12)}
@@ -134,13 +134,11 @@
     .card-media{width:100%;aspect-ratio:var(--phi);border-radius:calc(var(--s1));border:1px solid #eaf1ff;background:radial-gradient(600px 280px at 20% 0%, rgba(47,125,217,.12), transparent 60%),linear-gradient(180deg,#fff,#f5f9ff);display:grid;place-items:center;color:#8fb5ff;font-weight:800}
     .card-media img{width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block}
 
-    /* Botão "Ver detalhes" (pill 3D sutil) */
     .toggle{background:#fff;border:1px solid #e5ecff;color:#2d3b50;font-weight:800;cursor:pointer;padding:.6rem 1rem;border-radius:999px;align-self:center;box-shadow:var(--shadow-soft);transition:transform .08s, box-shadow var(--t-fast), background-color var(--t-fast), color var(--t-fast)}
     .toggle:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(47,125,217,.18)}
     .toggle:focus-visible{box-shadow:var(--ring)}
     .card[aria-expanded="true"] .toggle{background:var(--blue-soft);color:var(--blue-3);border-color:#cfe0ff}
 
-    /* Área expandida */
     .expand{max-height:0;opacity:0;overflow:hidden;pointer-events:none;border-top:1px dashed #e5ecff;padding:0;transition:max-height var(--t-med) cubic-bezier(.2,.7,.2,1), opacity var(--t-fast), padding var(--t-fast)}
     .card[aria-expanded="true"] .expand{max-height:600px;opacity:1;pointer-events:auto;padding: var(--s1) 0}
     .expand p{margin:.38rem 0}
@@ -152,8 +150,8 @@
     .model-grid{display:grid;grid-template-columns:1fr;gap:var(--s1);margin-top:var(--s1)}
     @media(min-width:720px){.model-grid{grid-template-columns:repeat(3,1fr)}}
     .model{appearance:none;background:#fff;border:1px solid #e5ecff;border-radius:calc(var(--s1));padding:var(--s1);display:flex;align-items:center;justify-content:center;gap:.6rem;cursor:pointer;text-align:center;box-shadow:var(--shadow-soft);font-weight:800;transition:transform var(--t-fast), box-shadow var(--t-fast), border-color var(--t-fast)}
-    .model:focus-visible{box-shadow:var(--ring)}
-    .model[aria-selected="true"]{border-color:#cfe0ff;box-shadow:0 0 0 3px rgba(74,147,240,.18), 0 12px 28px rgba(47,125,217,.10);transform:translateY(-1px) scale(1.02)}
+    .model:focus-visible{box-shadow:0 0 0 3px rgba(11,18,32,.12)}
+    .model[aria-selected="true"]{border-color:#cfe0ff;box-shadow:0 0 0 3px rgba(74,147,240,.10), 0 12px 28px rgba(47,125,217,.08);transform:translateY(-1px) scale(1.02)}
     .fee-row{display:none;place-content:center;margin-top:4px}
     .fee-chip{display:inline-flex;align-items:center;gap:.5rem;padding:.45rem .8rem;border:1px solid #cfe0ff;border-radius:999px;background:#eef4ff;color:#2F7DD9;font-weight:800;box-shadow:var(--shadow-soft)}
     .fee-row.is-visible{display:grid}
@@ -162,7 +160,6 @@
     .panel-grid{display:grid;grid-template-columns:1fr;gap:var(--s2)}
     @media(min-width:820px){.panel-grid{grid-template-columns:1.1fr .9fr}}
     .panel-card{background:#f9fbff;border:1px solid #e5ecff;border-radius:calc(var(--s1));padding:var(--s2)}
-    @media(min-width:820px){ .panel-card:has(details[open]){grid-column:1 / -1} }
 
     .cmd-list{display:grid;gap:8px}
     .cmd{display:grid;grid-template-columns:1fr max-content;gap:6px;align-items:center;background:#fff;border:1px solid #e5ecff;border-radius:12px;padding:10px 12px}
@@ -171,7 +168,7 @@
     .cmd .copy{appearance:none;border:1px solid #e5ecff;background:#fff;border-radius:10px;padding:.4rem .6rem;cursor:pointer;font-weight:700;color:#2F7DD9}
 
     details.disclosure{border:0;padding:0;margin:0}
-    .disclosure__summary{list-style:none;cursor:pointer;user-select:none;display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:.75rem 1rem;border:1px solid #e5ecff;border-radius:12px;background:#fff;box-shadow:var(--shadow-soft);font-weight:800}
+    .disclosure__summary{list-style:none;cursor:pointer;user-select:none;display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:.75rem 1rem;border:1px solid #e5ecff;border-radius:12px;background:#fff;box-shadow:var(--shadow-soft);font-weight:800;outline:none}
     .disclosure__summary::-webkit-details-marker{display:none}
     details[open] .disclosure__summary{box-shadow:0 10px 24px rgba(47,125,217,.18);border-color:#cfe0ff}
 
@@ -188,9 +185,9 @@
     footer{background:#fff;border-top:1px solid #e7eefb;margin-top:var(--s4)}
     .foot{max-width:var(--container-max);margin:0 auto;padding:var(--s3) var(--s3)}
     .foot-block{display:grid;gap:var(--s2);justify-items:center;text-align:center}
-    .foot h3{margin:0;font-weight:800;font-size:clamp(1rem,2.6vw,1.05rem)}
-    .link-row{display:flex;gap:var(--s1);flex-wrap:wrap;justify-content:center;margin-bottom:var(--s1)}
-    .link-btn{display:inline-flex;align-items:center;gap:8px;padding:.5rem .8rem;border:1px solid #e5edff;border-radius:999px;background:#f7f9ff;box-shadow:var(--shadow-soft);font-weight:700}
+    .link-row{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-bottom:var(--s1)}
+    .link-btn{width:40px;height:40px;display:grid;place-items:center;border:0;background:transparent;box-shadow:none;color:#0b1220;padding:0}
+    .link-btn svg{width:22px;height:22px;stroke:currentColor}
     .legal{display:flex;flex-wrap:wrap;gap:var(--s1);justify-content:center;margin-top:calc(var(--s0)*1.2)}
     .legal a{padding:0;border:0;background:transparent;text-decoration:underline;font-weight:600}
     .foot-meta{display:flex;flex-wrap:wrap;gap:10px;align-items:center;color:#667792;justify-content:center}
@@ -208,22 +205,31 @@
 </head>
 <body>
   <header class="tech-header" role="banner">
-    <div class="container nav">
-      <div class="brand">
-        <img src="/logo_ingressai.png" alt="IngressAI" width="160" height="160" loading="eager" fetchpriority="high" />
-        <p class="tagline"><strong>IngressAI</strong></p>
-      </div>
-    </div>
+    <div class="container nav"></div>
   </header>
 
   <main class="container" role="main">
     <!-- HERO -->
     <section class="hero" aria-labelledby="hero-title">
-      <h1 id="hero-title">Crie eventos com a <strong>IngressAI</strong>.</h1>
-      <p class="lead">Checkout no WhatsApp • QR Code antifraude • Validador web • Repasse na hora</p>
-      <div class="hero-cta">
-        <a href="#vitrine" class="btn btn--primary">Ver eventos</a>
-        <a href="#organizadores" class="btn btn--secondary">Sou organizador</a>
+      <div class="hero-brand">
+        <img src="/logo_ingressai.png" alt="IngressAI" width="160" height="160" loading="eager" fetchpriority="high" />
+        <p class="brand-title">IngressAI</p>
+        <div class="badges" aria-label="Selos de plataforma">
+          <span class="badge" aria-label="Powered by Meta Business Platform">
+            <img src="/meta.png" alt="Meta" width="24" height="24" loading="lazy" decoding="async" />
+            <span>Powered by Meta Business Platform</span>
+          </span>
+          <span class="badge" aria-label="WhatsApp Business API">
+            <img src="/whatsapp_business.png" alt="WhatsApp Business" width="24" height="24" loading="lazy" decoding="async" />
+            <span>WhatsApp Business API</span>
+          </span>
+        </div>
+      </div>
+      <h1 id="hero-title">Crie eventos com a IngressAI.</h1>
+
+      <!-- CTA único do hero -->
+      <div class="hero-cta" role="group" aria-label="Ações principais">
+        <a href="#organizadores" class="btn btn--secondary" aria-label="Abrir soluções para organizadores">Soluções para organizadores</a>
       </div>
     </section>
 
@@ -231,7 +237,6 @@
     <section class="proofs" aria-labelledby="proofs-title">
       <h2 id="proofs-title" class="sr-only">Provas de valor</h2>
       <div class="features" aria-label="Provas de valor">
-        <!-- 1) Venda automatizada: ticket + raio minimalista -->
         <div class="feature">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <rect x="3.6" y="6.6" width="16.8" height="10.8" rx="2.4" />
@@ -241,8 +246,6 @@
           </svg>
           <div class="meta"><strong>Venda automatizada</strong><small>via WhatsApp</small></div>
         </div>
-
-        <!-- 2) Repasse imediato -->
         <div class="feature">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M4 10a8 8 0 0 1 14-2" />
@@ -252,8 +255,6 @@
           </svg>
           <div class="meta"><strong>Repasse imediato</strong><small>via Pix</small></div>
         </div>
-
-        <!-- 3) QR Code Antifraude (3 finders) -->
         <div class="feature">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <rect x="3" y="3" width="7" height="7" rx="1.1" />
@@ -265,8 +266,6 @@
           </svg>
           <div class="meta"><strong>QR Code Antifraude</strong><small>+ validador web</small></div>
         </div>
-
-        <!-- 4) Comandos & Dashboard -->
         <div class="feature">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M9 7h11M9 12h11M9 17h11" />
@@ -280,7 +279,7 @@
     </section>
 
     <!-- VITRINE -->
-    <section id="vitrine" class="section" aria-labelledby="vitrine-title">
+    <section id="vitrine" class="section" aria-labelledby="vitrine-title" tabindex="-1">
       <h2 id="vitrine-title">Eventos em destaque</h2>
       <div class="filters" aria-label="Filtros de eventos">
         <div class="search">
@@ -290,28 +289,16 @@
         <div id="filtro-cidades" class="chips" role="tablist" aria-label="Filtrar por cidade"></div>
       </div>
       <div class="cards" id="lista-eventos" aria-live="polite"></div>
-      <noscript>
-      <ul>
-        <li>Evento Genérico — Uberaba (28/08/2025)</li>
-        <li>Evento Genérico — Uberlândia (30/08/2025)</li>
-        <li>Evento Genérico — Belo Horizonte (01/09/2025)</li>
-        <li>Evento Genérico — Ribeirão Preto (07/09/2025)</li>
-        <li>Evento Genérico — Franca (03/09/2025)</li>
-      </ul>
-      </noscript>
     </section>
 
     <!-- ORGANIZADORES -->
-    <section id="organizadores" class="section" aria-labelledby="orgs-title">
+    <section id="organizadores" class="section" aria-labelledby="orgs-title" tabindex="-1">
       <h2 id="orgs-title">Soluções para organizadores</h2>
-
       <div id="std-card" class="std-card"></div>
-
       <div id="org-models" class="model-grid" role="tablist" aria-label="Modelos de organizador"></div>
       <div class="fee-row" id="fee-row"><span class="fee-chip" id="fee-chip">Taxa</span></div>
-
       <div id="org-detail" class="org-panel" role="tabpanel" tabindex="0" aria-live="polite">
-        <p class="subtle">Selecione um modelo acima para ver comandos do bot e a calculadora de taxa.</p>
+        <p class="subtle">Selecione um dos planos acima para liberar os botões.</p>
       </div>
     </section>
 
@@ -353,19 +340,32 @@
   <footer role="contentinfo">
     <div class="foot">
       <div class="foot-block">
-        <h3>Nossas redes</h3>
         <div class="link-row" aria-label="Canais de contato">
-          <a class="link-btn" href="mailto:contato@ingressai.chat" aria-label="Enviar e-mail">E-mail</a>
-          <a class="link-btn" href="https://instagram.com/ingressai" target="_blank" rel="noopener noreferrer" aria-label="Abrir Instagram">Instagram</a>
-          <a class="link-btn" href="https://wa.me/5534999992747" target="_blank" rel="noopener noreferrer" aria-label="Falar com o bot no WhatsApp">WhatsApp do bot</a>
+          <a class="link-btn" href="mailto:contato@ingressai.chat" aria-label="Enviar e-mail">
+            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+              <path d="M4 6l8 6 8-6"></path>
+            </svg>
+          </a>
+          <a class="link-btn" href="https://instagram.com/ingressai" target="_blank" rel="noopener noreferrer" aria-label="Abrir Instagram">
+            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="4"></rect>
+              <circle cx="12" cy="12" r="5"></circle>
+              <circle cx="17" cy="7" r="1.3" fill="currentColor" stroke="none"></circle>
+            </svg>
+          </a>
+          <a class="link-btn" href="https://wa.me/5534999992747" target="_blank" rel="noopener noreferrer" aria-label="Falar com o bot no WhatsApp">
+            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20.5 12a8.5 8.5 0 1 1-15.6 4.3L3 21l3.8-1a8.5 8.5 0 0 0 13.7-7.9z"></path>
+              <path d="M9.2 9.4c.6-1 1.3-.9 1.9-.2l.5.6c.2.2.3.6.1.9l-.3.7c-.2.4 0 .8.2 1.1l.9 1c.3.3.7.4 1.1.3l.8-.2"></path>
+            </svg>
+          </a>
         </div>
-
         <div class="legal" aria-label="Links legais">
           <a href="/politica.html">Política de privacidade</a>
           <a href="/termos.html">Termos de uso</a>
           <a href="/excluir.html">Excluir meus dados</a>
         </div>
-
         <div class="foot-meta" aria-label="Informações">
           <strong>IngressAI</strong>
           <span>•</span>
@@ -381,7 +381,6 @@
   </script>
 
   <script>
-    /* ===== Config & Data ===== */
     const WHATSAPP_NUMBER = '5534999992747';
 
     const eventos = [
@@ -441,23 +440,25 @@
     /* ===== Micro animações de clique + scroll suave ===== */
     function animatePress(el){ try{ el.classList.add('btn-press'); el.addEventListener('animationend', ()=> el.classList.remove('btn-press'), {once:true}); }catch{} }
 
-    // Smooth scroll nos CTAs do hero
+    function smoothGoTo(id){
+      const target = document.getElementById(id);
+      if(!target) return;
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      target.scrollIntoView({behavior: reduced ? 'auto' : 'smooth', block:'start'});
+      try{ target.focus({preventScroll:true}); }catch{}
+    }
+
+    // Navegação âncora estável (sem esconder seções)
     document.addEventListener('DOMContentLoaded', ()=>{
-      document.querySelectorAll('.hero-cta a[href^="#"]').forEach(a=>{
+      document.querySelectorAll('a[href^="#vitrine"], a[href^="#organizadores"]').forEach(a=>{
         a.addEventListener('click', (e)=>{
-          const id = a.getAttribute('href').slice(1);
-          const target = document.getElementById(id);
-          if(target){
-            animatePress(a);
-            e.preventDefault();
-            const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-            target.scrollIntoView({behavior: reduced ? 'auto' : 'smooth', block:'start'});
-          }
+          e.preventDefault();
+          animatePress(a);
+          smoothGoTo(a.getAttribute('href').slice(1));
         });
       });
     });
 
-    // animação rápida em qualquer .btn ou .toggle
     document.addEventListener('click',(e)=>{ const el=e.target.closest('.btn,.toggle'); if(el) animatePress(el); });
 
     /* ===== Header + Hero scroll ===== */
@@ -476,7 +477,6 @@
             hero.style.setProperty('--hero-p', p.toFixed(3));
             hero.classList.toggle('is-hidden', p >= 1);
           }
-          header?.classList.toggle('logo-hidden', p >= 1);
           ticking = false;
         });
       }
@@ -605,7 +605,7 @@
     ];
     std.innerHTML = `<ul class="std-list">${commonFeatures.map(f=>`<li>${f}</li>`).join('')}</ul>`;
 
-    // Render dos botões de modelo (sem seleção inicial)
+    // Botões de modelo (sem seleção inicial)
     modelsBox.innerHTML = categorias.map((m)=>`
       <button type="button" class="model" role="tab" aria-selected="false" data-key="${m.key}">
         ${m.title}
@@ -622,7 +622,7 @@
 
     function renderDetail(key){
       const m = categorias.find(x=>x.key===key);
-      if(!m){ detail.innerHTML = `<p class="subtle">Selecione um modelo acima para ver comandos do bot e a calculadora de taxa.</p>`; feeRow.classList.remove('is-visible'); return; }
+      if(!m){ detail.innerHTML = `<p class="subtle">Selecione um dos planos acima para liberar os botões.</p>`; feeRow.classList.remove('is-visible'); return; }
 
       // badge de taxa
       feeChip.textContent = `Taxa ${m.taxa}`;
@@ -660,14 +660,14 @@
           <div class="calc-result"><span>Você recebe</span><strong id="calc-net">R$ 0,00</strong></div>
         </div>
         <div class="panel-cta" style="margin-top:var(--s2)">
-          <a class="btn btn--primary" data-org-quick data-key="${m.key}">Criar evento no WhatsApp</a>
+          <a class="btn btn--secondary" data-org-quick data-key="${m.key}">Criar evento no WhatsApp</a>
           <a class="btn btn--secondary" href="https://wa.me/${WHATSAPP_NUMBER}" target="_blank" rel="noopener noreferrer">Falar com suporte</a>
         </div>`;
 
       detail.innerHTML = `
         <div class="panel-grid">
           <div class="panel-card">
-            <details class="disclosure" open>
+            <details class="disclosure">
               <summary class="disclosure__summary">Comandos do bot</summary>
               <div class="cmd-list">${cmdHTML}</div>
             </details>
