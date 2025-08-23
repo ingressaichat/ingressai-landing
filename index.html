@@ -76,7 +76,7 @@
     .brand-title{margin:0;font-weight:800;letter-spacing:.2px;font-size:clamp(1rem,2.8vw,1.1rem);color:var(--ink)}
     .badges{display:flex;gap:calc(var(--s1)*1.4);align-items:center;justify-content:center;flex-wrap:wrap;margin-top:6px}
     .badge{display:inline-flex;align-items:center;gap:.55rem;padding:0;background:transparent;border-radius:0;box-shadow:none;font-weight:700;cursor:default;user-select:none}
-    .badge img{height:18px;width:auto;display:block;filter:none;opacity:1} /* sem blur/ofuscado */
+    .badge img{height:18px;width:auto;display:block;filter:none;opacity:1}
     .badge span{color:#445570;font-weight:700;opacity:.95}
 
     /* Buttons */
@@ -86,7 +86,7 @@
     .btn--sm{min-height:40px;padding:0 .9rem;font-size:.92rem}
     .btn--cta-organizadores{background:#fff;border-color:#cfe0ff;box-shadow:0 10px 24px rgba(74,147,240,.18)}
     .btn--cta-organizadores:hover{transform:translateY(-1px);box-shadow:0 12px 28px rgba(74,147,240,.24)}
-    .btn--cta-organizadores:focus-visible{box-shadow:none;outline:none} /* remove moldura azul no clique/teclado */
+    .btn--cta-organizadores:focus-visible{box-shadow:none;outline:none}
     .btn.is-disabled{opacity:.6;pointer-events:none;filter:grayscale(.08)}
 
     /* Click micro-animations */
@@ -94,7 +94,7 @@
     @keyframes btn-press{0%{transform:translateY(0) scale(1)}50%{transform:translateY(1px) scale(.98)}100%{transform:translateY(0) scale(1)}}
     .btn-press{animation:btn-press var(--t-fast) ease}
 
-    /* CTA inline acima das provas */
+    /* CTA inline */
     .cta-inline{display:flex;justify-content:flex-start;margin-top:calc(var(--s1)*-1);margin-bottom:var(--s1)}
 
     /* PROVAS (4 cards) */
@@ -124,7 +124,7 @@
     .cards{display:grid;grid-template-columns:repeat(1,minmax(0,1fr));gap:var(--s1);overflow-anchor:none}
     @media(min-width:700px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(min-width:1000px){.cards{grid-template-columns:repeat(3,minmax(0,1fr))}}
-    #lista-eventos.cards{grid-template-columns:repeat(2,minmax(0,1fr))} /* 2× até no mobile */
+    #lista-eventos.cards{grid-template-columns:repeat(2,minmax(0,1fr))}
 
     .card{background:var(--card);border-radius:calc(var(--s2));box-shadow:var(--shadow);padding:var(--s2);border:1px solid #eaf1ff;display:flex;flex-direction:column;gap:var(--s1);transition:transform .12s, box-shadow var(--t-fast);position:relative;content-visibility:auto;contain-intrinsic-size:300px}
     .card:hover{transform:translateY(-2px);box-shadow:0 14px 36px rgba(47,125,217,.16), 0 3px 8px rgba(11,18,32,.12)}
@@ -182,7 +182,6 @@
     details.disclosure{border:0;padding:0;margin:0}
     .disclosure__summary{list-style:none;cursor:pointer;user-select:none;display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:.75rem 1rem;border:1px solid #e5ecff;border-radius:12px;background:#fff;box-shadow:var(--shadow-soft);font-weight:800;outline:none}
     .disclosure__summary::-webkit-details-marker{display:none}
-    /* IMPORTANTE: fechados por padrão (sem [open]) */
 
     .calc{display:grid;gap:10px}
     .calc-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -216,7 +215,21 @@
     }
 
     /* Remoção de ring na área de organizadores */
-    #organizadores :focus-visible{box-shadow:none;outline:none}
+    #organizadores :focus, #organizadores :focus-visible{box-shadow:none!important;outline:none!important}
+    #organizadores .disclosure__summary:focus, #organizadores .disclosure__summary:focus-visible,
+    #organizadores .model:focus, #organizadores .model:focus-visible,
+    #organizadores a:focus, #organizadores a:focus-visible,
+    #organizadores button:focus, #organizadores button:focus-visible,
+    #organizadores input:focus, #organizadores input:focus-visible{box-shadow:none!important;outline:none!important}
+
+    /* ===== PATCH MOBILE: manter o badge dentro do card (não-invasivo) ===== */
+    .card{overflow:hidden;}
+    .card-header{position:relative;padding-right:7.5rem;}
+    .card-header .status{position:absolute;top:0;right:0;z-index:1;display:inline-flex;align-items:center;white-space:nowrap;}
+    @media (max-width:380px){
+      .card-header{padding-right:6.2rem;}
+      .card-header .status{font-size:.72rem;padding:.3rem .55rem;}
+    }
   </style>
 </head>
 <body>
@@ -244,7 +257,7 @@
       <h1 id="hero-title">Crie eventos com a IngressAI.</h1>
     </section>
 
-    <!-- CTA inline (mínimo, à esquerda) -->
+    <!-- CTA inline -->
     <div class="cta-inline">
       <a href="#organizadores" class="btn btn--cta-organizadores btn--sm" id="cta-organizadores" aria-label="Abrir soluções para organizadores">Soluções para organizadores</a>
     </div>
@@ -307,20 +320,19 @@
       <div class="cards" id="lista-eventos" aria-live="polite"></div>
     </section>
 
-    <!-- ORGANIZADORES (oculto por padrão; revelado ao clicar no CTA) -->
+    <!-- ORGANIZADORES (oculto por padrão) -->
     <section id="organizadores" class="section" aria-labelledby="orgs-title" tabindex="-1" hidden>
       <h2 id="orgs-title">Soluções para organizadores</h2>
       <div id="std-card" class="std-card"></div>
       <div id="org-models" class="model-grid" role="tablist" aria-label="Modelos de organizador"></div>
       <div class="fee-row" id="fee-row"><span class="fee-chip" id="fee-chip">Taxa</span></div>
       <div id="org-detail" class="org-panel" role="tabpanel" tabindex="0" aria-live="polite">
-        <!-- Mensagem aparece acima e some ao escolher um plano -->
         <div id="org-notice" class="org-notice subtle">Selecione um dos planos acima para liberar os botões.</div>
         <div class="panel-grid">
           <div class="panel-card">
             <details class="disclosure">
               <summary class="disclosure__summary">Comandos do bot</summary>
-              <div class="cmd-list" id="cmd-list"><!-- preenchido ao selecionar plano --></div>
+              <div class="cmd-list" id="cmd-list"></div>
             </details>
           </div>
           <div class="panel-card">
@@ -400,8 +412,8 @@
             </svg>
           </a>
           <a class="link-btn" href="https://wa.me/5534999992747" target="_blank" rel="noopener noreferrer" aria-label="Falar com o bot no WhatsApp">
-            <!-- Ícone WhatsApp substituído -->
-            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="256" height="256" viewBox="0 0 256 256" xml:space="preserve">
+            <!-- WhatsApp: ícone fornecido -->
+            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="256" height="256" viewBox="0 0 256 256" xml:space="preserve" aria-hidden="true" focusable="false">
               <g style="stroke: none; stroke-width: 0; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: none; fill-rule: nonzero; opacity: 1;" transform="translate(1.4065934065934016 1.4065934065934016) scale(2.81 2.81)">
                 <path d="M 0.576 44.596 C 0.573 52.456 2.626 60.129 6.53 66.892 L 0.201 90 l 23.65 -6.201 c 6.516 3.553 13.852 5.426 21.318 5.429 h 0.019 c 24.586 0 44.601 -20.009 44.612 -44.597 c 0.004 -11.917 -4.633 -23.122 -13.055 -31.552 C 68.321 4.65 57.121 0.005 45.188 0 C 20.597 0 0.585 20.005 0.575 44.595 M 14.658 65.727 l -0.883 -1.402 c -3.712 -5.902 -5.671 -12.723 -5.669 -19.726 C 8.115 24.161 24.748 7.532 45.201 7.532 c 9.905 0.004 19.213 3.865 26.215 10.871 c 7.001 7.006 10.854 16.32 10.851 26.224 c -0.009 20.439 -16.643 37.068 -37.08 37.068 h -0.015 c -6.655 -0.004 -13.181 -1.79 -18.872 -5.168 l -1.355 -0.803 l -14.035 3.68 L 14.658 65.727 z M 45.188 89.228 L 45.188 89.228 L 45.188 89.228 C 45.187 89.228 45.187 89.228 45.188 89.228" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(0,0,0); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/>
                 <path d="M 34.038 25.95 c -0.835 -1.856 -1.714 -1.894 -2.508 -1.926 c -0.65 -0.028 -1.394 -0.026 -2.136 -0.026 c -0.744 0 -1.951 0.279 -2.972 1.394 c -1.022 1.116 -3.902 3.812 -3.902 9.296 c 0 5.485 3.995 10.784 4.551 11.529 c 0.558 0.743 7.712 12.357 19.041 16.825 c 9.416 3.713 11.333 2.975 13.376 2.789 c 2.044 -0.186 6.595 -2.696 7.524 -5.299 c 0.929 -2.603 0.929 -4.834 0.651 -5.299 c -0.279 -0.465 -1.022 -0.744 -2.137 -1.301 c -1.115 -0.558 -6.595 -3.254 -7.617 -3.626 c -1.022 -0.372 -1.765 -0.557 -2.509 0.559 c -0.743 1.115 -2.878 3.625 -3.528 4.368 c -0.65 0.745 -1.301 0.838 -2.415 0.28 c -1.115 -0.559 -4.705 -1.735 -8.964 -5.532 c -3.314 -2.955 -5.551 -6.603 -6.201 -7.719 c -0.65 -1.115 -0.069 -1.718 0.489 -2.274 c 0.501 -0.499 1.115 -1.301 1.673 -1.952 c 0.556 -0.651 0.742 -1.116 1.113 -1.859 c 0.372 -0.744 0.186 -1.395 -0.093 -1.953 C 37.195 33.666 35.029 28.154 34.038 25.95" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(0,0,0); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/>
@@ -491,7 +503,7 @@
     function formatDate(iso){ try{ const d=new Date(iso); return d.toLocaleString('pt-BR',{dateStyle:'medium',timeStyle:'short'}) } catch{ return iso } }
     function waHref(text){ return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}` }
 
-    /* ===== Micro animações de clique + scroll suave ===== */
+    /* ===== Micro animações + scroll ===== */
     function animatePress(el){ try{ el.classList.add('btn-press'); el.addEventListener('animationend', ()=> el.classList.remove('btn-press'), {once:true}); }catch{} }
 
     function smoothGoTo(id){
@@ -503,7 +515,6 @@
     }
 
     document.addEventListener('DOMContentLoaded', ()=>{
-      // Intercepta anchors e revela #organizadores se estiver hidden
       document.querySelectorAll('a[href^="#vitrine"], a[href^="#organizadores"]').forEach(a=>{
         a.addEventListener('click', (e)=>{
           e.preventDefault();
@@ -684,7 +695,6 @@
     function applyPlan(key){
       const plan = categorias.find(x=>x.key===key) || null;
 
-      // Atualiza badge de taxa
       if(plan){
         feeChip.textContent = 'Taxa '+plan.taxa;
         feeRow.classList.add('is-visible');
@@ -694,7 +704,6 @@
         orgNotice.classList.remove('is-hidden');
       }
 
-      // Preenche comandos do bot
       const cmdData = [
         {cmd:'criar evento', desc:'Inicia o fluxo para cadastro de um novo evento.'},
         {cmd:'adicionar lote', desc:'Inclui um novo lote com preço/quantidade.'},
@@ -708,7 +717,6 @@
         '<div class="cmd"><code>'+cmd+'</code><button type="button" class="copy" data-cmd="'+cmd+'">Copiar</button><small>'+desc+'</small></div>'
       ).join('');
 
-      // Calculadora
       calcBox.dataset.fee = plan ? plan.feePct : '';
       calcNote.innerHTML = plan
         ? 'Taxa aplicada: <strong>'+plan.taxa+'</strong>. O restante é repassado ao organizador na hora.'
@@ -719,7 +727,6 @@
       calcNet.textContent = BRL.format(0);
 
       if(plan){
-        // Ativa CTA de criar evento
         orgQuick.classList.remove('is-disabled');
         orgQuick.removeAttribute('aria-disabled');
         orgQuick.onclick = (e)=>{
@@ -734,7 +741,6 @@
         orgQuick.onclick = null;
       }
 
-      // Copiar comandos
       detail.querySelectorAll('button.copy').forEach(b=>{
         b.addEventListener('click', async ()=>{ try{ await navigator.clipboard.writeText(b.dataset.cmd); }catch{} });
       });
@@ -751,12 +757,11 @@
 
     modelsBox.addEventListener('click', (e)=>{
       const b = e.target.closest('button.model'); if(!b) return;
-      modelsBox.querySelectorAll('.model').forEach(x=>x.setAttribute('aria-selected','false'));
+      modelsBox.querySelectorAll('button.model').forEach(x=>x.setAttribute('aria-selected','false'));
       b.setAttribute('aria-selected','true');
       applyPlan(b.dataset.key);
     });
 
-    // Sem plano aplicado inicialmente
     applyPlan(null);
 
     /* ===== JSON-LD Events ===== */
