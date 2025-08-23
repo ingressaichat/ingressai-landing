@@ -35,11 +35,12 @@
       /* colors */
       --ink:#0b1220; --muted:#5b6b86; --bg:#f6f8fc; --card:#ffffff;
       --blue-1:#4A93F0; --blue-2:#2F7DD9; --blue-3:#1B5FB3; --blue-soft:#eaf3ff;
+      --red-soft:#c94747;
 
       /* fx */
       --shadow: 0 10px 28px rgba(47,125,217,.14), 0 2px 6px rgba(11,18,32,.08);
       --shadow-soft: 0 6px 18px rgba(47,125,217,.12);
-      --ring: 0 0 0 3px rgba(74,147,240,.25);
+      --ring: 0 0 0 2px rgba(74,147,240,.18);
 
       /* layout */
       --container-max: calc(680px * var(--phi));
@@ -58,7 +59,6 @@
     .container{max-width:var(--container-max);margin:0 auto;padding:0 var(--s3)}
     .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
     .subtle{color:var(--muted)}
-    .is-hidden{display:none !important}
     :where(section,[id]){scroll-margin-top:96px}
 
     /* Header */
@@ -70,28 +70,34 @@
     .hero{padding:var(--s4) 0;opacity:calc(1 - var(--hero-p,0));transform:translateY(calc(-6px * var(--hero-p,0)));transition:opacity var(--t-fast) linear,transform var(--t-fast) linear}
     .hero.is-hidden{opacity:0;height:0;padding:0;margin:0;overflow:hidden}
     .hero h1{font-size: clamp(calc(1.25rem * var(--phi)), 6.2vw, calc(1.25rem * var(--phi) * var(--phi)));line-height:var(--lh-compact);margin:0 0 var(--s2) 0;font-weight:850;text-align:center}
-    .hero-cta{display:grid;grid-template-columns:1fr;gap:var(--s1);justify-items:center}
 
     /* Brand + badges */
     .hero-brand{display:grid;gap:var(--s1);place-items:center;margin-bottom:var(--s2)}
-    .brand-title{margin:0;font-weight:800;letter-spacing:.2px;font-size:clamp(1rem,2.8vw,1.1rem);color:var(--ink);text-transform:none}
+    .brand-title{margin:0;font-weight:800;letter-spacing:.2px;font-size:clamp(1rem,2.8vw,1.1rem);color:var(--ink)}
     .badges{display:flex;gap:calc(var(--s1)*1.4);align-items:center;justify-content:center;flex-wrap:wrap;margin-top:6px}
-    .badge{display:inline-flex;align-items:center;gap:.55rem;padding:0;border:0;background:transparent;border-radius:0;box-shadow:none;font-weight:700;cursor:default;user-select:none;opacity:.88}
-    .badge img{height:18px;width:auto;display:block;filter:grayscale(.85);opacity:.85}
-    .badge span{color:#61708a;font-weight:600}
+    .badge{display:inline-flex;align-items:center;gap:.55rem;padding:0;background:transparent;border-radius:0;box-shadow:none;font-weight:700;cursor:default;user-select:none}
+    .badge img{height:18px;width:auto;display:block;filter:none;opacity:1} /* sem blur/ofuscado */
+    .badge span{color:#445570;font-weight:700;opacity:.95}
 
     /* Buttons */
-    .btn{min-height:var(--btn-h);padding:0 var(--s2);border-radius:var(--radius-pill);border:1px solid #d6e4ff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;letter-spacing:.2px;gap:10px}
-    .btn--secondary{background:#fff;color:var(--ink);box-shadow:var(--shadow-soft)}
-    .btn--ghost{background:#f2f4f8;border-color:#d9e2f2;box-shadow:0 10px 24px rgba(11,18,32,.12);min-height:40px;padding:.4rem 1rem;color:#2d3b50}
-    .btn--ghost:hover{transform:translateY(-1px);box-shadow:0 12px 28px rgba(11,18,32,.16)}
+    .btn{min-height:var(--btn-h);padding:0 var(--s2);border-radius:var(--radius-pill);border:1px solid #d6e4ff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;letter-spacing:.2px;gap:10px;background:#fff;color:#0b1220;transition:transform .08s, box-shadow var(--t-fast)}
+    .btn--secondary{box-shadow:var(--shadow-soft)}
+    .btn--ghost{background:#fff;border-color:#e1e8f6;box-shadow:none;color:#2d3b50}
+    .btn--sm{min-height:40px;padding:0 .9rem;font-size:.92rem}
+    .btn--cta-organizadores{background:#fff;border-color:#cfe0ff;box-shadow:0 10px 24px rgba(74,147,240,.18)}
+    .btn--cta-organizadores:hover{transform:translateY(-1px);box-shadow:0 12px 28px rgba(74,147,240,.24)}
+    .btn--cta-organizadores:focus-visible{box-shadow:none;outline:none} /* remove moldura azul no clique/teclado */
+    .btn.is-disabled{opacity:.6;pointer-events:none;filter:grayscale(.08)}
 
     /* Click micro-animations */
-    .btn, .toggle{will-change:transform}
+    .btn, .view{will-change:transform}
     @keyframes btn-press{0%{transform:translateY(0) scale(1)}50%{transform:translateY(1px) scale(.98)}100%{transform:translateY(0) scale(1)}}
     .btn-press{animation:btn-press var(--t-fast) ease}
 
-    /* PROVAS (4 cards informativos) */
+    /* CTA inline acima das provas */
+    .cta-inline{display:flex;justify-content:flex-start;margin-top:calc(var(--s1)*-1);margin-bottom:var(--s1)}
+
+    /* PROVAS (4 cards) */
     .proofs{padding: var(--s2) 0 var(--s3)}
     .features{display:grid;gap:var(--s0);grid-template-columns:repeat(2,minmax(0,1fr))}
     @media(min-width:900px){.features{grid-template-columns:repeat(4,minmax(0,1fr))}}
@@ -110,38 +116,44 @@
 
     .filters{display:grid;grid-template-columns:1fr;gap:var(--s1);margin:0 0 var(--s1) 0}
     @media(min-width:680px){.filters{grid-template-columns:1fr max-content}}
-    .search input{width:100%;border:1px solid #e5ecff;border-radius:999px;padding:.8rem 1rem;font:inherit;box-shadow:var(--shadow-soft)}
+    .search input{width:100%;border:1px solid #e5ecff;border-radius:999px;padding:.8rem 1rem;font:inherit;box-shadow:var(--shadow-soft);font-weight:600}
     .chips{display:flex;gap:8px;align-items:center;overflow:auto;padding-bottom:2px}
-    .chip{appearance:none;border:1px solid #e5ecff;background:#fff;border-radius:999px;padding:.5rem .85rem;font-weight:700;color:#415577;cursor:pointer;white-space:nowrap}
-    .chip:focus-visible{box-shadow:var(--ring)}
+    .chip{appearance:none;border:1px solid #e5ecff;background:#fff;border-radius:999px;padding:.5rem .85rem;font-weight:800;color:#415577;cursor:pointer;white-space:nowrap}
     .chip[aria-selected="true"]{background:var(--blue-2);color:#fff;border-color:rgba(27,95,179,.35);box-shadow:0 6px 14px rgba(47,125,217,.25)}
 
     .cards{display:grid;grid-template-columns:repeat(1,minmax(0,1fr));gap:var(--s1);overflow-anchor:none}
     @media(min-width:700px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(min-width:1000px){.cards{grid-template-columns:repeat(3,minmax(0,1fr))}}
-    #lista-eventos.cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+    #lista-eventos.cards{grid-template-columns:repeat(2,minmax(0,1fr))} /* 2× até no mobile */
 
     .card{background:var(--card);border-radius:calc(var(--s2));box-shadow:var(--shadow);padding:var(--s2);border:1px solid #eaf1ff;display:flex;flex-direction:column;gap:var(--s1);transition:transform .12s, box-shadow var(--t-fast);position:relative;content-visibility:auto;contain-intrinsic-size:300px}
     .card:hover{transform:translateY(-2px);box-shadow:0 14px 36px rgba(47,125,217,.16), 0 3px 8px rgba(11,18,32,.12)}
-    .card-header{display:flex;align-items:center;justify-content:space-between;gap:var(--s1)}
-    .card-title{font-weight:800;font-size: clamp(1.05rem, 2.4vw, 1.2rem)}
-    .card-city{color:var(--blue-2);font-weight:700;font-size: clamp(.9rem, 2vw, 1rem)}
-    .status{font-size:clamp(.72rem, 1.7vw, .8rem);padding:calc(var(--s0)/1.5) calc(var(--s1)/2);border-radius:999px;border:1px solid #e2ecff}
+    .card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--s1)}
+    .card-title{font-weight:900;font-size: clamp(1rem, 2.2vw, 1.14rem);line-height:1.18;margin-bottom:4px}
+    .card-city{color:var(--blue-2);font-weight:800;font-size:.94rem}
+    .status{font-size:.78rem;padding:.35rem .6rem;border-radius:999px;border:1px solid #e2ecff;font-weight:800;white-space:nowrap}
     .status.soon{background:#f7fbff}
     .status.low{background:#fff6f6;border-color:#ffd9d9;color:#b64848}
     .status.sold{background:#f1f1f3;color:#777;border-color:#e2e2e6}
-    .pill{display:inline-flex;align-items:center;gap:.4rem;padding:.45rem .8rem;border:1px solid #e2e2e6;border-radius:999px;background:#f1f1f3;color:#777;font-weight:800}
-    .card-media{width:100%;aspect-ratio:var(--phi);border-radius:calc(var(--s1));border:1px solid #eaf1ff;background:radial-gradient(600px 280px at 20% 0%, rgba(47,125,217,.12), transparent 60%),linear-gradient(180deg,#fff,#f5f9ff);display:grid;place-items:center;color:#8fb5ff;font-weight:800}
+    .card-media{width:100%;aspect-ratio:1.2;border-radius:calc(var(--s1));border:1px solid #eaf1ff;background:radial-gradient(600px 280px at 20% 0%, rgba(47,125,217,.12), transparent 60%),linear-gradient(180deg,#fff,#f5f9ff);display:grid;place-items:center;color:#8fb5ff;font-weight:800}
     .card-media img{width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block}
 
-    .toggle{background:#fff;border:1px solid #e5ecff;color:#2d3b50;font-weight:800;cursor:pointer;padding:.6rem 1rem;border-radius:999px;align-self:center;box-shadow:var(--shadow-soft);transition:transform .08s, box-shadow var(--t-fast), background-color var(--t-fast), color var(--t-fast)}
-    .toggle:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(47,125,217,.18)}
-    .toggle:focus-visible{box-shadow:var(--ring)}
-    .card[aria-expanded="true"] .toggle{background:var(--blue-soft);color:var(--blue-3);border-color:#cfe0ff}
+    .view{background:#fff;border:1px solid #e5ecff;color:#2d3b50;font-weight:800;cursor:pointer;padding:.4rem .9rem;border-radius:999px;align-self:flex-end;box-shadow:var(--shadow-soft);min-height:36px}
+    .view:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(47,125,217,.18)}
 
-    .expand{max-height:0;opacity:0;overflow:hidden;pointer-events:none;border-top:1px dashed #e5ecff;padding:0;transition:max-height var(--t-med) cubic-bezier(.2,.7,.2,1), opacity var(--t-fast), padding var(--t-fast)}
-    .card[aria-expanded="true"] .expand{max-height:600px;opacity:1;pointer-events:auto;padding: var(--s1) 0}
-    .expand p{margin:.38rem 0}
+    /* Bottom Sheet (detalhes) */
+    .sheet-backdrop{position:fixed;inset:0;background:rgba(11,18,32,.32);opacity:0;pointer-events:none;transition:opacity var(--t-fast)}
+    .sheet-backdrop.is-open{opacity:1;pointer-events:auto}
+    .sheet{position:fixed;left:0;right:0;bottom:0;height:56vh;max-height:640px;background:#fff;border-top-left-radius:24px;border-top-right-radius:24px;box-shadow:0 -24px 48px rgba(11,18,32,.16);transform:translateY(100%);transition:transform var(--t-med) cubic-bezier(.2,.7,.2,1);display:flex;flex-direction:column;padding:var(--s2);z-index:40}
+    .sheet.is-open{transform:translateY(0)}
+    .sheet h3{margin:0 0 var(--s1) 0;font-weight:900}
+    .sheet .sheet-body{overflow:auto;display:grid;gap:8px;padding-right:4px}
+    .sheet .meta-line{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .sheet .actions{margin-top:var(--s1);display:flex;gap:var(--s1);flex-wrap:wrap}
+    .sheet-close{position:absolute;right:10px;top:10px;appearance:none;background:transparent;border:0;color:var(--red-soft);border-radius:10px;padding:.35rem;display:grid;place-items:center}
+    .sheet-close svg{width:20px;height:20px;stroke:currentColor}
+    .sheet-media{width:100%;aspect-ratio:1.4;border:1px solid #eaf1ff;border-radius:16px;background:radial-gradient(600px 280px at 20% 0%, rgba(47,125,217,.12), transparent 60%),linear-gradient(180deg,#fff,#f5f9ff);margin-bottom:var(--s1);overflow:hidden}
+    .sheet-media img{width:100%;height:100%;object-fit:cover;display:block}
 
     /* Organizadores */
     .std-card{background:#fff;border:1px solid #e5ecff;border-radius:calc(var(--s2));padding:var(--s2);box-shadow:var(--shadow-soft)}
@@ -150,13 +162,13 @@
     .model-grid{display:grid;grid-template-columns:1fr;gap:var(--s1);margin-top:var(--s1)}
     @media(min-width:720px){.model-grid{grid-template-columns:repeat(3,1fr)}}
     .model{appearance:none;background:#fff;border:1px solid #e5ecff;border-radius:calc(var(--s1));padding:var(--s1);display:flex;align-items:center;justify-content:center;gap:.6rem;cursor:pointer;text-align:center;box-shadow:var(--shadow-soft);font-weight:800;transition:transform var(--t-fast), box-shadow var(--t-fast), border-color var(--t-fast)}
-    .model:focus-visible{box-shadow:0 0 0 3px rgba(11,18,32,.12)}
     .model[aria-selected="true"]{border-color:#cfe0ff;box-shadow:0 0 0 3px rgba(74,147,240,.10), 0 12px 28px rgba(47,125,217,.08);transform:translateY(-1px) scale(1.02)}
     .fee-row{display:none;place-content:center;margin-top:4px}
     .fee-chip{display:inline-flex;align-items:center;gap:.5rem;padding:.45rem .8rem;border:1px solid #cfe0ff;border-radius:999px;background:#eef4ff;color:#2F7DD9;font-weight:800;box-shadow:var(--shadow-soft)}
     .fee-row.is-visible{display:grid}
 
     .org-panel{background:#fff;border:1px solid #e5ecff;border-radius:calc(var(--s2));padding:var(--s3);box-shadow:var(--shadow);margin-top:var(--s2)}
+    .org-notice{margin-bottom:var(--s1);font-weight:700}
     .panel-grid{display:grid;grid-template-columns:1fr;gap:var(--s2)}
     @media(min-width:820px){.panel-grid{grid-template-columns:1.1fr .9fr}}
     .panel-card{background:#f9fbff;border:1px solid #e5ecff;border-radius:calc(var(--s1));padding:var(--s2)}
@@ -170,11 +182,12 @@
     details.disclosure{border:0;padding:0;margin:0}
     .disclosure__summary{list-style:none;cursor:pointer;user-select:none;display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:.75rem 1rem;border:1px solid #e5ecff;border-radius:12px;background:#fff;box-shadow:var(--shadow-soft);font-weight:800;outline:none}
     .disclosure__summary::-webkit-details-marker{display:none}
-    details[open] .disclosure__summary{box-shadow:0 10px 24px rgba(47,125,217,.18);border-color:#cfe0ff}
+    /* IMPORTANTE: fechados por padrão (sem [open]) */
 
     .calc{display:grid;gap:10px}
     .calc-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     .calc input{width:100%;border:1px solid #e5ecff;border-radius:12px;padding:.7rem .8rem;font:inherit}
+    .calc input:disabled{background:#f3f6ff;color:#8796b0}
     .calc small{color:var(--muted)}
     .calc-result{background:#fff;border:1px dashed #dbe5ff;border-radius:12px;padding:.75rem .9rem;font-weight:800;display:flex;justify-content:space-between;align-items:center}
 
@@ -187,20 +200,23 @@
     .foot-block{display:grid;gap:var(--s2);justify-items:center;text-align:center}
     .link-row{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-bottom:var(--s1)}
     .link-btn{width:40px;height:40px;display:grid;place-items:center;border:0;background:transparent;box-shadow:none;color:#0b1220;padding:0}
-    .link-btn svg{width:22px;height:22px;stroke:currentColor}
+    .link-btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-linecap:round;stroke-linejoin:round}
     .legal{display:flex;flex-wrap:wrap;gap:var(--s1);justify-content:center;margin-top:calc(var(--s0)*1.2)}
-    .legal a{padding:0;border:0;background:transparent;text-decoration:underline;font-weight:600}
+    .legal a{text-decoration:underline;font-weight:600}
     .foot-meta{display:flex;flex-wrap:wrap;gap:10px;align-items:center;color:#667792;justify-content:center}
 
     /* Print */
     @media print{
-      header,footer,.cta-row,.toast,button.toggle{display:none !important}
+      header,footer,.cta-row,.toast,button.view{display:none !important}
       .container{max-width:100%;padding:0}
       .card,.panel-card,.std-card{box-shadow:none !important;border:1px solid #999 !important}
       .status{border:1px solid #000 !important}
       a:link,a:visited{text-decoration:underline;color:#000 !important}
       a[href]:after{content:" <" attr(href) ">";font-size:.9em}
     }
+
+    /* Remoção de ring na área de organizadores */
+    #organizadores :focus-visible{box-shadow:none;outline:none}
   </style>
 </head>
 <body>
@@ -226,12 +242,12 @@
         </div>
       </div>
       <h1 id="hero-title">Crie eventos com a IngressAI.</h1>
-
-      <!-- CTA único do hero -->
-      <div class="hero-cta" role="group" aria-label="Ações principais">
-        <a href="#organizadores" class="btn btn--secondary" aria-label="Abrir soluções para organizadores">Soluções para organizadores</a>
-      </div>
     </section>
+
+    <!-- CTA inline (mínimo, à esquerda) -->
+    <div class="cta-inline">
+      <a href="#organizadores" class="btn btn--cta-organizadores btn--sm" id="cta-organizadores" aria-label="Abrir soluções para organizadores">Soluções para organizadores</a>
+    </div>
 
     <!-- PROVAS (4 cards) -->
     <section class="proofs" aria-labelledby="proofs-title">
@@ -291,14 +307,46 @@
       <div class="cards" id="lista-eventos" aria-live="polite"></div>
     </section>
 
-    <!-- ORGANIZADORES -->
-    <section id="organizadores" class="section" aria-labelledby="orgs-title" tabindex="-1">
+    <!-- ORGANIZADORES (oculto por padrão; revelado ao clicar no CTA) -->
+    <section id="organizadores" class="section" aria-labelledby="orgs-title" tabindex="-1" hidden>
       <h2 id="orgs-title">Soluções para organizadores</h2>
       <div id="std-card" class="std-card"></div>
       <div id="org-models" class="model-grid" role="tablist" aria-label="Modelos de organizador"></div>
       <div class="fee-row" id="fee-row"><span class="fee-chip" id="fee-chip">Taxa</span></div>
       <div id="org-detail" class="org-panel" role="tabpanel" tabindex="0" aria-live="polite">
-        <p class="subtle">Selecione um dos planos acima para liberar os botões.</p>
+        <!-- Mensagem aparece acima e some ao escolher um plano -->
+        <div id="org-notice" class="org-notice subtle">Selecione um dos planos acima para liberar os botões.</div>
+        <div class="panel-grid">
+          <div class="panel-card">
+            <details class="disclosure">
+              <summary class="disclosure__summary">Comandos do bot</summary>
+              <div class="cmd-list" id="cmd-list"><!-- preenchido ao selecionar plano --></div>
+            </details>
+          </div>
+          <div class="panel-card">
+            <details class="disclosure">
+              <summary class="disclosure__summary">Calculadora de taxa</summary>
+              <div class="calc" id="calc-box" data-fee="">
+                <div class="calc-row">
+                  <div>
+                    <label for="preco">Preço</label>
+                    <input id="preco" type="text" inputmode="decimal" placeholder="R$ 60,00" aria-label="Preço do ingresso" disabled />
+                  </div>
+                  <div>
+                    <label for="qtd">Qtd</label>
+                    <input id="qtd" type="number" placeholder="1" min="1" step="1" aria-label="Quantidade de ingressos" disabled />
+                  </div>
+                </div>
+                <small id="calc-note">Selecione um plano acima para aplicar a taxa.</small>
+                <div class="calc-result"><span>Você recebe</span><strong id="calc-net">R$ 0,00</strong></div>
+              </div>
+              <div class="panel-cta" style="margin-top:var(--s2)">
+                <a class="btn btn--secondary is-disabled" id="org-quick" aria-disabled="true">Criar evento no WhatsApp</a>
+                <a class="btn btn--secondary" href="https://wa.me/5534999992747" target="_blank" rel="noopener noreferrer">Falar com suporte</a>
+              </div>
+            </details>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -323,17 +371,14 @@
       </div>
     </section>
 
-    <!-- FAQ -->
-    <section id="faq" class="section" aria-labelledby="faq-title">
-      <h2 id="faq-title">Perguntas frequentes</h2>
-      <div class="cards" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr))">
-        <details><summary>Como recebo meu ingresso?</summary><p>Por ingresso com QR Code, enviado no WhatsApp logo após a confirmação.</p></details>
-        <details><summary>Como é validado?</summary><p>O QR Code é bipado na entrada pelo organizador, garantindo acesso rápido e seguro.</p></details>
-        <details><summary>Quais taxas?</summary><p>8% (Atléticas &amp; Repúblicas) e 10% (Produtoras/Locais). O plano gratuito não inclui vitrine.</p></details>
-        <details><summary>Como funciona o repasse?</summary><p>O valor do ingresso é repassado na hora ao organizador.</p></details>
-        <details><summary>Política de reembolso</summary><p>Definida pelo organizador. Em caso de dúvidas, fale com a equipe pelo WhatsApp.</p></details>
-      </div>
-    </section>
+    <!-- Bottom Sheet (detalhes do evento) -->
+    <div class="sheet-backdrop" id="sheet-backdrop" aria-hidden="true"></div>
+    <aside class="sheet" id="sheet" aria-hidden="true" role="dialog" aria-labelledby="sheet-title">
+      <button class="sheet-close" id="sheet-close" aria-label="Fechar detalhes">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6L18 18M18 6L6 18" /></svg>
+      </button>
+      <div class="sheet-body" id="sheet-body"></div>
+    </aside>
   </main>
 
   <!-- RODAPÉ -->
@@ -342,22 +387,25 @@
       <div class="foot-block">
         <div class="link-row" aria-label="Canais de contato">
           <a class="link-btn" href="mailto:contato@ingressai.chat" aria-label="Enviar e-mail">
-            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
               <rect x="3" y="5" width="18" height="14" rx="2"></rect>
               <path d="M4 6l8 6 8-6"></path>
             </svg>
           </a>
           <a class="link-btn" href="https://instagram.com/ingressai" target="_blank" rel="noopener noreferrer" aria-label="Abrir Instagram">
-            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
               <rect x="3" y="3" width="18" height="18" rx="4"></rect>
               <circle cx="12" cy="12" r="5"></circle>
-              <circle cx="17" cy="7" r="1.3" fill="currentColor" stroke="none"></circle>
+              <circle cx="17" cy="7" r="1.2" fill="currentColor" stroke="none"></circle>
             </svg>
           </a>
           <a class="link-btn" href="https://wa.me/5534999992747" target="_blank" rel="noopener noreferrer" aria-label="Falar com o bot no WhatsApp">
-            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M20.5 12a8.5 8.5 0 1 1-15.6 4.3L3 21l3.8-1a8.5 8.5 0 0 0 13.7-7.9z"></path>
-              <path d="M9.2 9.4c.6-1 1.3-.9 1.9-.2l.5.6c.2.2.3.6.1.9l-.3.7c-.2.4 0 .8.2 1.1l.9 1c.3.3.7.4 1.1.3l.8-.2"></path>
+            <!-- Ícone WhatsApp substituído -->
+            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="256" height="256" viewBox="0 0 256 256" xml:space="preserve">
+              <g style="stroke: none; stroke-width: 0; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: none; fill-rule: nonzero; opacity: 1;" transform="translate(1.4065934065934016 1.4065934065934016) scale(2.81 2.81)">
+                <path d="M 0.576 44.596 C 0.573 52.456 2.626 60.129 6.53 66.892 L 0.201 90 l 23.65 -6.201 c 6.516 3.553 13.852 5.426 21.318 5.429 h 0.019 c 24.586 0 44.601 -20.009 44.612 -44.597 c 0.004 -11.917 -4.633 -23.122 -13.055 -31.552 C 68.321 4.65 57.121 0.005 45.188 0 C 20.597 0 0.585 20.005 0.575 44.595 M 14.658 65.727 l -0.883 -1.402 c -3.712 -5.902 -5.671 -12.723 -5.669 -19.726 C 8.115 24.161 24.748 7.532 45.201 7.532 c 9.905 0.004 19.213 3.865 26.215 10.871 c 7.001 7.006 10.854 16.32 10.851 26.224 c -0.009 20.439 -16.643 37.068 -37.08 37.068 h -0.015 c -6.655 -0.004 -13.181 -1.79 -18.872 -5.168 l -1.355 -0.803 l -14.035 3.68 L 14.658 65.727 z M 45.188 89.228 L 45.188 89.228 L 45.188 89.228 C 45.187 89.228 45.187 89.228 45.188 89.228" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(0,0,0); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/>
+                <path d="M 34.038 25.95 c -0.835 -1.856 -1.714 -1.894 -2.508 -1.926 c -0.65 -0.028 -1.394 -0.026 -2.136 -0.026 c -0.744 0 -1.951 0.279 -2.972 1.394 c -1.022 1.116 -3.902 3.812 -3.902 9.296 c 0 5.485 3.995 10.784 4.551 11.529 c 0.558 0.743 7.712 12.357 19.041 16.825 c 9.416 3.713 11.333 2.975 13.376 2.789 c 2.044 -0.186 6.595 -2.696 7.524 -5.299 c 0.929 -2.603 0.929 -4.834 0.651 -5.299 c -0.279 -0.465 -1.022 -0.744 -2.137 -1.301 c -1.115 -0.558 -6.595 -3.254 -7.617 -3.626 c -1.022 -0.372 -1.765 -0.557 -2.509 0.559 c -0.743 1.115 -2.878 3.625 -3.528 4.368 c -0.65 0.745 -1.301 0.838 -2.415 0.28 c -1.115 -0.559 -4.705 -1.735 -8.964 -5.532 c -3.314 -2.955 -5.551 -6.603 -6.201 -7.719 c -0.65 -1.115 -0.069 -1.718 0.489 -2.274 c 0.501 -0.499 1.115 -1.301 1.673 -1.952 c 0.556 -0.651 0.742 -1.116 1.113 -1.859 c 0.372 -0.744 0.186 -1.395 -0.093 -1.953 C 37.195 33.666 35.029 28.154 34.038 25.95" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(0,0,0); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/>
+              </g>
             </svg>
           </a>
         </div>
@@ -384,31 +432,26 @@
     const WHATSAPP_NUMBER = '5534999992747';
 
     const eventos = [
-      // Uberaba (4)
       { id:'uberaba-2025-08-28-1', nome:'Evento Genérico 01', cidade:'Uberaba', dataISO:'2025-08-28T20:00:00-03:00', localNome:'Espaço A', localUrl:'https://maps.google.com/?q=Uberaba', categoria:'Atléticas & Repúblicas', status:'Em breve', descricao:'Evento de teste para integração.' },
       { id:'uberaba-2025-09-05-2', nome:'Evento Genérico 02', cidade:'Uberaba', dataISO:'2025-09-05T21:00:00-03:00', localNome:'Espaço B', localUrl:'https://maps.google.com/?q=Uberaba', categoria:'Produtoras Independentes', status:'Últimos ingressos', descricao:'Evento de teste para integração.' },
       { id:'uberaba-2025-09-20-3', nome:'Evento Genérico 03', cidade:'Uberaba', dataISO:'2025-09-20T22:00:00-03:00', localNome:'Espaço C', localUrl:'https://maps.google.com/?q=Uberaba', categoria:'Locais Independentes', status:'Em breve', descricao:'Evento de teste para integração.' },
       { id:'uberaba-2025-10-12-4', nome:'Evento Genérico 04', cidade:'Uberaba', dataISO:'2025-10-12T18:00:00-03:00', localNome:'Espaço D', localUrl:'https://maps.google.com/?q=Uberaba', categoria:'Atléticas & Repúblicas', status:'Esgotado', descricao:'Evento de teste para integração.' },
 
-      // Uberlândia (4)
       { id:'uberlandia-2025-08-30-1', nome:'Evento Genérico 01', cidade:'Uberlândia', dataISO:'2025-08-30T19:00:00-03:00', localNome:'Espaço A', localUrl:'https://maps.google.com/?q=Uberl%C3%A2ndia', categoria:'Locais Independentes', status:'Em breve', descricao:'Evento de teste para integração.' },
       { id:'uberlandia-2025-09-10-2', nome:'Evento Genérico 02', cidade:'Uberlândia', dataISO:'2025-09-10T21:00:00-03:00', localNome:'Espaço B', localUrl:'https://maps.google.com/?q=Uberl%C3%A2ndia', categoria:'Produtoras Independentes', status:'Últimos ingressos', descricao:'Evento de teste para integração.' },
       { id:'uberlandia-2025-09-28-3', nome:'Evento Genérico 03', cidade:'Uberlândia', dataISO:'2025-09-28T16:00:00-03:00', localNome:'Espaço C', localUrl:'https://maps.google.com/?q=Uberl%C3%A2ndia', categoria:'Atléticas & Repúblicas', status:'Em breve', descricao:'Evento de teste para integração.' },
       { id:'uberlandia-2025-10-18-4', nome:'Evento Genérico 04', cidade:'Uberlândia', dataISO:'2025-10-18T22:00:00-03:00', localNome:'Espaço D', localUrl:'https://maps.google.com/?q=Uberl%C3%A2ndia', categoria:'Locais Independentes', status:'Esgotado', descricao:'Evento de teste para integração.' },
 
-      // Belo Horizonte (4)
       { id:'bh-2025-09-01-1', nome:'Evento Genérico 01', cidade:'Belo Horizonte', dataISO:'2025-09-01T20:00:00-03:00', localNome:'Espaço A', localUrl:'https://maps.google.com/?q=Belo%20Horizonte', categoria:'Produtoras Independentes', status:'Em breve', descricao:'Evento de teste para integração.' },
       { id:'bh-2025-09-13-2', nome:'Evento Genérico 02', cidade:'Belo Horizonte', dataISO:'2025-09-13T20:00:00-03:00', localNome:'Espaço B', localUrl:'https://maps.google.com/?q=Belo%20Horizonte', categoria:'Atléticas & Repúblicas', status:'Últimos ingressos', descricao:'Evento de teste para integração.' },
       { id:'bh-2025-10-02-3', nome:'Evento Genérico 03', cidade:'Belo Horizonte', dataISO:'2025-10-02T21:00:00-03:00', localNome:'Espaço C', localUrl:'https://maps.google.com/?q=Belo%20Horizonte', categoria:'Locais Independentes', status:'Em breve', descricao:'Evento de teste para integração.' },
       { id:'bh-2025-10-25-4', nome:'Evento Genérico 04', cidade:'Belo Horizonte', dataISO:'2025-10-25T22:00:00-03:00', localNome:'Espaço D', localUrl:'https://maps.google.com/?q=Belo%20Horizonte', categoria:'Produtoras Independentes', status:'Esgotado', descricao:'Evento de teste para integração.' },
 
-      // Ribeirão Preto (4)
       { id:'ribeirao-2025-09-07-1', nome:'Evento Genérico 01', cidade:'Ribeirão Preto', dataISO:'2025-09-07T21:00:00-03:00', localNome:'Espaço A', localUrl:'https://maps.google.com/?q=Ribeir%C3%A3o%20Preto', categoria:'Atléticas & Repúblicas', status:'Em breve', descricao:'Evento de teste para integração.' },
       { id:'ribeirao-2025-09-21-2', nome:'Evento Genérico 02', cidade:'Ribeirão Preto', dataISO:'2025-09-21T20:00:00-03:00', localNome:'Espaço B', localUrl:'https://maps.google.com/?q=Ribeir%C3%A3o%20Preto', categoria:'Locais Independentes', status:'Últimos ingressos', descricao:'Evento de teste para integração.' },
       { id:'ribeirao-2025-10-05-3', nome:'Evento Genérico 03', cidade:'Ribeirão Preto', dataISO:'2025-10-05T20:00:00-03:00', localNome:'Espaço C', localUrl:'https://maps.google.com/?q=Ribeir%C3%A3o%20Preto', categoria:'Produtoras Independentes', status:'Em breve', descricao:'Evento de teste para integração.' },
       { id:'ribeirao-2025-11-15-4', nome:'Evento Genérico 04', cidade:'Ribeirão Preto', dataISO:'2025-11-15T23:00:00-03:00', localNome:'Espaço D', localUrl:'https://maps.google.com/?q=Ribeir%C3%A3o%20Preto', categoria:'Atléticas & Repúblicas', status:'Esgotado', descricao:'Evento de teste para integração.' },
 
-      // Franca (4)
       { id:'franca-2025-09-03-1', nome:'Evento Genérico 01', cidade:'Franca', dataISO:'2025-09-03T22:00:00-03:00', localNome:'Espaço A', localUrl:'https://maps.google.com/?q=Franca', categoria:'Locais Independentes', status:'Em breve', descricao:'Evento de teste para integração.' },
       { id:'franca-2025-09-17-2', nome:'Evento Genérico 02', cidade:'Franca', dataISO:'2025-09-17T21:00:00-03:00', localNome:'Espaço B', localUrl:'https://maps.google.com/?q=Franca', categoria:'Produtoras Independentes', status:'Últimos ingressos', descricao:'Evento de teste para integração.' },
       { id:'franca-2025-10-09-3', nome:'Evento Genérico 03', cidade:'Franca', dataISO:'2025-10-09T19:00:00-03:00', localNome:'Espaço C', localUrl:'https://maps.google.com/?q=Franca', categoria:'Atléticas & Repúblicas', status:'Em breve', descricao:'Evento de teste para integração.' },
@@ -433,6 +476,17 @@
     const feeRow = document.getElementById('fee-row');
     const feeChip = document.getElementById('fee-chip');
     const detail = document.getElementById('org-detail');
+    const orgNotice = document.getElementById('org-notice');
+    const cmdList = document.getElementById('cmd-list');
+    const calcBox = document.getElementById('calc-box');
+    const calcNote = document.getElementById('calc-note');
+    const calcNet = document.getElementById('calc-net');
+    const orgQuick = document.getElementById('org-quick');
+
+    const sheet = document.getElementById('sheet');
+    const sheetBody = document.getElementById('sheet-body');
+    const sheetBackdrop = document.getElementById('sheet-backdrop');
+    const sheetClose = document.getElementById('sheet-close');
 
     function formatDate(iso){ try{ const d=new Date(iso); return d.toLocaleString('pt-BR',{dateStyle:'medium',timeStyle:'short'}) } catch{ return iso } }
     function waHref(text){ return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}` }
@@ -448,18 +502,23 @@
       try{ target.focus({preventScroll:true}); }catch{}
     }
 
-    // Navegação âncora estável (sem esconder seções)
     document.addEventListener('DOMContentLoaded', ()=>{
+      // Intercepta anchors e revela #organizadores se estiver hidden
       document.querySelectorAll('a[href^="#vitrine"], a[href^="#organizadores"]').forEach(a=>{
         a.addEventListener('click', (e)=>{
           e.preventDefault();
+          const hash = a.getAttribute('href').slice(1);
+          if(hash === 'organizadores'){
+            const sec = document.getElementById('organizadores');
+            if(sec.hasAttribute('hidden')) sec.removeAttribute('hidden');
+          }
           animatePress(a);
-          smoothGoTo(a.getAttribute('href').slice(1));
+          smoothGoTo(hash);
         });
       });
     });
 
-    document.addEventListener('click',(e)=>{ const el=e.target.closest('.btn,.toggle'); if(el) animatePress(el); });
+    document.addEventListener('click',(e)=>{ const el=e.target.closest('.btn,.view'); if(el) animatePress(el); });
 
     /* ===== Header + Hero scroll ===== */
     (function uiScroll(){
@@ -488,7 +547,8 @@
     const MAIN_CITIES = ['Uberaba','Uberlândia','Belo Horizonte','Ribeirão Preto','Franca'];
     let selectedCity = 'Todas';
     let query = '';
-    let openKey = null; // garante que apenas um card fique aberto
+
+    const evIndex = Object.fromEntries(eventos.map(e=>[e.id,e]));
 
     function filterEventos(data, q, city){
       const qn = (q||'').trim().toLowerCase();
@@ -504,37 +564,24 @@
       const data = filterEventos(eventos, query, selectedCity);
       lista.innerHTML = '';
       data.forEach((ev)=>{
-        const expanded = openKey === ev.id;
         const statusClass = ev.status==='Esgotado'?'sold':(ev.status==='Últimos ingressos'?'low':'soon');
-
         const card = document.createElement('article');
         card.className = 'card';
         card.dataset.key = ev.id;
-        card.setAttribute('aria-expanded', String(expanded));
         card.setAttribute('tabindex','0');
         card.setAttribute('aria-labelledby', `card-title-${ev.id}`);
-
-        card.innerHTML = `
-          <div class="card-media" role="img" aria-label="Mídia do evento">
-            ${ev.img ? `<img src="${ev.img}" alt="Imagem do evento ${ev.nome}" loading="lazy" decoding="async">` : 'Mídia do evento'}
-          </div>
-          <div class="card-header">
-            <div><div class="card-title" id="card-title-${ev.id}">${ev.nome}</div><div class="card-city">${ev.cidade}</div></div>
-            <span class="status ${statusClass}" aria-label="Status do evento: ${ev.status}">${ev.status}</span>
-          </div>
-          <button type="button" class="toggle" aria-controls="expand-${ev.id}" aria-expanded="${expanded?'true':'false'}">${expanded?'Ocultar detalhes':'Ver detalhes'}</button>
-          <div id="expand-${ev.id}" class="expand">
-            <p><strong>Data:</strong> ${formatDate(ev.dataISO)}</p>
-            <p><strong>Local:</strong> <a href="${ev.localUrl}" target="_blank" rel="noopener noreferrer">${ev.localNome}</a></p>
-            <p><strong>Categoria:</strong> ${ev.categoria}</p>
-            <p class="subtle">${ev.descricao}</p>
-            <div style="display:flex;gap:calc(var(--s0) + 2px);flex-wrap:wrap;margin-top:calc(var(--s0) + 2px)">
-              ${ev.status==='Esgotado'
-                ? `<span class="pill" aria-live="polite">Esgotado</span> <a class="btn btn--secondary" href="#vitrine">Ver outros eventos</a>`
-                : `<a class="btn buy" data-nome="${ev.nome}" data-cidade="${ev.cidade}" role="button" aria-label="Comprar ingresso para ${ev.nome} em ${ev.cidade}">Comprar ingresso</a>`}
-            </div>
-          </div>`;
-
+        card.innerHTML =
+          '<div class="card-media" role="img" aria-label="Mídia do evento">' +
+            (ev.img ? '<img src="'+ev.img+'" alt="Imagem do evento '+ev.nome+'" loading="lazy" decoding="async">' : 'Mídia do evento') +
+          '</div>' +
+          '<div class="card-header">' +
+            '<div>' +
+              '<div class="card-title" id="card-title-'+ev.id+'">'+ev.nome+'</div>' +
+              '<div class="card-city">'+ev.cidade+'</div>' +
+            '</div>' +
+            '<span class="status '+statusClass+'" aria-label="Status do evento: '+ev.status+'">'+ev.status+'</span>' +
+          '</div>' +
+          '<button type="button" class="view" data-open="'+ev.id+'" aria-label="Ver detalhes de '+ev.nome+'">Ver detalhes</button>';
         lista.appendChild(card);
       });
     }
@@ -554,7 +601,6 @@
     chipsRow.addEventListener('click', (e)=>{
       const b = e.target.closest('button.chip'); if(!b) return;
       selectedCity = b.dataset.city;
-      openKey = null; // fecha todos ao trocar filtro
       chipsRow.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-selected','false'));
       b.setAttribute('aria-selected','true');
       renderCards();
@@ -563,34 +609,51 @@
     let debounce;
     inputBusca.addEventListener('input', ()=>{
       clearTimeout(debounce);
-      debounce = setTimeout(()=>{ query = inputBusca.value; openKey = null; renderCards(); }, 180);
+      debounce = setTimeout(()=>{ query = inputBusca.value; renderCards(); }, 180);
     });
 
-    lista.addEventListener('keydown', (e)=>{
-      const card = e.target.closest('.card'); if(!card) return;
-      if(e.key === 'Enter' || e.key === ' '){
-        const btn = card.querySelector('button.toggle');
-        btn?.click(); e.preventDefault();
-      }
-    });
+    /* ===== Bottom Sheet ===== */
+    function openSheet(ev){
+      const sold = ev.status==='Esgotado';
+      sheetBody.innerHTML =
+        '<div class="sheet-media">'+(ev.img ? '<img src="'+ev.img+'" alt="Imagem do evento '+ev.nome+'" loading="lazy" decoding="async">' : 'Mídia do evento')+'</div>' +
+        '<h3 id="sheet-title">'+ev.nome+' — '+ev.cidade+'</h3>' +
+        '<div class="meta-line"><strong>Data:</strong> <span>'+formatDate(ev.dataISO)+'</span></div>' +
+        '<div class="meta-line"><strong>Local:</strong> <a href="'+ev.localUrl+'" target="_blank" rel="noopener noreferrer">'+ev.localNome+'</a></div>' +
+        '<div class="meta-line"><strong>Categoria:</strong> <span>'+ev.categoria+'</span></div>' +
+        '<p class="subtle">'+ev.descricao+'</p>' +
+        '<div class="actions">' +
+          (sold
+            ? '<span class="status sold" aria-live="polite">Esgotado</span> <a class="btn btn--secondary btn--sm" href="#vitrine">Ver outros eventos</a>'
+            : '<a class="btn btn--secondary btn--sm" href="'+waHref('Olá! Quero comprar ingresso para '+ev.nome+' em '+ev.cidade+'. Quantidade: 1. Meu nome: ')+'" target="_blank" rel="noopener noreferrer">Comprar ingresso</a>'
+          ) +
+        '</div>';
+      sheet.setAttribute('aria-hidden','false');
+      sheetBackdrop.setAttribute('aria-hidden','false');
+      sheet.classList.add('is-open');
+      sheetBackdrop.classList.add('is-open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeSheet(){
+      sheet.classList.remove('is-open');
+      sheetBackdrop.classList.remove('is-open');
+      sheet.setAttribute('aria-hidden','true');
+      sheetBackdrop.setAttribute('aria-hidden','true');
+      document.body.style.overflow = '';
+    }
+    sheetClose.addEventListener('click', closeSheet);
+    sheetBackdrop.addEventListener('click', closeSheet);
+    document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeSheet(); });
 
     lista.addEventListener('click', (e)=>{
-      const btn = e.target.closest('button.toggle');
-      if(btn){
-        const card = btn.closest('article.card'); if(!card) return;
-        const key = card.dataset.key;
-        const isOpen = openKey === key;
-        animatePress(btn);
-        setTimeout(()=>{ openKey = isOpen ? null : key; renderCards(); }, 140);
-        return;
-      }
-      const buy = e.target.closest('a.buy');
-      if(buy){
-        const msg = `Olá! Quero comprar ingresso para ${buy.dataset.nome} em ${buy.dataset.cidade}. Quantidade: 1. Meu nome: `;
-        buy.href = waHref(msg); buy.target = '_blank'; buy.rel = 'noopener noreferrer';
-      }
+      const btn = e.target.closest('[data-open]');
+      if(!btn) return;
+      const ev = evIndex[btn.dataset.open];
+      if(!ev) return;
+      openSheet(ev);
     });
 
+    /* init vitrine */
     buildChips();
     renderCards();
 
@@ -603,14 +666,12 @@
       'Página de validador liberada ao criar o evento',
       'Lista de compradores atualizada'
     ];
-    std.innerHTML = `<ul class="std-list">${commonFeatures.map(f=>`<li>${f}</li>`).join('')}</ul>`;
+    document.getElementById('std-card').innerHTML = '<ul class="std-list">'+commonFeatures.map(f=>'<li>'+f+'</li>').join('')+'</ul>';
 
     // Botões de modelo (sem seleção inicial)
-    modelsBox.innerHTML = categorias.map((m)=>`
-      <button type="button" class="model" role="tab" aria-selected="false" data-key="${m.key}">
-        ${m.title}
-      </button>
-    `).join('');
+    modelsBox.innerHTML = categorias.map((m)=>(
+      '<button type="button" class="model" role="tab" aria-selected="false" data-key="'+m.key+'">'+m.title+'</button>'
+    )).join('');
 
     const BRL = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
     const parseBR = (v)=> Number(String(v).replace(/[^\d,.-]/g,'').replace(/\./g,'').replace(',', '.')) || 0;
@@ -620,14 +681,20 @@
       return Number((bruto * (1 - (Number(feePct)||0)/100)).toFixed(2));
     }
 
-    function renderDetail(key){
-      const m = categorias.find(x=>x.key===key);
-      if(!m){ detail.innerHTML = `<p class="subtle">Selecione um dos planos acima para liberar os botões.</p>`; feeRow.classList.remove('is-visible'); return; }
+    function applyPlan(key){
+      const plan = categorias.find(x=>x.key===key) || null;
 
-      // badge de taxa
-      feeChip.textContent = `Taxa ${m.taxa}`;
-      feeRow.classList.add('is-visible');
+      // Atualiza badge de taxa
+      if(plan){
+        feeChip.textContent = 'Taxa '+plan.taxa;
+        feeRow.classList.add('is-visible');
+        orgNotice.classList.add('is-hidden');
+      } else {
+        feeRow.classList.remove('is-visible');
+        orgNotice.classList.remove('is-hidden');
+      }
 
+      // Preenche comandos do bot
       const cmdData = [
         {cmd:'criar evento', desc:'Inicia o fluxo para cadastro de um novo evento.'},
         {cmd:'adicionar lote', desc:'Inclui um novo lote com preço/quantidade.'},
@@ -637,79 +704,60 @@
         {cmd:'validador', desc:'Abre a página de validação de QR Code.'},
         {cmd:'enviar ingresso <telefone>', desc:'Reenvia o ingresso ao comprador indicado.'},
       ];
-      const cmdHTML = cmdData.map(({cmd,desc})=>`
-        <div class="cmd">
-          <code>${cmd}</code>
-          <button type="button" class="copy" data-cmd="${cmd}">Copiar</button>
-          <small>${desc}</small>
-        </div>`).join('');
+      cmdList.innerHTML = cmdData.map(({cmd,desc})=>
+        '<div class="cmd"><code>'+cmd+'</code><button type="button" class="copy" data-cmd="'+cmd+'">Copiar</button><small>'+desc+'</small></div>'
+      ).join('');
 
-      const calcInner = `
-        <div class="calc" data-fee="${m.feePct}">
-          <div class="calc-row">
-            <div>
-              <label for="preco">Preço</label>
-              <input id="preco" type="text" inputmode="decimal" placeholder="R$ 60,00" aria-label="Preço do ingresso" />
-            </div>
-            <div>
-              <label for="qtd">Qtd</label>
-              <input id="qtd" type="number" placeholder="1" min="1" step="1" aria-label="Quantidade de ingressos" />
-            </div>
-          </div>
-          <small>Taxa aplicada: <strong>${m.taxa}</strong>. O restante é repassado ao organizador na hora.</small>
-          <div class="calc-result"><span>Você recebe</span><strong id="calc-net">R$ 0,00</strong></div>
-        </div>
-        <div class="panel-cta" style="margin-top:var(--s2)">
-          <a class="btn btn--secondary" data-org-quick data-key="${m.key}">Criar evento no WhatsApp</a>
-          <a class="btn btn--secondary" href="https://wa.me/${WHATSAPP_NUMBER}" target="_blank" rel="noopener noreferrer">Falar com suporte</a>
-        </div>`;
+      // Calculadora
+      calcBox.dataset.fee = plan ? plan.feePct : '';
+      calcNote.innerHTML = plan
+        ? 'Taxa aplicada: <strong>'+plan.taxa+'</strong>. O restante é repassado ao organizador na hora.'
+        : 'Selecione um plano acima para aplicar a taxa.';
+      const preco = document.getElementById('preco');
+      const qtd = document.getElementById('qtd');
+      preco.disabled = !plan; qtd.disabled = !plan;
+      calcNet.textContent = BRL.format(0);
 
-      detail.innerHTML = `
-        <div class="panel-grid">
-          <div class="panel-card">
-            <details class="disclosure">
-              <summary class="disclosure__summary">Comandos do bot</summary>
-              <div class="cmd-list">${cmdHTML}</div>
-            </details>
-          </div>
-          <div class="panel-card">
-            <details class="disclosure">
-              <summary class="disclosure__summary">Calculadora de taxa</summary>
-              ${calcInner}
-            </details>
-          </div>
-        </div>`;
+      if(plan){
+        // Ativa CTA de criar evento
+        orgQuick.classList.remove('is-disabled');
+        orgQuick.removeAttribute('aria-disabled');
+        orgQuick.onclick = (e)=>{
+          e.currentTarget.href = waHref(plan.ctaMsg);
+          e.currentTarget.target = '_blank';
+          e.currentTarget.rel = 'noopener noreferrer';
+        };
+      }else{
+        orgQuick.classList.add('is-disabled');
+        orgQuick.setAttribute('aria-disabled','true');
+        orgQuick.removeAttribute('href');
+        orgQuick.onclick = null;
+      }
 
-      // handlers
+      // Copiar comandos
       detail.querySelectorAll('button.copy').forEach(b=>{
         b.addEventListener('click', async ()=>{ try{ await navigator.clipboard.writeText(b.dataset.cmd); }catch{} });
       });
 
-      const calc = detail.querySelector('.calc'); const netEl = detail.querySelector('#calc-net');
-      function recompute(){
-        if(!calc || !netEl) return;
-        const fee = Number(calc.dataset.fee)||0; const preco = parseBR(detail.querySelector('#preco').value);
-        const qtd = Math.max(1, parseInt(detail.querySelector('#qtd').value||'1',10));
-        netEl.textContent = money(computeNet(preco, qtd, fee));
-      }
-      detail.querySelector('#preco')?.addEventListener('input', recompute);
-      detail.querySelector('#qtd')?.addEventListener('input', recompute);
-      recompute();
-
-      detail.querySelector('[data-org-quick]')?.addEventListener('click', (e)=>{
-        const href = waHref(m.ctaMsg); e.currentTarget.href = href; e.currentTarget.target = '_blank'; e.currentTarget.rel = 'noopener noreferrer';
-      });
+      const recompute = ()=>{
+        const fee = Number(calcBox.dataset.fee)||0;
+        const p = parseBR(preco.value || '0');
+        const q = Math.max(1, parseInt(qtd.value||'1',10));
+        calcNet.textContent = money(computeNet(p,q,fee));
+      };
+      preco.addEventListener('input', recompute);
+      qtd.addEventListener('input', recompute);
     }
 
     modelsBox.addEventListener('click', (e)=>{
       const b = e.target.closest('button.model'); if(!b) return;
       modelsBox.querySelectorAll('.model').forEach(x=>x.setAttribute('aria-selected','false'));
       b.setAttribute('aria-selected','true');
-      renderDetail(b.dataset.key);
+      applyPlan(b.dataset.key);
     });
 
-    // inicial
-    renderDetail(null);
+    // Sem plano aplicado inicialmente
+    applyPlan(null);
 
     /* ===== JSON-LD Events ===== */
     (function injectEventsJSONLD(){
