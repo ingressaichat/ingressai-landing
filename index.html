@@ -21,6 +21,8 @@
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="icon" href="/favicon.png" type="image/png" sizes="32x32" />
   <link rel="preload" as="image" href="/logo_ingressai.png" />
+  <!-- jsPDF para gerar PDF no navegador -->
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js" defer></script>
   <style>
     :root{--phi:1.618;--s0:8px;--s1:calc(var(--s0)*var(--phi));--s2:calc(var(--s1)*var(--phi));--s3:calc(var(--s2)*var(--phi));--s4:calc(var(--s3)*var(--phi));--fs-0:1rem;--fs--1:calc(var(--fs-0)/var(--phi));--fs-1:calc(var(--fs-0)*var(--phi));--fs-2:calc(var(--fs-1)*var(--phi));--lh-compact:1.22;--lh:1.45;--ink:#0b1220;--muted:#5b6b86;--bg:#f6f8fc;--card:#ffffff;--blue-1:#4A93F0;--blue-2:#2F7DD9;--blue-3:#1B5FB3;--blue-soft:#eaf3ff;--red-soft:#c94747;--shadow:0 10px 28px rgba(47,125,217,.14),0 2px 6px rgba(11,18,32,.08);--shadow-soft:0 6px 18px rgba(47,125,217,.12);--ring:0 0 0 2px rgba(74,147,240,.18);--container-max:calc(680px*var(--phi));--ico:clamp(40px,7vw,64px);--btn-h:52px;--radius-pill:999px;--t-fast:.18s;--t-med:.28s}
     *{box-sizing:border-box}
@@ -96,78 +98,41 @@
     .view{background:#fff;border:1px solid #e5ecff;color:#2d3b50;font-weight:800;cursor:pointer;padding:.3rem .7rem;border-radius:999px;align-self:center;min-height:28px;font-size:.82rem;margin-top:auto;box-shadow:0 6px 16px rgba(47,125,217,.16),0 2px 6px rgba(11,18,32,.08);transition:transform .12s ease,box-shadow var(--t-fast),filter var(--t-fast)}
     .view:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(47,125,217,.2),0 4px 10px rgba(11,18,32,.12)}
 
-    /* ===== ONLY CHANGES BELOW: Bottom Sheet layout to avoid info overlay on media ===== */
+    /* ===== Bottom Sheet ===== */
     .sheet-backdrop{position:fixed;inset:0;background:rgba(11,18,32,.36);opacity:0;pointer-events:none;transition:opacity var(--t-fast)}
     .sheet-backdrop.is-open{opacity:1;pointer-events:auto}
     .sheet{position:fixed;left:0;right:0;bottom:0;height:72vh;max-height:760px;background:#fff;border-top-left-radius:24px;border-top-right-radius:24px;box-shadow:0 -24px 48px rgba(11,18,32,.16);transform:translateY(100%);transition:transform var(--t-med) cubic-bezier(.2,.7,.2,1);display:flex;flex-direction:column;padding:var(--s2);z-index:40;--close-hit:64px}
     .sheet.is-open{transform:translateY(0)}
     .sheet h3{margin:0;font-weight:900;line-height:1.2}
-    /* Make body a simple vertical flow so nothing overlaps the media */
     .sheet .sheet-body{overflow:auto;display:flex;flex-direction:column;gap:10px;padding-right:4px;padding-bottom:calc(20px + env(safe-area-inset-bottom))}
-    /* Media is a block element, with overflow hidden; no absolute children above it */
     .sheet-media{width:100%;aspect-ratio:1.35;border:1px solid #eaf1ff;border-radius:16px;background:radial-gradient(600px 280px at 20% 0%,rgba(47,125,217,.12),transparent 60%),linear-gradient(180deg,#fff,#f5f9ff);margin-top:var(--s0);margin-bottom:var(--s1);overflow:hidden;display:block}
     .sheet-media img{width:100%;height:100%;object-fit:cover;display:block}
     .sheet-head{display:flex;flex-direction:column;gap:6px;align-items:flex-start;margin-top:0}
     .status-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid #e6eaf6;border-radius:999px;padding:.25rem .55rem;font-weight:800;font-size:.8rem}
     .status-chip .dot{width:.5rem;height:.5rem;border-radius:50%}
     .status-chip.low{color:#b64848;border-color:#ffdede;background:#fff7f7}
-    .status-chip.low .dot{background:#ffdede}
     .status-chip.soon{color:#1B5FB3;border-color:#cfe3ff;background:#f3f8ff}
-    .status-chip.soon .dot{background:#cfe3ff}
     .status-chip.sold{color:#6b7280;border-color:#e3e4ea;background:#fafbfc}
-    .status-chip.sold .dot{background:#dcdde3}
     .sheet .meta-line{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.96rem}
     .sheet .meta-line strong{min-width:64px}
     .sheet .actions{margin-top:var(--s1);display:flex;gap:var(--s1);flex-wrap:wrap;justify-content:flex-start}
-    /* ===== END ONLY CHANGES ===== */
 
     .sheet-close{position:absolute;right:10px;top:10px;appearance:none;background:#fff;border:1px solid #ffd6d6;color:#c94747;border-radius:14px;padding:.8rem;display:grid;place-items:center;box-shadow:0 8px 20px rgba(201,71,71,.18);z-index:5}
     .sheet-close:hover{background:#fff5f5}
     .sheet-close:active{filter:saturate(1.1)}
     .sheet-close svg{width:22px;height:22px;stroke:currentColor}
-    .std-card{background:#fff;border:1px solid #e5ecff;border-radius:calc(var(--s2));padding:var(--s2);box-shadow:var(--shadow-soft)}
-    .std-list{margin:0;padding-left:1.25rem;display:grid;gap:6px}
-    .model-grid{display:grid;grid-template-columns:1fr;gap:var(--s1);margin-top:var(--s1)}
-    @media(min-width:720px){.model-grid{grid-template-columns:repeat(3,1fr)}}
-    .model{appearance:none;background:#fff;border:1px solid #e5ecff;border-radius:calc(var(--s1));padding:var(--s1);display:flex;align-items:center;justify-content:center;gap:.6rem;cursor:pointer;text-align:center;box-shadow:var(--shadow-soft);font-weight:800;transition:transform var(--t-fast),box-shadow var(--t-fast),border-color var(--t-fast)}
-    .model[aria-selected="true"]{border-color:#cfe0ff;box-shadow:0 0 0 3px rgba(74,147,240,.10),0 12px 28px rgba(47,125,217,.08);transform:translateY(-1px) scale(1.02)}
-    .fee-row{display:none;place-content:center;margin-top:4px}
-    .fee-chip{display:inline-flex;align-items:center;gap:.5rem;padding:.45rem .8rem;border:1px solid #cfe0ff;border-radius:999px;background:#eef4ff;color:#2F7DD9;font-weight:800;box-shadow:var(--shadow-soft)}
-    .fee-row.is-visible{display:grid}
-    .org-panel{background:#fff;border:1px solid #e5ecff;border-radius:calc(var(--s2));padding:var(--s3);box-shadow:var(--shadow);margin-top:var(--s2)}
-    .org-notice{margin-bottom:var(--s1);font-weight:700}
-    .panel-grid{display:grid;grid-template-columns:1fr;gap:var(--s2)}
-    @media(min-width:820px){.panel-grid{grid-template-columns:1.1fr .9fr}}
-    .panel-card{background:#f9fbff;border:1px solid #e5ecff;border-radius:calc(var(--s1));padding:var(--s2)}
-    #org-detail.is-disabled{opacity:.55;pointer-events:none}
-    .cmd-list{display:grid;gap:8px}
-    .cmd{display:grid;grid-template-columns:1fr max-content;gap:6px;align-items:center;background:#fff;border:1px solid #e5ecff;border-radius:12px;padding:10px 12px}
-    .cmd code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.95rem;color:#0b1220}
-    .cmd small{grid-column:1 / -1;color:var(--muted)}
-    .cmd .copy{appearance:none;border:1px solid #e5ecff;background:#fff;border-radius:10px;padding:.4rem .6rem;cursor:pointer;font-weight:700;color:#2F7DD9}
-    details.disclosure{border:0;padding:0;margin:0}
-    .disclosure__summary{list-style:none;cursor:pointer;user-select:none;display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:.75rem 1rem;border:1px solid #e5ecff;border-radius:12px;background:#fff;box-shadow:var(--shadow-soft);font-weight:800;outline:none}
-    .disclosure__summary::-webkit-details-marker{display:none}
-    .calc{display:grid;gap:10px}
-    .calc-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .calc input{width:100%;border:1px solid #e5ecff;border-radius:12px;padding:.7rem .8rem;font:inherit}
-    .calc input:disabled{background:#f3f6ff;color:#8796b0}
-    .calc small{color:var(--muted)}
-    .calc-result{background:#fff;border:1px dashed #dbe5ff;border-radius:12px;padding:.75rem .9rem;font-weight:800;display:flex;justify-content:space-between;align-items:center}
-    .panel-cta{display:grid;grid-template-columns:1fr;gap:var(--s1);margin-top:var(--s2)}
-    @media(min-width:560px){.panel-cta{grid-template-columns:max-content max-content}}
-    footer{background:#fff;border-top:1px solid #e7eefb;margin-top:var(--s4)}
-    .foot{max-width:var(--container-max);margin:0 auto;padding:var(--s3) var(--s3)}
-    .foot-block{display:grid;gap:var(--s2);justify-items:center;text-align:center}
-    .link-row{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-bottom:var(--s1)}
-    .link-btn{width:44px;height:44px;display:grid;place-items:center;border:1px solid #e7eefb;background:#fff;border-radius:12px;box-shadow:var(--shadow-soft);color:#0b1220;padding:0}
-    .link-btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-linecap:round;stroke-linejoin:round}
-    .legal{display:flex;flex-wrap:wrap;gap:var(--s1);justify-content:center;margin-top:calc(var(--s0)*1.2)}
-    .legal a{text-decoration:underline;font-weight:600}
-    .foot-meta{display:flex;flex-wrap:wrap;gap:10px;align-items:center;color:#667792;justify-content:center}
-    @media print{header,footer,.cta-row,.toast,button.view{display:none!important}.container{max-width:100%;padding:0}.card,.panel-card,.std-card{box-shadow:none!important;border:1px solid #999!important}.status-line{color:#000!important}a:link,a:visited{text-decoration:underline;color:#000!important}a[href]:after{content:" <" attr(href) ">";font-size:.9em}}
-    #organizadores :focus,#organizadores :focus-visible{box-shadow:none!important;outline:none!important}
-    #organizadores .disclosure__summary:focus,#organizadores .disclosure__summary:focus-visible,#organizadores .model:focus,#organizadores .model:focus-visible,#organizadores a:focus,#organizadores a:focus-visible,#organizadores button:focus,#organizadores button:focus-visible,#organizadores input:focus,#organizadores input:focus-visible{box-shadow:none!important;outline:none!important}
+
+    /* ===== Painel de Testes (novos estilos) ===== */
+    .test-grid{display:grid;gap:var(--s1)}
+    @media(min-width:900px){.test-grid{grid-template-columns:1.1fr .9fr}}
+    .status{padding:10px 12px;border-radius:10px;border:1px solid #e7eefb;background:#fff;display:flex;align-items:center;gap:10px}
+    .dot{width:10px;height:10px;border-radius:10px;background:#999}
+    .ok{background:#12a150} .warn{background:#d97706} .err{background:#c2410c}
+    .ticket-preview{display:grid;place-items:center;border:1px dashed #dbe5ff;border-radius:12px;min-height:240px;background:#fff}
+    .ticket-preview img{max-width:100%;height:auto;border-radius:8px}
+    .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+    .small{font-size:.92rem}
+    .val{font-family:ui-monospace,Menlo,Consolas,monospace}
   </style>
 </head>
 <body>
@@ -237,6 +202,7 @@
         </div>
       </div>
     </section>
+
     <section id="vitrine" class="section" aria-labelledby="vitrine-title" tabindex="-1">
       <h2 id="vitrine-title">Eventos em destaque</h2>
       <div class="filters" aria-label="Filtros de eventos">
@@ -248,6 +214,7 @@
       </div>
       <div class="cards" id="lista-eventos" aria-live="polite"></div>
     </section>
+
     <section id="organizadores" class="section" aria-labelledby="orgs-title" tabindex="-1" hidden>
       <h2 id="orgs-title">Soluções para organizadores</h2>
       <div id="std-card" class="std-card"></div>
@@ -289,6 +256,97 @@
         </div>
       </div>
     </section>
+
+    <!-- ===== PAINEL DE TESTES (STATUS + COMPRA + EMISSÃO) ===== -->
+    <section id="painel" class="section" aria-labelledby="painel-title">
+      <h2 id="painel-title">Painel de Testes</h2>
+      <div class="test-grid">
+        <!-- Coluna A: Status + Compra -->
+        <div class="card">
+          <h3 class="card-title">Status do Backend</h3>
+          <div id="statusBox" class="status" style="margin-top:8px">
+            <span class="dot warn"></span>
+            <span id="statusText">Conectando…</span>
+          </div>
+          <div class="actions">
+            <button id="btnRefresh" class="btn btn--ghost btn--sm">Recarregar status</button>
+            <a class="btn btn--ghost btn--sm" id="btnRoutes" href="#" target="_blank" rel="noopener">Ver rotas</a>
+          </div>
+          <p class="subtle small" style="margin-top:8px">API: <span id="apiBaseTxt" class="val"></span></p>
+          <hr style="border:0;border-top:1px solid #eef3ff;margin:16px 0">
+          <h3 class="card-title">Comprar (atalho por lista)</h3>
+          <div style="display:grid;gap:10px;margin-top:8px">
+            <label for="selectEvento2" class="sr-only">Evento</label>
+            <select id="selectEvento2"></select>
+            <div style="display:grid;gap:10px;grid-template-columns:1fr 1fr">
+              <div>
+                <label for="comprarQtd">Qtd</label>
+                <select id="comprarQtd"><option>1</option><option>2</option><option>3</option><option>4</option></select>
+              </div>
+              <div>
+                <label for="comprarNome">Seu nome</label>
+                <input id="comprarNome" placeholder="Ex: Ana Maria" />
+              </div>
+            </div>
+            <div class="actions">
+              <button id="btnAbrirWA" class="btn btn--secondary btn--sm">Abrir WhatsApp</button>
+              <button id="btnCopiarMSG" class="btn btn--ghost btn--sm">Copiar mensagem</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Coluna B: Emissão -->
+        <div class="card">
+          <h3 class="card-title">Emitir Ingresso (teste)</h3>
+          <div style="display:grid;gap:10px;margin-top:8px">
+            <div style="display:grid;gap:10px;grid-template-columns:1fr 1fr">
+              <div>
+                <label for="title2">Título do evento</label>
+                <input id="title2" placeholder="Ex: Evento Genérico 01" />
+              </div>
+              <div>
+                <label for="when2">Data • Hora</label>
+                <input id="when2" placeholder="Ex: 28 Ago 25 • 21:00" />
+              </div>
+            </div>
+            <div style="display:grid;gap:10px;grid-template-columns:1fr 1fr">
+              <div>
+                <label for="venue2">Local</label>
+                <input id="venue2" placeholder="Ex: Espaço A" />
+              </div>
+              <div>
+                <label for="buyer2">Nome do comprador</label>
+                <input id="buyer2" placeholder="Ex: Ana Maria" />
+              </div>
+            </div>
+            <div style="display:grid;gap:10px;grid-template-columns:1fr 1fr">
+              <div>
+                <label for="code2">Código (opcional)</label>
+                <input id="code2" placeholder="Ex: TKT-0001" />
+              </div>
+              <div>
+                <label for="phone2">Telefone (DDI + DDD + número)</label>
+                <input id="phone2" placeholder="Ex: 5534999992747" />
+              </div>
+            </div>
+            <div class="actions">
+              <button id="btnPreencherEvt" class="btn btn--ghost btn--sm">Usar dados do evento selecionado</button>
+              <button id="btnPreview2" class="btn btn--secondary btn--sm">Gerar prévia</button>
+            </div>
+            <div id="previewBox2" class="ticket-preview" style="margin-top:8px">
+              <span class="subtle small">A prévia aparece aqui…</span>
+            </div>
+            <div class="actions">
+              <button id="btnPDF2" class="btn btn--ghost btn--sm" disabled>Baixar PDF</button>
+              <button id="btnEnviarWA2" class="btn btn--ghost btn--sm" disabled>Enviar pelo WhatsApp</button>
+              <a id="btnValidar2" class="btn btn--ghost btn--sm" href="#" target="_blank" rel="noopener" style="display:none">Abrir validador</a>
+            </div>
+            <p class="subtle small">O PDF é montado no navegador a partir da imagem PNG do backend.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section id="como-funciona" class="section" aria-labelledby="como-title">
       <h2 id="como-title">Como funciona</h2>
       <div class="cards" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:var(--s2)">
@@ -308,6 +366,7 @@
         </div>
       </div>
     </section>
+
     <div class="sheet-backdrop" id="sheet-backdrop" aria-hidden="true"></div>
     <aside class="sheet" id="sheet" aria-hidden="true" role="dialog" aria-modal="true">
       <button class="sheet-close" id="sheet-close" aria-label="Fechar detalhes">
@@ -316,6 +375,7 @@
       <div class="sheet-body" id="sheet-body"></div>
     </aside>
   </main>
+
   <footer role="contentinfo">
     <div class="foot">
       <div class="foot-block">
@@ -353,7 +413,10 @@
       </div>
     </div>
   </footer>
+
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"IngressAI","url":"https://ingressai.chat/","logo":"https://ingressai.chat/logo_ingressai.png","sameAs":["https://instagram.com/ingressai"],"contactPoint":[{"@type":"ContactPoint","contactType":"customer support","areaServed":"BR","availableLanguage":"pt-BR"}]}</script>
+
+  <!-- ===== APP JS ===== -->
   <script>
     const WHATSAPP_NUMBER='5534999992747';
     const eventos=[{id:'uberaba-2025-08-28-1',nome:'Evento Genérico 01',cidade:'Uberaba',dataISO:'2025-08-28T20:00:00-03:00',localNome:'Espaço A',localUrl:'https://maps.google.com/?q=Uberaba',categoria:'Atléticas & Repúblicas',status:'Em breve',descricao:'Evento de teste para integração.'},{id:'uberaba-2025-09-05-2',nome:'Evento Genérico 02',cidade:'Uberaba',dataISO:'2025-09-05T21:00:00-03:00',localNome:'Espaço B',localUrl:'https://maps.google.com/?q=Uberaba',categoria:'Produtoras Independentes',status:'Último lote',descricao:'Evento de teste para integração.'},{id:'uberaba-2025-09-20-3',nome:'Evento Genérico 03',cidade:'Uberaba',dataISO:'2025-09-20T22:00:00-03:00',localNome:'Espaço C',localUrl:'https://maps.google.com/?q=Uberaba',categoria:'Locais Independentes',status:'Em breve',descricao:'Evento de teste para integração.'},{id:'uberaba-2025-10-12-4',nome:'Evento Genérico 04',cidade:'Uberaba',dataISO:'2025-10-12T18:00:00-03:00',localNome:'Espaço D',localUrl:'https://maps.google.com/?q=Uberaba',categoria:'Atléticas & Repúblicas',status:'Esgotado',descricao:'Evento de teste para integração.'},{id:'uberlandia-2025-08-30-1',nome:'Evento Genérico 01',cidade:'Uberlândia',dataISO:'2025-08-30T19:00:00-03:00',localNome:'Espaço A',localUrl:'https://maps.google.com/?q=Uberl%C3%A2ndia',categoria:'Locais Independentes',status:'Em breve',descricao:'Evento de teste para integração.'},{id:'uberlandia-2025-09-10-2',nome:'Evento Genérico 02',cidade:'Uberlândia',dataISO:'2025-09-10T21:00:00-03:00',localNome:'Espaço B',localUrl:'https://maps.google.com/?q=Uberl%C3%A2ndia',categoria:'Produtoras Independentes',status:'Último lote',descricao:'Evento de teste para integração.'},{id:'uberlandia-2025-09-28-3',nome:'Evento Genérico 03',cidade:'Uberlândia',dataISO:'2025-09-28T16:00:00-03:00',localNome:'Espaço C',localUrl:'https://maps.google.com/?q=Uberl%C3%A2ndia',categoria:'Atléticas & Repúblicas',status:'Em breve',descricao:'Evento de teste para integração.'},{id:'uberlandia-2025-10-18-4',nome:'Evento Genérico 04',cidade:'Uberlândia',dataISO:'2025-10-18T22:00:00-03:00',localNome:'Espaço D',localUrl:'https://maps.google.com/?q=Uberl%C3%A2ndia',categoria:'Locais Independentes',status:'Esgotado',descricao:'Evento de teste para integração.'},{id:'bh-2025-09-01-1',nome:'Evento Genérico 01',cidade:'Belo Horizonte',dataISO:'2025-09-01T20:00:00-03:00',localNome:'Espaço A',localUrl:'https://maps.google.com/?q=Belo%20Horizonte',categoria:'Produtoras Independentes',status:'Em breve',descricao:'Evento de teste para integração.'},{id:'bh-2025-09-13-2',nome:'Evento Genérico 02',cidade:'Belo Horizonte',dataISO:'2025-09-13T20:00:00-03:00',localNome:'Espaço B',localUrl:'https://maps.google.com/?q=Belo%20Horizonte',categoria:'Atléticas & Repúblicas',status:'Último lote',descricao:'Evento de teste para integração.'},{id:'bh-2025-10-02-3',nome:'Evento Genérico 03',cidade:'Belo Horizonte',dataISO:'2025-10-02T21:00:00-03:00',localNome:'Espaço C',localUrl:'https://maps.google.com/?q=Belo%20Horizonte',categoria:'Locais Independentes',status:'Em breve',descricao:'Evento de teste para integração.'},{id:'bh-2025-10-25-4',nome:'Evento Genérico 04',cidade:'Belo Horizonte',dataISO:'2025-10-25T22:00:00-03:00',localNome:'Espaço D',localUrl:'https://maps.google.com/?q=Belo%20Horizonte',categoria:'Produtoras Independentes',status:'Esgotado',descricao:'Evento de teste para integração.'},{id:'ribeirao-2025-09-07-1',nome:'Evento Genérico 01',cidade:'Ribeirão Preto',dataISO:'2025-09-07T21:00:00-03:00',localNome:'Espaço A',localUrl:'https://maps.google.com/?q=Ribeir%C3%A3o%20Preto',categoria:'Atléticas & Repúblicas',status:'Em breve',descricao:'Evento de teste para integração.'},{id:'ribeirao-2025-09-21-2',nome:'Evento Genérico 02',cidade:'Ribeirão Preto',dataISO:'2025-09-21T20:00:00-03:00',localNome:'Espaço B',localUrl:'https://maps.google.com/?q=Ribeir%C3%A3o%20Preto',categoria:'Locais Independentes',status:'Último lote',descricao:'Evento de teste para integração.'},{id:'ribeirao-2025-10-05-3',nome:'Evento Genérico 03',cidade:'Ribeirão Preto',dataISO:'2025-10-05T20:00:00-03:00',localNome:'Espaço C',localUrl:'https://maps.google.com/?q=Ribeir%C3%A3o%20Preto',categoria:'Produtoras Independentes',status:'Em breve',descricao:'Evento de teste para integração.'},{id:'ribeirao-2025-11-15-4',nome:'Evento Genérico 04',cidade:'Ribeirão Preto',dataISO:'2025-11-15T23:00:00-03:00',localNome:'Espaço D',localUrl:'https://maps.google.com/?q=Ribeir%C3%A3o%20Preto',categoria:'Atléticas & Repúblicas',status:'Esgotado',descricao:'Evento de teste para integração.'},{id:'franca-2025-09-03-1',nome:'Evento Genérico 01',cidade:'Franca',dataISO:'2025-09-03T22:00:00-03:00',localNome:'Espaço A',localUrl:'https://maps.google.com/?q=Franca',categoria:'Locais Independentes',status:'Em breve',descricao:'Evento de teste para integração.'},{id:'franca-2025-09-17-2',nome:'Evento Genérico 02',cidade:'Franca',dataISO:'2025-09-17T21:00:00-03:00',localNome:'Espaço B',localUrl:'https://maps.google.com/?q=Franca',categoria:'Produtoras Independentes',status:'Último lote',descricao:'Evento de teste para integração.'},{id:'franca-2025-10-09-3',nome:'Evento Genérico 03',cidade:'Franca',dataISO:'2025-10-09T19:00:00-03:00',localNome:'Espaço C',localUrl:'https://maps.google.com/?q=Franca',categoria:'Atléticas & Repúblicas',status:'Em breve',descricao:'Evento de teste para integração.'},{id:'franca-2025-10-29-4',nome:'Evento Genérico 04',cidade:'Franca',dataISO:'2025-10-29T20:00:00-03:00',localNome:'Espaço D',localUrl:'https://maps.google.com/?q=Franca',categoria:'Locais Independentes',status:'Esgotado',descricao:'Evento de teste para integração.'}];
@@ -453,7 +516,6 @@
         actions.innerHTML=`<a class="btn btn--secondary btn--sm" href="${waHref('Olá! Quero comprar ingresso para '+ev.nome+' em '+ev.cidade+'. Quantidade: 1. Meu nome: ')}" target="_blank" rel="noopener noreferrer">Comprar ingresso</a>`;
       }
 
-      /* Order: MEDIA first, then HEAD + META + DESC + ACTIONS for mobile-first flow (prevents overlap) */
       sheetBody.replaceChildren(media, head, meta1, meta2, meta3, desc, actions);
 
       sheet.setAttribute('aria-hidden','false');
@@ -487,7 +549,182 @@
     modelsBox.addEventListener('click',e=>{const b=e.target.closest('button.model');if(!b)return;modelsBox.querySelectorAll('button.model').forEach(x=>x.setAttribute('aria-selected','false'));b.setAttribute('aria-selected','true');applyPlan(b.dataset.key)});
     applyPlan(null);
     (function(){try{const nodes=eventos.map(ev=>({"@context":"https://schema.org","@type":"Event","name":ev.nome,"startDate":ev.dataISO,"eventAttendanceMode":"https://schema.org/OfflineEventAttendanceMode","eventStatus":"https://schema.org/EventScheduled","location":{"@type":"Place","name":ev.localNome,"address":ev.cidade,"url":ev.localUrl},"organizer":{"@type":"Organization","name":"IngressAI","url":"https://ingressai.chat/"}}));const script=document.createElement('script');script.type='application/ld+json';script.textContent=JSON.stringify(nodes);document.head.appendChild(script)}catch{}})();
+
+    /* ======== PAINEL (integração backend) ======== */
+    const API_BASE = "https://ingressai-backend-production.up.railway.app";
+    const WABA_PUBLIC = WHATSAPP_NUMBER;
+    const $ = (q)=>document.querySelector(q);
+    const fmtPhone = (v)=> String(v||"").replace(/\D+/g,"");
+    const randCode = ()=> "TKT-" + (Date.now().toString().slice(-6));
+    const waLink = (to, text)=> `https://wa.me/${fmtPhone(to)}?text=${encodeURIComponent(text||"")}`;
+
+    // pinta status
+    function setStatus(state, text){
+      const dot = $("#statusBox .dot");
+      const label = $("#statusText");
+      if(!dot || !label) return;
+      label.textContent = text;
+      dot.classList.remove("ok","warn","err");
+      dot.classList.add(state);
+    }
+
+    function buildPreviewUrl({title, when, venue, buyer, code}){
+      const u = new URL(API_BASE + "/tickets/preview.png");
+      if(title) u.searchParams.set("title", title);
+      if(when)  u.searchParams.set("when", when);
+      if(venue) u.searchParams.set("venue", venue);
+      if(buyer) u.searchParams.set("buyer", buyer);
+      if(code)  u.searchParams.set("code", code);
+      return u.toString();
+    }
+    async function fetchBlob(url){
+      const r = await fetch(url, { mode: "cors" });
+      if(!r.ok) throw new Error("Falha ao carregar imagem");
+      return await r.blob();
+    }
+    async function makePdfFromPng(pngBlob, fileName="ticket.pdf"){
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({ unit:"pt", format:"a4" });
+      const url = URL.createObjectURL(pngBlob);
+      const img = new Image();
+      img.src = url;
+      await new Promise((res,rej)=>{ img.onload = res; img.onerror = rej; });
+      const pageW = pdf.internal.pageSize.getWidth();
+      const pageH = pdf.internal.pageSize.getHeight();
+      const margin = 36, maxW = pageW - margin*2, maxH = pageH - margin*2;
+      let w = img.naturalWidth, h = img.naturalHeight;
+      const r = Math.min(maxW/w, maxH/h);
+      w *= r; h *= r;
+      pdf.addImage(img, "PNG", (pageW-w)/2, (pageH-h)/2, w, h);
+      pdf.save(fileName);
+      URL.revokeObjectURL(url);
+    }
+
+    // montar select com os mesmos "eventos"
+    const sel2 = $("#selectEvento2");
+    if(sel2){
+      eventos.forEach(ev=>{
+        const opt = document.createElement("option");
+        opt.value = ev.id;
+        opt.textContent = `${ev.nome} — ${ev.cidade} (${formatDate(ev.dataISO)})`;
+        sel2.appendChild(opt);
+      });
+    }
+    function fillFromSelected2(){
+      const ev = evIndex[sel2.value];
+      if(!ev) return;
+      $("#title2").value = ev.nome;
+      // converte a data para formato curtinho
+      const d = new Date(ev.dataISO);
+      const when = d.toLocaleString('pt-BR',{day:'2-digit',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'}).replace('.', '');
+      $("#when2").value  = when;
+      $("#venue2").value = ev.localNome;
+    }
+    $("#btnPreencherEvt")?.addEventListener("click", fillFromSelected2);
+    sel2?.addEventListener("change", fillFromSelected2);
+    fillFromSelected2();
+
+    // Status
+    $("#apiBaseTxt").textContent = API_BASE;
+    async function refreshStatus(){
+      try{
+        setStatus("warn","Conectando…");
+        const r = await fetch(API_BASE + "/health", { mode:"cors" });
+        if(!r.ok) throw new Error("HTTP "+r.status);
+        const j = await r.json();
+        setStatus("ok", `Online • uptime ${Math.round(j.uptime||0)}s`);
+        const routes = $("#btnRoutes"); if(routes) routes.href = API_BASE + "/__routes";
+      }catch(e){
+        console.error(e);
+        setStatus("err","Offline (verifique API_BASE / CORS)");
+      }
+    }
+    $("#btnRefresh")?.addEventListener("click", refreshStatus);
+    refreshStatus();
+
+    // Comprar (abre WhatsApp)
+    $("#btnAbrirWA")?.addEventListener("click", ()=>{
+      const ev = evIndex[sel2.value];
+      if(!ev) return;
+      const qtd = ($("#comprarQtd")?.value)||"1";
+      const nome = ($("#comprarNome")?.value)||"";
+      const msg = `Olá! Quero comprar ingresso para ${ev.nome} em ${ev.cidade}. Quantidade: ${qtd}. Meu nome: ${nome}`;
+      window.open(waLink(WABA_PUBLIC, msg), "_blank", "noopener");
+    });
+    $("#btnCopiarMSG")?.addEventListener("click", async ()=>{
+      const ev = evIndex[sel2.value];
+      if(!ev) return;
+      const qtd = ($("#comprarQtd")?.value)||"1";
+      const nome = ($("#comprarNome")?.value)||"";
+      const msg = `Olá! Quero comprar ingresso para ${ev.nome} em ${ev.cidade}. Quantidade: ${qtd}. Meu nome: ${nome}`;
+      try{ await navigator.clipboard.writeText(msg); alert("Mensagem copiada!"); }catch{ alert("Não foi possível copiar."); }
+    });
+
+    // Emissão: prévia / pdf / enviar
+    let lastPreview = { blob:null, code:null };
+    $("#btnPreview2")?.addEventListener("click", async ()=>{
+      const title = $("#title2").value.trim();
+      const when  = $("#when2").value.trim();
+      const venue = $("#venue2").value.trim();
+      const buyer = $("#buyer2").value.trim() || "Cliente";
+      const codeI = $("#code2").value.trim() || randCode();
+      if(!title || !when || !venue){ alert("Preencha Título, Data•Hora e Local."); return; }
+      $("#code2").value = codeI;
+      const url = buildPreviewUrl({ title, when, venue, buyer, code: codeI });
+      const box = $("#previewBox2");
+      box.innerHTML = '<span class="subtle small">Gerando…</span>';
+      try{
+        const blob = await fetchBlob(url);
+        const imgUrl = URL.createObjectURL(blob);
+        box.innerHTML = `<img alt="Prévia do ingresso" src="${imgUrl}" />`;
+        $("#btnPDF2").disabled = false;
+        $("#btnEnviarWA2").disabled = false;
+        const v = $("#btnValidar2");
+        if(v){ v.style.display = ""; v.href = API_BASE + "/validate?c=" + encodeURIComponent(codeI); }
+        lastPreview = { blob, code: codeI };
+      }catch(e){
+        console.error(e);
+        box.innerHTML = `<span class="small" style="color:#b64848">Falha ao gerar prévia.</span>`;
+        $("#btnPDF2").disabled = true;
+        $("#btnEnviarWA2").disabled = true;
+        $("#btnValidar2").style.display = "none";
+        lastPreview = { blob:null, code:null };
+      }
+    });
+
+    $("#btnPDF2")?.addEventListener("click", async ()=>{
+      if(!lastPreview.blob){ alert("Gere a prévia primeiro."); return; }
+      const buyer = ($("#buyer2").value||"Cliente").trim() || "Cliente";
+      const code  = lastPreview.code || "TICKET";
+      await makePdfFromPng(lastPreview.blob, `ingresso_${code}_${buyer}.pdf`);
+    });
+
+    $("#btnEnviarWA2")?.addEventListener("click", async ()=>{
+      const to = ($("#phone2").value||"").trim();
+      if(!to){ alert("Informe o telefone do destinatário."); return; }
+      const payload = {
+        to: to,
+        title: $("#title2").value.trim(),
+        when:  $("#when2").value.trim(),
+        venue: $("#venue2").value.trim(),
+        buyer: $("#buyer2").value.trim() || "Cliente",
+        code:  $("#code2").value.trim() || randCode()
+      };
+      try{
+        const r = await fetch(API_BASE + "/test/send-ticket", {
+          method:"POST",
+          headers:{ "Content-Type":"application/json" },
+          body: JSON.stringify(payload),
+          mode:"cors"
+        });
+        const j = await r.json().catch(()=>({}));
+        if(r.ok && j && j.ok){ alert("Ingresso enviado por WhatsApp!"); }
+        else{ console.error(j); alert("Falha ao enviar. Veja os logs do backend."); }
+      }catch(e){
+        console.error(e);
+        alert("Erro de rede ao chamar o backend.");
+      }
+    });
   </script>
 </body>
 </html>
-
