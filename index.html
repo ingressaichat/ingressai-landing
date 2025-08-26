@@ -96,15 +96,13 @@
     .view{background:#fff;border:1px solid #e5ecff;color:#2d3b50;font-weight:800;cursor:pointer;padding:.3rem .7rem;border-radius:999px;align-self:center;min-height:28px;font-size:.82rem;margin-top:auto;box-shadow:0 6px 16px rgba(47,125,217,.16),0 2px 6px rgba(11,18,32,.08);transition:transform .12s ease,box-shadow var(--t-fast),filter var(--t-fast)}
     .view:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(47,125,217,.2),0 4px 10px rgba(11,18,32,.12)}
 
-    /* ===== ONLY CHANGES BELOW: Bottom Sheet layout to avoid info overlay on media ===== */
+    /* ===== BOTTOM SHEET ===== */
     .sheet-backdrop{position:fixed;inset:0;background:rgba(11,18,32,.36);opacity:0;pointer-events:none;transition:opacity var(--t-fast)}
     .sheet-backdrop.is-open{opacity:1;pointer-events:auto}
     .sheet{position:fixed;left:0;right:0;bottom:0;height:72vh;max-height:760px;background:#fff;border-top-left-radius:24px;border-top-right-radius:24px;box-shadow:0 -24px 48px rgba(11,18,32,.16);transform:translateY(100%);transition:transform var(--t-med) cubic-bezier(.2,.7,.2,1);display:flex;flex-direction:column;padding:var(--s2);z-index:40;--close-hit:64px}
     .sheet.is-open{transform:translateY(0)}
     .sheet h3{margin:0;font-weight:900;line-height:1.2}
-    /* Make body a simple vertical flow so nothing overlaps the media */
     .sheet .sheet-body{overflow:auto;display:flex;flex-direction:column;gap:10px;padding-right:4px;padding-bottom:calc(20px + env(safe-area-inset-bottom))}
-    /* Media is a block element, with overflow hidden; no absolute children above it */
     .sheet-media{width:100%;aspect-ratio:1.35;border:1px solid #eaf1ff;border-radius:16px;background:radial-gradient(600px 280px at 20% 0%,rgba(47,125,217,.12),transparent 60%),linear-gradient(180deg,#fff,#f5f9ff);margin-top:var(--s0);margin-bottom:var(--s1);overflow:hidden;display:block}
     .sheet-media img{width:100%;height:100%;object-fit:cover;display:block}
     .sheet-head{display:flex;flex-direction:column;gap:6px;align-items:flex-start;margin-top:0}
@@ -119,7 +117,6 @@
     .sheet .meta-line{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.96rem}
     .sheet .meta-line strong{min-width:64px}
     .sheet .actions{margin-top:var(--s1);display:flex;gap:var(--s1);flex-wrap:wrap;justify-content:flex-start}
-    /* ===== END ONLY CHANGES ===== */
 
     .sheet-close{position:absolute;right:10px;top:10px;appearance:none;background:#fff;border:1px solid #ffd6d6;color:#c94747;border-radius:14px;padding:.8rem;display:grid;place-items:center;box-shadow:0 8px 20px rgba(201,71,71,.18);z-index:5}
     .sheet-close:hover{background:#fff5f5}
@@ -353,13 +350,25 @@
       </div>
     </div>
   </footer>
+
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"IngressAI","url":"https://ingressai.chat/","logo":"https://ingressai.chat/logo_ingressai.png","sameAs":["https://instagram.com/ingressai"],"contactPoint":[{"@type":"ContactPoint","contactType":"customer support","areaServed":"BR","availableLanguage":"pt-BR"}]}</script>
+
   <script>
+    /* ========= CONFIG ========= */
+    const BASE = "https://ingressai-backend-production.up.railway.app";
     const WHATSAPP_NUMBER='5534999992747';
-    const eventos=[{id:'uberaba-2025-08-28-1',nome:'Evento Genérico 01',cidade:'Uberaba',dataISO:'2025-08-28T20:00:00-03:00',localNome:'Espaço A',localUrl:'https://maps.google.com/?q=Uberaba',categoria:'Atléticas & Repúblicas',status:'Em breve',descricao:'Evento de teste para integração.'},{id:'uberaba-2025-09-05-2',nome:'Evento Genérico 02',cidade:'Uberaba',dataISO:'2025-09-05T21:00:00-03:00',localNome:'Espaço B',localUrl:'https://maps.google.com/?q=Uberaba',categoria:'Produtoras Independentes',status:'Último lote',descricao:'Evento de teste para integração.'},{id:'uberaba-2025-09-20-3',nome:'Evento Genérico 03',cidade:'Uberaba',dataISO:'2025-09-20T22:00:00-03:00',localNome:'Espaço C',localUrl:'https://maps.google.com/?q=Uberaba',categoria:'Locais Independentes',status:'Em breve',descricao:'Evento de teste para integração.'},{id:'uberaba-2025-10-12-4',nome:'Evento Genérico 04',cidade:'Uberaba',dataISO:'2025-10-12T18:00:00-03:00',localNome:'Espaço D',localUrl:'https://maps.google.com/?q=Uberaba',categoria:'Atléticas & Repúblicas',status:'Esgotado',descricao:'Evento de teste para integração.'},{id:'uberlandia-2025-08-30-1',nome:'Evento Genérico 01',cidade:'Uberlândia',dataISO:'2025-08-30T19:00:00-03:00',localNome:'Espaço A',localUrl:'https://maps.google.com/?q=Uberl%C3%A2ndia',categoria:'Locais Independentes',status:'Em breve',descricao:'Evento de teste para integração.'},{id:'uberlandia-2025-09-10-2',nome:'Evento Genérico 02',cidade:'Uberlândia',dataISO:'2025-09-10T21:00:00-03:00',localNome:'Espaço B',localUrl:'https://maps.google.com/?q=Uberl%C3%A2ndia',categoria:'Produtoras Independentes',status:'Último lote',descricao:'Evento de teste para integração.'},{id:'uberlandia-2025-09-28-3',nome:'Evento Genérico 03',cidade:'Uberlândia',dataISO:'2025-09-28T16:00:00-03:00',localNome:'Espaço C',localUrl:'https://maps.google.com/?q=Uberl%C3%A2ndia',categoria:'Atléticas & Repúblicas',status:'Em breve',descricao:'Evento de teste para integração.'},{id:'uberlandia-2025-10-18-4',nome:'Evento Genérico 04',cidade:'Uberlândia',dataISO:'2025-10-18T22:00:00-03:00',localNome:'Espaço D',localUrl:'https://maps.google.com/?q=Uberl%C3%A2ndia',categoria:'Locais Independentes',status:'Esgotado',descricao:'Evento de teste para integração.'},{id:'bh-2025-09-01-1',nome:'Evento Genérico 01',cidade:'Belo Horizonte',dataISO:'2025-09-01T20:00:00-03:00',localNome:'Espaço A',localUrl:'https://maps.google.com/?q=Belo%20Horizonte',categoria:'Produtoras Independentes',status:'Em breve',descricao:'Evento de teste para integração.'},{id:'bh-2025-09-13-2',nome:'Evento Genérico 02',cidade:'Belo Horizonte',dataISO:'2025-09-13T20:00:00-03:00',localNome:'Espaço B',localUrl:'https://maps.google.com/?q=Belo%20Horizonte',categoria:'Atléticas & Repúblicas',status:'Último lote',descricao:'Evento de teste para integração.'},{id:'bh-2025-10-02-3',nome:'Evento Genérico 03',cidade:'Belo Horizonte',dataISO:'2025-10-02T21:00:00-03:00',localNome:'Espaço C',localUrl:'https://maps.google.com/?q=Belo%20Horizonte',categoria:'Locais Independentes',status:'Em breve',descricao:'Evento de teste para integração.'},{id:'bh-2025-10-25-4',nome:'Evento Genérico 04',cidade:'Belo Horizonte',dataISO:'2025-10-25T22:00:00-03:00',localNome:'Espaço D',localUrl:'https://maps.google.com/?q=Belo%20Horizonte',categoria:'Produtoras Independentes',status:'Esgotado',descricao:'Evento de teste para integração.'},{id:'ribeirao-2025-09-07-1',nome:'Evento Genérico 01',cidade:'Ribeirão Preto',dataISO:'2025-09-07T21:00:00-03:00',localNome:'Espaço A',localUrl:'https://maps.google.com/?q=Ribeir%C3%A3o%20Preto',categoria:'Atléticas & Repúblicas',status:'Em breve',descricao:'Evento de teste para integração.'},{id:'ribeirao-2025-09-21-2',nome:'Evento Genérico 02',cidade:'Ribeirão Preto',dataISO:'2025-09-21T20:00:00-03:00',localNome:'Espaço B',localUrl:'https://maps.google.com/?q=Ribeir%C3%A3o%20Preto',categoria:'Locais Independentes',status:'Último lote',descricao:'Evento de teste para integração.'},{id:'ribeirao-2025-10-05-3',nome:'Evento Genérico 03',cidade:'Ribeirão Preto',dataISO:'2025-10-05T20:00:00-03:00',localNome:'Espaço C',localUrl:'https://maps.google.com/?q=Ribeir%C3%A3o%20Preto',categoria:'Produtoras Independentes',status:'Em breve',descricao:'Evento de teste para integração.'},{id:'ribeirao-2025-11-15-4',nome:'Evento Genérico 04',cidade:'Ribeirão Preto',dataISO:'2025-11-15T23:00:00-03:00',localNome:'Espaço D',localUrl:'https://maps.google.com/?q=Ribeir%C3%A3o%20Preto',categoria:'Atléticas & Repúblicas',status:'Esgotado',descricao:'Evento de teste para integração.'},{id:'franca-2025-09-03-1',nome:'Evento Genérico 01',cidade:'Franca',dataISO:'2025-09-03T22:00:00-03:00',localNome:'Espaço A',localUrl:'https://maps.google.com/?q=Franca',categoria:'Locais Independentes',status:'Em breve',descricao:'Evento de teste para integração.'},{id:'franca-2025-09-17-2',nome:'Evento Genérico 02',cidade:'Franca',dataISO:'2025-09-17T21:00:00-03:00',localNome:'Espaço B',localUrl:'https://maps.google.com/?q=Franca',categoria:'Produtoras Independentes',status:'Último lote',descricao:'Evento de teste para integração.'},{id:'franca-2025-10-09-3',nome:'Evento Genérico 03',cidade:'Franca',dataISO:'2025-10-09T19:00:00-03:00',localNome:'Espaço C',localUrl:'https://maps.google.com/?q=Franca',categoria:'Atléticas & Repúblicas',status:'Em breve',descricao:'Evento de teste para integração.'},{id:'franca-2025-10-29-4',nome:'Evento Genérico 04',cidade:'Franca',dataISO:'2025-10-29T20:00:00-03:00',localNome:'Espaço D',localUrl:'https://maps.google.com/?q=Franca',categoria:'Locais Independentes',status:'Esgotado',descricao:'Evento de teste para integração.'}];
-    const categorias=[{key:'aret',title:'Atléticas & Repúblicas',taxa:'8%',feePct:8,ctaMsg:'Olá! Quero criar um evento como Atléticas & Repúblicas. Nome do evento: . Cidade: . Data: . Lotes: .'},
-      {key:'prod',title:'Produtoras Independentes',taxa:'10%',feePct:10,ctaMsg:'Olá! Quero criar um evento como Produtora Independente. Nome do evento: . Cidade: . Data: . Lotes: .'},
-      {key:'locais',title:'Locais Independentes',taxa:'10%',feePct:10,ctaMsg:'Olá! Quero criar um evento como Local Independente. Nome do evento: . Cidade: . Data: . Capacidade: .'}];
+
+    /* ========= ESTADO ========= */
+    let eventos = [];
+    let evIndex = {};
+
+    /* ========= HELPERS ========= */
+    function formatDate(iso){try{const d=new Date(iso);return d.toLocaleString('pt-BR',{dateStyle:'medium',timeStyle:'short'})}catch{return iso}}
+    function waHref(text){return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`}
+    function animatePress(el){try{el.classList.add('btn-press');el.addEventListener('animationend',()=>el.classList.remove('btn-press'),{once:true})}catch{}}
+    function smoothGoTo(id){const target=document.getElementById(id);if(!target)return;const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;target.scrollIntoView({behavior:reduced?'auto':'smooth',block:'start'});try{target.focus({preventScroll:true})}catch{}}
+
+    /* ========= DOM ========= */
     const lista=document.getElementById('lista-eventos');
     const inputBusca=document.getElementById('busca-eventos');
     const chipsRow=document.getElementById('filtro-cidades');
@@ -379,33 +388,57 @@
     const sheetBody=document.getElementById('sheet-body');
     const sheetBackdrop=document.getElementById('sheet-backdrop');
     const sheetClose=document.getElementById('sheet-close');
-    function formatDate(iso){try{const d=new Date(iso);return d.toLocaleString('pt-BR',{dateStyle:'medium',timeStyle:'short'})}catch{return iso}}
-    function waHref(text){return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`}
-    function animatePress(el){try{el.classList.add('btn-press');el.addEventListener('animationend',()=>el.classList.remove('btn-press'),{once:true})}catch{}}
-    function smoothGoTo(id){const target=document.getElementById(id);if(!target)return;const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;target.scrollIntoView({behavior:reduced?'auto':'smooth',block:'start'});try{target.focus({preventScroll:true})}catch{}}
+
+    /* ========= HEADER ANIMA ========= */
     document.addEventListener('DOMContentLoaded',()=>{document.querySelectorAll('a[href^="#vitrine"], a[href^="#organizadores"]').forEach(a=>{a.addEventListener('click',e=>{e.preventDefault();const hash=a.getAttribute('href').slice(1);if(hash==='organizadores'){const sec=document.getElementById('organizadores');if(sec.hasAttribute('hidden'))sec.removeAttribute('hidden')}animatePress(a);smoothGoTo(hash)})})});
     document.addEventListener('click',e=>{const el=e.target.closest('.btn,.view');if(el)animatePress(el)});
     (function(){const hero=document.querySelector('.hero');const header=document.querySelector('header');const HIDE_START=16,HIDE_END=240;let ticking=false;function onScroll(){if(ticking)return;ticking=true;requestAnimationFrame(()=>{const y=window.scrollY||document.documentElement.scrollTop||0;header&&header.classList.toggle('is-scrolled',y>8);const p=Math.min(1,Math.max(0,(y-HIDE_START)/(HIDE_END-HIDE_START)));if(hero){hero.style.setProperty('--hero-p',p.toFixed(3));hero.classList.toggle('is-hidden',p>=1)}ticking=false})}onScroll();window.addEventListener('scroll',onScroll,{passive:true})})();
+
+    /* ========= VITRINE ========= */
     const MAIN_CITIES=['Uberaba','Uberlândia','Belo Horizonte','Ribeirão Preto','Franca'];
     let selectedCity='Todas';
     let query='';
-    const evIndex=Object.fromEntries(eventos.map(e=>[e.id,e]));
+
     function normalizeStatusLabel(s){if(!s)return'';return s.replace('Últimos ingressos','Último lote')}
     function filterEventos(data,q,city){const qn=(q||'').trim().toLowerCase();const citySel=city||'Todas';return data.filter(ev=>{const matchCity=citySel==='Todas'?true:ev.cidade.toLowerCase()===citySel.toLowerCase();const matchQuery=!qn?true:(ev.nome.toLowerCase().includes(qn)||ev.descricao.toLowerCase().includes(qn));return matchCity&&matchQuery})}
-    function renderCards(){const data=filterEventos(eventos,query,selectedCity);lista.innerHTML='';data.forEach(ev=>{const statusLabel=normalizeStatusLabel(ev.status||'');const statusKey=statusLabel==='Esgotado'?'sold':(statusLabel==='Último lote'?'low':'soon');const card=document.createElement('article');card.className='card';card.dataset.key=ev.id;card.setAttribute('tabindex','0');card.setAttribute('aria-labelledby',`card-title-${ev.id}`);card.innerHTML=`
+    function buildChips(){chipsRow.innerHTML='';const cities=Array.from(new Set(MAIN_CITIES.concat(eventos.map(e=>e.cidade).filter(Boolean))));['Todas',...cities].forEach(c=>{const btn=document.createElement('button');btn.className='chip';btn.type='button';btn.textContent=c;btn.setAttribute('role','tab');btn.setAttribute('aria-selected',c===selectedCity?'true':'false');btn.dataset.city=c;chipsRow.appendChild(btn)})}
+    function renderCards(){
+      const data=filterEventos(eventos,query,selectedCity);
+      lista.innerHTML='';
+      if (!data.length){
+        const empty=document.createElement('div');
+        empty.className='std-card';
+        empty.innerHTML='<strong>Sem eventos publicados ainda.</strong><br><span class="subtle">Volte em breve — estamos preparando novidades ✨</span>';
+        lista.appendChild(empty);
+        return;
+      }
+      data.forEach(ev=>{
+        const statusLabel=normalizeStatusLabel(ev.status||'');
+        const statusKey=statusLabel==='Esgotado'?'sold':(statusLabel==='Último lote'?'low':'soon');
+        const card=document.createElement('article');
+        card.className='card';
+        card.dataset.key=ev.id;
+        card.setAttribute('tabindex','0');
+        card.setAttribute('aria-labelledby',`card-title-${ev.id}`);
+        card.innerHTML=`
           <div class="card-media">${ev.img?`<img src="${ev.img}" alt="Imagem do evento ${ev.nome}" loading="lazy" decoding="async">`:'Mídia do evento'}</div>
           <div class="card-header">
             <div>
               <div class="card-title" id="card-title-${ev.id}">${ev.nome}</div>
-              <div class="card-city">${ev.cidade}</div>
-              <div class="status-line status--${statusKey}"><span class="status-dot" aria-hidden="true"></span><span class="status-label">${statusLabel}</span></div>
+              <div class="card-city">${ev.cidade || ''}</div>
+              <div class="status-line status--${statusKey}"><span class="status-dot" aria-hidden="true"></span><span class="status-label">${statusLabel || 'Em breve'}</span></div>
             </div>
           </div>
-          <button type="button" class="view" data-open="${ev.id}" aria-label="Ver detalhes de ${ev.nome}">Ver detalhes</button>`;lista.appendChild(card)})}
-    function buildChips(){chipsRow.innerHTML='';const cities=Array.from(new Set(MAIN_CITIES.concat(eventos.map(e=>e.cidade))));['Todas',...cities].forEach(c=>{const btn=document.createElement('button');btn.className='chip';btn.type='button';btn.textContent=c;btn.setAttribute('role','tab');btn.setAttribute('aria-selected',c===selectedCity?'true':'false');btn.dataset.city=c;chipsRow.appendChild(btn)})}
+          <button type="button" class="view" data-open="${ev.id}" aria-label="Ver detalhes de ${ev.nome}">Ver detalhes</button>`;
+        lista.appendChild(card)
+      })
+    }
+
     chipsRow.addEventListener('click',e=>{const b=e.target.closest('button.chip');if(!b)return;selectedCity=b.dataset.city;chipsRow.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-selected','false'));b.setAttribute('aria-selected','true');renderCards()});
     let debounce;inputBusca.addEventListener('input',()=>{clearTimeout(debounce);debounce=setTimeout(()=>{query=inputBusca.value;renderCards()},180)});
+
     function buildStatusChip(statusLabel){const key=statusLabel==='Esgotado'?'sold':(statusLabel==='Último lote'?'low':'soon');const lbl=statusLabel||'Em breve';return `<span class="status-chip ${key}"><span class="dot" aria-hidden="true"></span>${lbl}</span>`}
+
     function openSheet(ev){
       const sold=normalizeStatusLabel(ev.status)==='Esgotado';
       const statusLabel=normalizeStatusLabel(ev.status||'');
@@ -427,7 +460,7 @@
 
       const head=document.createElement('div');
       head.className='sheet-head';
-      head.innerHTML=`<h3 id="sheet-title">${ev.nome} — ${ev.cidade}</h3>${buildStatusChip(statusLabel)}`;
+      head.innerHTML=`<h3 id="sheet-title">${ev.nome} — ${ev.cidade||''}</h3>${buildStatusChip(statusLabel)}`;
 
       const meta1=document.createElement('div');
       meta1.className='meta-line';
@@ -439,22 +472,44 @@
 
       const meta3=document.createElement('div');
       meta3.className='meta-line';
-      meta3.innerHTML=`<strong>Categoria:</strong> <span>${ev.categoria}</span>`;
+      meta3.innerHTML=`<strong>Categoria:</strong> <span>${ev.categoria || 'IngressAI'}</span>`;
 
       const desc=document.createElement('p');
       desc.className='subtle';
-      desc.textContent=ev.descricao;
+      desc.textContent=ev.descricao || ev.nome;
 
       const actions=document.createElement('div');
       actions.className='actions';
       if(sold){
         actions.innerHTML=`<span class="status-line status--sold"><span class="status-dot" aria-hidden="true"></span><span class="status-label">Esgotado</span></span><a class="btn btn--secondary btn--sm" href="#vitrine">Ver outros eventos</a>`;
       }else{
-        actions.innerHTML=`<a class="btn btn--secondary btn--sm" href="${waHref('Olá! Quero comprar ingresso para '+ev.nome+' em '+ev.cidade+'. Quantidade: 1. Meu nome: ')}" target="_blank" rel="noopener noreferrer">Comprar ingresso</a>`;
+        actions.innerHTML=`
+          <button type="button" class="btn btn--secondary btn--sm" data-buy="${ev.id}">
+            Comprar ingresso (teste)
+          </button>`;
       }
 
-      /* Order: MEDIA first, then HEAD + META + DESC + ACTIONS for mobile-first flow (prevents overlap) */
+      /* order: mídia → cabeçalho → meta → desc → ações */
       sheetBody.replaceChildren(media, head, meta1, meta2, meta3, desc, actions);
+
+      /* compra via backend */
+      actions.querySelector('[data-buy]')?.addEventListener('click', async () => {
+        const to = prompt('Seu WhatsApp (DDI+DDD+NÚMERO, ex: 5534991551802):')?.trim();
+        if (!/^\d{10,15}$/.test(to || '')) { alert('Número inválido.'); return; }
+        try {
+          const r = await fetch(`${BASE}/purchase/start`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ to, eventId: ev.id, name: 'Visitante' })
+          });
+          const j = await r.json().catch(()=>({ok:false}));
+          if (!j.ok) throw new Error(j?.error || 'Falha ao enviar');
+          alert('🎟️ Ingresso de teste enviado no seu WhatsApp!');
+        } catch (e) {
+          console.error(e);
+          alert('Não consegui enviar agora. Tente mandar "menu" pro bot e repetir.');
+        }
+      });
 
       sheet.setAttribute('aria-hidden','false');
       sheet.setAttribute('aria-labelledby','sheet-title');
@@ -466,27 +521,98 @@
     function closeSheet(){sheet.classList.remove('is-open');sheetBackdrop.classList.remove('is-open');sheet.removeAttribute('aria-labelledby');sheet.setAttribute('aria-hidden','true');sheetBackdrop.setAttribute('aria-hidden','true');document.body.style.overflow=''}
     sheetClose.addEventListener('click',closeSheet);sheetBackdrop.addEventListener('click',closeSheet);document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet()});
     lista.addEventListener('click',e=>{const btn=e.target.closest('[data-open]');if(!btn)return;const ev=evIndex[btn.dataset.open];if(!ev)return;openSheet(ev)});
-    buildChips();renderCards();
+
+    /* ========= ORGANIZADORES ========= */
     const commonFeatures=['Criação de evento 100% pelo WhatsApp','Geração automática de ingresso com QR Code','Link público de vendas e acompanhamento em tempo real','Repasse na hora ao organizador','Página de validador liberada ao criar o evento','Lista de compradores atualizada'];
     std.innerHTML='<ul class="std-list">'+commonFeatures.map(f=>'\n<li>'+f+'</li>').join('')+'</ul>';
+
+    const categorias=[
+      {key:'aret',title:'Atléticas & Repúblicas',taxa:'8%',feePct:8,ctaMsg:'Olá! Quero criar um evento como Atléticas & Repúblicas. Nome do evento: . Cidade: . Data: . Lotes: .'},
+      {key:'prod',title:'Produtoras Independentes',taxa:'10%',feePct:10,ctaMsg:'Olá! Quero criar um evento como Produtora Independente. Nome do evento: . Cidade: . Data: . Lotes: .'},
+      {key:'locais',title:'Locais Independentes',taxa:'10%',feePct:10,ctaMsg:'Olá! Quero criar um evento como Local Independente. Nome do evento: . Cidade: . Data: . Capacidade: .'}
+    ];
     modelsBox.innerHTML=categorias.map(m=>'<button type="button" class="model" role="tab" aria-selected="false" data-key="'+m.key+'">'+m.title+'</button>').join('');
+
     const BRL=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
     const parseBR=v=>Number(String(v).replace(/[^\d,.-]/g,'').replace(/\./g,'').replace(',', '.'))||0;
     const money=v=>BRL.format(isFinite(v)?v:0);
     function computeGross(preco,qtd){return Math.max(0,Number(preco)||0)*Math.max(1,parseInt(qtd||1,10))}
     function computeNet(preco,qtd,feePct){const bruto=computeGross(preco,qtd);return Number((bruto*(1-(Number(feePct)||0)/100)).toFixed(2))}
-    function applyPlan(key){const plan=categorias.find(x=>x.key===key)||null; if(plan){feeChip.textContent='Taxa '+plan.taxa;feeRow.classList.add('is-visible');orgNotice.classList.add('is-hidden');detail.classList.remove('is-disabled')}else{feeRow.classList.remove('is-visible');orgNotice.classList.remove('is-hidden');detail.classList.add('is-disabled')}
-      const cmdData=[{cmd:'criar evento',desc:'Inicia o fluxo para cadastro de um novo evento.'},{cmd:'adicionar lote',desc:'Inclui um novo lote com preço/quantidade.'},{cmd:'fechar vendas',desc:'Pausa as vendas imediatamente.'},{cmd:'link do evento',desc:'Retorna o link público de vendas.'},{cmd:'lista de vendas',desc:'Mostra compradores e status de pagamento.'},{cmd:'validador',desc:'Abre a página de validação de QR Code.'},{cmd:'enviar ingresso <telefone>',desc:'Reenvia o ingresso ao comprador indicado.'}];
+    function applyPlan(key){
+      const plan=categorias.find(x=>x.key===key)||null;
+      if(plan){feeChip.textContent='Taxa '+plan.taxa;feeRow.classList.add('is-visible');orgNotice.classList.add('is-hidden');detail.classList.remove('is-disabled')}
+      else{feeRow.classList.remove('is-visible');orgNotice.classList.remove('is-hidden');detail.classList.add('is-disabled')}
+      const cmdData=[
+        {cmd:'criar evento',desc:'Inicia o fluxo para cadastro de um novo evento.'},
+        {cmd:'adicionar lote',desc:'Inclui um novo lote com preço/quantidade.'},
+        {cmd:'fechar vendas',desc:'Pausa as vendas imediatamente.'},
+        {cmd:'link do evento',desc:'Retorna o link público de vendas.'},
+        {cmd:'lista de vendas',desc:'Mostra compradores e status de pagamento.'},
+        {cmd:'validador',desc:'Abre a página de validação de QR Code.'},
+        {cmd:'enviar ingresso <telefone>',desc:'Reenvia o ingresso ao comprador indicado.'}
+      ];
       cmdList.innerHTML=cmdData.map(({cmd,desc})=>'<div class="cmd"><code>'+cmd+'</code><button type="button" class="copy" data-cmd="'+cmd+'">Copiar</button><small>'+desc+'</small></div>').join('');
-      calcBox.dataset.fee=plan?plan.feePct:'';calcNote.innerHTML=plan?'Taxa aplicada: <strong>'+plan.taxa+'</strong>. O restante é repassado ao organizador na hora.':'Selecione um plano acima para aplicar a taxa.';const preco=document.getElementById('preco');const qtd=document.getElementById('qtd');preco.disabled=!plan;qtd.disabled=!plan;calcGross.textContent=BRL.format(0);calcNet.textContent=BRL.format(0);
-      if(plan){orgQuick.classList.remove('is-disabled');orgQuick.removeAttribute('aria-disabled');orgQuick.onclick=e=>{e.currentTarget.href=waHref(plan.ctaMsg);e.currentTarget.target='_blank';e.currentTarget.rel='noopener noreferrer'}}else{orgQuick.classList.add('is-disabled');orgQuick.setAttribute('aria-disabled','true');orgQuick.removeAttribute('href');orgQuick.onclick=null}
+      calcBox.dataset.fee=plan?plan.feePct:'';
+      calcNote.innerHTML=plan?'Taxa aplicada: <strong>'+plan.taxa+'</strong>. O restante é repassado ao organizador na hora.':'Selecione um plano acima para aplicar a taxa.';
+      const preco=document.getElementById('preco');const qtd=document.getElementById('qtd');
+      preco.disabled=!plan;qtd.disabled=!plan;calcGross.textContent=BRL.format(0);calcNet.textContent=BRL.format(0);
+      if(plan){orgQuick.classList.remove('is-disabled');orgQuick.removeAttribute('aria-disabled');orgQuick.onclick=e=>{e.currentTarget.href=waHref(plan.ctaMsg);e.currentTarget.target='_blank';e.currentTarget.rel='noopener noreferrer'}}
+      else{orgQuick.classList.add('is-disabled');orgQuick.setAttribute('aria-disabled','true');orgQuick.removeAttribute('href');orgQuick.onclick=null}
       detail.querySelectorAll('button.copy').forEach(b=>{b.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(b.dataset.cmd)}catch{}})});
       const recompute=()=>{const fee=Number(calcBox.dataset.fee)||0;const p=parseBR(preco.value||'0');const q=Math.max(1,parseInt(qtd.value||'1',10));const bruto=computeGross(p,q);calcGross.textContent=money(bruto);calcNet.textContent=money(computeNet(p,q,fee))};
       preco.addEventListener('input',recompute);qtd.addEventListener('input',recompute)
     }
     modelsBox.addEventListener('click',e=>{const b=e.target.closest('button.model');if(!b)return;modelsBox.querySelectorAll('button.model').forEach(x=>x.setAttribute('aria-selected','false'));b.setAttribute('aria-selected','true');applyPlan(b.dataset.key)});
     applyPlan(null);
-    (function(){try{const nodes=eventos.map(ev=>({"@context":"https://schema.org","@type":"Event","name":ev.nome,"startDate":ev.dataISO,"eventAttendanceMode":"https://schema.org/OfflineEventAttendanceMode","eventStatus":"https://schema.org/EventScheduled","location":{"@type":"Place","name":ev.localNome,"address":ev.cidade,"url":ev.localUrl},"organizer":{"@type":"Organization","name":"IngressAI","url":"https://ingressai.chat/"}}));const script=document.createElement('script');script.type='application/ld+json';script.textContent=JSON.stringify(nodes);document.head.appendChild(script)}catch{}})();
+
+    /* ========= FETCH /events ========= */
+    async function fetchEventosDoBackend() {
+      try {
+        const r = await fetch(`${BASE}/events`, { mode: 'cors' });
+        const j = await r.json();
+        if (!j.ok) throw new Error('Falha ao carregar eventos');
+        eventos = j.events.map(e => ({
+          id: String(e.id),
+          nome: e.title,
+          cidade: e.city || '',
+          dataISO: e.startsAt || new Date().toISOString(),
+          localNome: e.venue || '',
+          localUrl: 'https://maps.google.com/?q=' + encodeURIComponent(`${e.venue||''} ${e.city||''}`),
+          categoria: 'IngressAI',
+          status: 'Em breve',
+          descricao: e.title,
+          img: e.bannerUrl || ''
+        }));
+      } catch (e) {
+        console.error('events load failed', e);
+        eventos = [];
+      } finally {
+        evIndex = Object.fromEntries(eventos.map(e=>[e.id,e]));
+      }
+    }
+
+    /* ========= INIT ========= */
+    (async () => {
+      await fetchEventosDoBackend();
+      buildChips();
+      renderCards();
+
+      // schema.org (dinâmico)
+      try {
+        const nodes = eventos.map(ev=>({
+          "@context":"https://schema.org","@type":"Event","name":ev.nome,"startDate":ev.dataISO,
+          "eventAttendanceMode":"https://schema.org/OfflineEventAttendanceMode","eventStatus":"https://schema.org/EventScheduled",
+          "location":{"@type":"Place","name":ev.localNome,"address":ev.cidade,"url":ev.localUrl},
+          "organizer":{"@type":"Organization","name":"IngressAI","url":"https://ingressai.chat/"}
+        }));
+        if (nodes.length){
+          const script=document.createElement('script');
+          script.type='application/ld+json';
+          script.textContent=JSON.stringify(nodes);
+          document.head.appendChild(script);
+        }
+      } catch {}
+    })();
   </script>
 </body>
 </html>
