@@ -97,7 +97,7 @@
     .card:hover{transform:translateY(-2px);box-shadow:0 14px 36px rgba(47,125,217,.16),0 3px 8px rgba(11,18,32,.12)}
     .card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--s1);padding-right:0}
     .card-title{font-weight:900;font-size:clamp(1rem,2.2vw,1.14rem);line-height:1.18;margin-bottom:4px}
-    .card-city{color:var(--blue-2);font-weight:800;font-size:.94rem}
+    .card-city{color:#2F7DD9;font-weight:800;font-size:.94rem}
     .status-line{display:flex;align-items:center;gap:8px;margin-top:4px;font-weight:800;font-size:.86rem}
     .status-dot{width:.6rem;height:.6rem;border-radius:999px;display:inline-block;flex:0 0 .6rem;border:1px solid rgba(0,0,0,.06)}
     .status--soon .status-dot{background:#cfe3ff}
@@ -133,11 +133,11 @@
     .std-card{background:#fff;border:1px solid #e5ecff;border-radius:calc(var(--s2));padding:var(--s2);box-shadow:var(--shadow-soft)}
     .std-list{margin:0;padding-left:1.25rem;display:grid;gap:6px}
 
-    /* ===== ORGANIZADORES (versão completa) ===== */
+    /* ===== ORGANIZADORES ===== */
     .model-grid{display:grid;grid-template-columns:1fr;gap:var(--s1);margin-top:var(--s1)}
     @media(min-width:720px){.model-grid{grid-template-columns:repeat(3,1fr)}}
     .model{appearance:none;background:#fff;border:1px solid #e5ecff;border-radius:calc(var(--s1));padding:var(--s1);display:flex;align-items:center;justify-content:center;gap:.6rem;cursor:pointer;text-align:center;box-shadow:var(--shadow-soft);font-weight:800;transition:transform var(--t-fast),box-shadow var(--t-fast),border-color var(--t-fast)}
-    .model[aria-selected="true"]{border-color:#e5ecff;box-shadow:var(--shadow-soft);transform:translateY(-1px) scale(1.02)} /* neutro, sem halo azul forte */
+    .model[aria-selected="true"]{border-color:#e5ecff;box-shadow:var(--shadow-soft);transform:translateY(-1px) scale(1.02)}
 
     .fee-row{display:none;place-content:center;margin-top:4px}
     .fee-chip{display:inline-flex;align-items:center;gap:.5rem;padding:.45rem .8rem;border:1px solid #cfe0ff;border-radius:999px;background:#eef4ff;color:#2F7DD9;font-weight:800;box-shadow:var(--shadow-soft)}
@@ -192,6 +192,21 @@
     #organizadores *:focus,
     #organizadores *:focus-visible { outline:none !important; box-shadow:none !important; }
     #organizadores input:focus { border-color:#d7e1f5; }
+
+    /* ===== X do sheet: maior hit-area + z-index + svg não captura clique ===== */
+    .sheet-close{
+      position:absolute; right:10px; top:10px;
+      appearance:none; background:#fff; border:1px solid #ffd6d6; color:#c94747;
+      border-radius:14px; padding:.8rem;
+      display:grid; place-items:center;
+      box-shadow:0 8px 20px rgba(201,71,71,.18);
+      z-index:9999;
+      touch-action:manipulation;
+      cursor:pointer;
+    }
+    .sheet-close:hover{background:#fff5f5}
+    .sheet-close:active{filter:saturate(1.1)}
+    .sheet-close svg{width:22px;height:22px;stroke:currentColor;pointer-events:none}
   </style>
 </head>
 <body>
@@ -235,9 +250,9 @@
         </div>
         <div class="feature">
           <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M4 10a8 8 0 0 1 14-2" />
+            <path d="M4 10a 8 8 0 0 1 14-2" />
             <path d="M4 6v4h4" />
-            <path d="M20 14a8 8 0 0 1-14 2" />
+            <path d="M20 14a 8 8 0 0 1-14 2" />
             <path d="M20 18v-4h-4" />
           </svg>
           <div class="meta"><strong>Repasse imediato</strong><small>via Pix</small></div>
@@ -350,8 +365,10 @@
     <!-- Bottom sheet -->
     <div class="sheet-backdrop" id="sheet-backdrop" aria-hidden="true"></div>
     <aside class="sheet" id="sheet" aria-hidden="true" role="dialog" aria-modal="true">
-      <button class="sheet-close" id="sheet-close" aria-label="Fechar detalhes">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6L18 18M18 6L6 18" /></svg>
+      <button type="button" class="sheet-close" id="sheet-close" data-close="sheet" aria-label="Fechar detalhes">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 6L18 18M18 6L6 18" />
+        </svg>
       </button>
       <div class="sheet-body" id="sheet-body"></div>
     </aside>
@@ -432,7 +449,7 @@
     const sheet=document.getElementById('sheet');
     const sheetBody=document.getElementById('sheet-body');
     const sheetBackdrop=document.getElementById('sheet-backdrop');
-    const sheetClose=document.getElementById('sheet-close');
+    const sheetClose=document.getElementById('sheet-close'); /* mantém referência, mas não dependemos dela */
 
     /* ========= HEADER ANIMA + CTA ORGANIZADORES ========= */
     document.addEventListener('click',e=>{const el=e.target.closest('.btn,.view');if(el)animatePress(el)});
@@ -593,6 +610,7 @@
         }
       });
 
+      // abre sheet
       sheet.setAttribute('aria-hidden','false');
       sheet.setAttribute('aria-labelledby','sheet-title');
       sheetBackdrop.setAttribute('aria-hidden','false');
@@ -600,8 +618,34 @@
       sheetBackdrop.classList.add('is-open');
       document.body.style.overflow='hidden';
     }
-    function closeSheet(){sheet.classList.remove('is-open');sheetBackdrop.classList.remove('is-open');sheet.removeAttribute('aria-labelledby');sheet.setAttribute('aria-hidden','true');sheetBackdrop.setAttribute('aria-hidden','true');document.body.style.overflow=''}
-    sheetClose.addEventListener('click',closeSheet);sheetBackdrop.addEventListener('click',closeSheet);document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet()});
+
+    // ===== FECHAR SHEET (X, backdrop e ESC) — delegação segura =====
+    function closeSheetSafe(e){
+      try{ e && e.preventDefault && e.preventDefault(); }catch{}
+      try{
+        sheet?.classList?.remove('is-open');
+        sheetBackdrop?.classList?.remove('is-open');
+        sheet?.removeAttribute?.('aria-labelledby');
+        sheet?.setAttribute?.('aria-hidden','true');
+        sheetBackdrop?.setAttribute?.('aria-hidden','true');
+        document.body.style.overflow = '';
+      }catch(err){
+        console.error('closeSheet fail:', err);
+      }
+    }
+    // Delegação: funciona mesmo se algum nó for recriado
+    document.addEventListener('click', (e)=>{
+      const btn = e.target.closest('[data-close="sheet"]');
+      if(btn) closeSheetSafe(e);
+    });
+    // Backdrop fecha
+    sheetBackdrop?.addEventListener('click', closeSheetSafe);
+    // ESC fecha
+    document.addEventListener('keydown', (e)=>{
+      if(e.key === 'Escape' && sheet?.classList?.contains('is-open')) closeSheetSafe(e);
+    });
+
+    // Abrir pelo clique no card
     lista.addEventListener('click',e=>{const btn=e.target.closest('[data-open]');if(!btn)return;const ev=evIndex[btn.dataset.open];if(!ev)return;openSheet(ev)});
 
     /* ========= ORGANIZADORES ========= */
@@ -723,4 +767,3 @@
   </script>
 </body>
 </html>
-
