@@ -22,7 +22,18 @@
   <link rel="icon" href="/favicon.png" type="image/png" sizes="32x32" />
   <link rel="preload" as="image" href="/logo_ingressai.png" />
   <style>
-    :root{--phi:1.618;--s0:8px;--s1:calc(var(--s0)*var(--phi));--s2:calc(var(--s1)*var(--phi));--s3:calc(var(--s2)*var(--phi));--s4:calc(var(--s3)*var(--phi));--fs-0:1rem;--fs--1:calc(var(--fs-0)/var(--phi));--fs-1:calc(var(--fs-0)*var(--phi));--fs-2:calc(var(--fs-1)*var(--phi));--lh-compact:1.22;--lh:1.45;--ink:#0b1220;--muted:#5b6b86;--bg:#f6f8fc;--card:#ffffff;--blue-1:#4A93F0;--blue-2:#2F7DD9;--blue-3:#1B5FB3;--blue-soft:#eaf3ff;--red-soft:#c94747;--shadow:0 10px 28px rgba(47,125,217,.14),0 2px 6px rgba(11,18,32,.08);--shadow-soft:0 6px 18px rgba(47,125,217,.12);--ring:0 0 0 2px rgba(74,147,240,.18);--container-max:calc(680px*var(--phi));--ico:clamp(40px,7vw,64px);--btn-h:52px;--radius-pill:999px;--t-fast:.18s;--t-med:.28s}
+    :root{
+      --phi:1.618;--s0:8px;--s1:calc(var(--s0)*var(--phi));--s2:calc(var(--s1)*var(--phi));
+      --s3:calc(var(--s2)*var(--phi));--s4:calc(var(--s3)*var(--phi));
+      --fs-0:1rem;--fs--1:calc(var(--fs-0)/var(--phi));--fs-1:calc(var(--fs-0)*var(--phi));
+      --fs-2:calc(var(--fs-1)*var(--phi));--lh-compact:1.22;--lh:1.45;
+      --ink:#0b1220;--muted:#5b6b86;--bg:#f6f8fc;--card:#ffffff;
+      --blue-1:#4A93F0;--blue-2:#2F7DD9;--blue-3:#1B5FB3;--blue-soft:#eaf3ff;--red-soft:#c94747;
+      --shadow:0 10px 28px rgba(47,125,217,.14),0 2px 6px rgba(11,18,32,.08);
+      --shadow-soft:0 6px 18px rgba(47,125,217,.12);--ring:0 0 0 2px rgba(74,147,240,.18);
+      --container-max:calc(680px*var(--phi));--ico:clamp(40px,7vw,64px);--btn-h:52px;--radius-pill:999px;
+      --t-fast:.18s;--t-med:.28s
+    }
     *{box-sizing:border-box}
     html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font:16px/var(--lh) -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Ubuntu,Inter,system-ui,sans-serif}
     a{color:inherit;text-decoration:none}
@@ -32,9 +43,11 @@
     .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
     .subtle{color:var(--muted)}
     :where(section,[id]){scroll-margin-top:96px}
+
     header{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid #e7eefb;transition:box-shadow var(--t-fast),border-color var(--t-fast),background-color var(--t-fast)}
     header.is-scrolled{box-shadow:var(--shadow);border-color:#e1e9fb}
     .nav{display:flex;flex-direction:column;align-items:center;gap:var(--s1);padding:var(--s1) 0}
+
     .hero{padding:var(--s4) 0;opacity:calc(1 - var(--hero-p,0));transform:translateY(calc(-6px * var(--hero-p,0)));transition:opacity var(--t-fast) linear,transform var(--t-fast) linear}
     .hero.is-hidden{opacity:0;height:0;padding:0;margin:0;overflow:hidden}
     .hero h1{font-size:clamp(calc(1.25rem*var(--phi)),6.2vw,calc(1.25rem*var(--phi)*var(--phi)));line-height:var(--lh-compact);margin:0 0 var(--s2) 0;font-weight:850;text-align:center}
@@ -43,14 +56,18 @@
     .badge{display:inline-flex;align-items:center;gap:.55rem;padding:0;background:transparent;border-radius:0;box-shadow:none;font-weight:700;cursor:default;user-select:none}
     .badge img{height:18px;width:auto;display:block;filter:none;opacity:1}
     .badge span{color:#445570;font-weight:700;opacity:.95}
+
     .btn{min-height:var(--btn-h);padding:0 var(--s2);border-radius:var(--radius-pill);border:1px solid #d6e4ff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;letter-spacing:.2px;gap:10px;background:#fff;color:#0b1220;transition:transform .08s,box-shadow var(--t-fast)}
     .btn--secondary{box-shadow:var(--shadow-soft)}
+    .btn--ghost{background:#fff;border-color:#e1e8f6;box-shadow:none;color:#2d3b50}
     .btn--sm{min-height:40px;padding:0 .9rem;font-size:.92rem}
     .btn.is-disabled{opacity:.6;pointer-events:none;filter:grayscale(.08)}
     .btn,.view{will-change:transform}
     @keyframes btn-press{0%{transform:translateY(0) scale(1)}50%{transform:translateY(1px) scale(.98)}100%{transform:translateY(0) scale(1)}}
     .btn-press{animation:btn-press var(--t-fast) ease}
     .cta-inline{display:flex;justify-content:flex-start;margin-top:calc(var(--s1)*-1);margin-bottom:var(--s1)}
+
+    .proofs{padding:var(--s2) 0 var(--s3)}
     .features{display:grid;gap:var(--s0);grid-template-columns:repeat(2,minmax(0,1fr))}
     @media(min-width:900px){.features{grid-template-columns:repeat(4,minmax(0,1fr))}}
     .feature{background:#fff;border:1px solid #e5ecff;border-radius:12px;padding:calc(var(--s0)*1.25);display:flex;flex-direction:column;align-items:center;gap:var(--s0);box-shadow:none;filter:none;cursor:default}
@@ -58,14 +75,20 @@
     .feature .bolt{fill:currentColor;stroke:none}
     .feature .cut{fill:var(--card);stroke:none}
     .feature .qr-fill{fill:currentColor;stroke:none}
+    .feature .meta{display:flex;flex-direction:column;gap:calc(var(--s0)/var(--phi));align-items:center}
+    .feature strong{font-weight:800;font-size:calc(var(--fs-0)*1.02);line-height:1.2;text-align:center}
+    .feature small{color:var(--muted);font-size:calc(var(--fs--1));line-height:1.4;text-align:center}
+
     .section{padding:calc(var(--s4)*1.1) 0;content-visibility:auto}
     .section h2{font-size:clamp(calc(1rem*var(--phi)),3.8vw,calc(1.1rem*var(--phi)*var(--phi)));margin:0 0 var(--s2) 0;font-weight:800}
+
     .filters{display:grid;grid-template-columns:1fr;gap:var(--s1);margin:0 0 var(--s1) 0}
     @media(min-width:680px){.filters{grid-template-columns:1fr max-content}}
     .search input{width:100%;border:1px solid #e5ecff;border-radius:999px;padding:.8rem 1rem;font:inherit;box-shadow:var(--shadow-soft);font-weight:600}
     .chips{display:flex;gap:8px;align-items:center;overflow:auto;padding-bottom:2px}
     .chip{appearance:none;border:1px solid #e5ecff;background:#fff;border-radius:999px;padding:.5rem .85rem;font-weight:800;color:#415577;cursor:pointer;white-space:nowrap}
     .chip[aria-selected="true"]{background:var(--blue-2);color:#fff;border-color:rgba(27,95,179,.35);box-shadow:0 6px 14px rgba(47,125,217,.25)}
+
     .cards{display:grid;grid-template-columns:repeat(1,minmax(0,1fr));gap:var(--s1);overflow-anchor:none}
     @media(min-width:700px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(min-width:1000px){.cards{grid-template-columns:repeat(3,minmax(0,1fr))}}
@@ -87,9 +110,11 @@
     .card-media img{width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block}
     .view{background:#fff;border:1px solid #e5ecff;color:#2d3b50;font-weight:800;cursor:pointer;padding:.3rem .7rem;border-radius:999px;align-self:center;min-height:28px;font-size:.82rem;margin-top:auto;box-shadow:0 6px 16px rgba(47,125,217,.16),0 2px 6px rgba(11,18,32,.08);transition:transform .12s ease,box-shadow var(--t-fast),filter var(--t-fast)}
     .view:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(47,125,217,.2),0 4px 10px rgba(11,18,32,.12)}
+
+    /* ===== BOTTOM SHEET ===== */
     .sheet-backdrop{position:fixed;inset:0;background:rgba(11,18,32,.36);opacity:0;pointer-events:none;transition:opacity var(--t-fast)}
     .sheet-backdrop.is-open{opacity:1;pointer-events:auto}
-    .sheet{position:fixed;left:0;right:0;bottom:0;height:72vh;max-height:760px;background:#fff;border-top-left-radius:24px;border-top-right-radius:24px;box-shadow:0 -24px 48px rgba(11,18,32,.16);transform:translateY(100%);transition:transform var(--t-med) cubic-bezier(.2,.7,.2,1);display:flex;flex-direction:column;padding:var(--s2);z-index:40}
+    .sheet{position:fixed;left:0;right:0;bottom:0;height:72vh;max-height:760px;background:#fff;border-top-left-radius:24px;border-top-right-radius:24px;box-shadow:0 -24px 48px rgba(11,18,32,.16);transform:translateY(100%);transition:transform var(--t-med) cubic-bezier(.2,.7,.2,1);display:flex;flex-direction:column;padding:var(--s2);z-index:40;--close-hit:64px}
     .sheet.is-open{transform:translateY(0)}
     .sheet h3{margin:0;font-weight:900;line-height:1.2}
     .sheet .sheet-body{overflow:auto;display:flex;flex-direction:column;gap:10px;padding-right:4px;padding-bottom:calc(20px + env(safe-area-inset-bottom))}
@@ -104,14 +129,46 @@
     .status-chip.soon .dot{background:#cfe3ff}
     .status-chip.sold{color:#6b7280;border-color:#e3e4ea;background:#fafbfc}
     .status-chip.sold .dot{background:#dcdde3}
-    .sheet .meta-line{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.96rem}
-    .sheet .meta-line strong{min-width:64px}
-    .sheet .actions{margin-top:var(--s1);display:flex;gap:var(--s1);flex-wrap:wrap;justify-content:flex-start}
-    .sheet-close{position:absolute;right:10px;top:10px;appearance:none;background:#fff;border:1px solid #ffd6d6;color:#c94747;border-radius:14px;padding:.8rem;display:grid;place-items:center;box-shadow:0 8px 20px rgba(201,71,71,.18);z-index:5}
-    .sheet-close:hover{background:#fff5f5}
-    .sheet-close svg{width:22px;height:22px;stroke:currentColor}
+
     .std-card{background:#fff;border:1px solid #e5ecff;border-radius:calc(var(--s2));padding:var(--s2);box-shadow:var(--shadow-soft)}
     .std-list{margin:0;padding-left:1.25rem;display:grid;gap:6px}
+
+    /* ===== ORGANIZADORES (versão completa) ===== */
+    .model-grid{display:grid;grid-template-columns:1fr;gap:var(--s1);margin-top:var(--s1)}
+    @media(min-width:720px){.model-grid{grid-template-columns:repeat(3,1fr)}}
+    .model{appearance:none;background:#fff;border:1px solid #e5ecff;border-radius:calc(var(--s1));padding:var(--s1);display:flex;align-items:center;justify-content:center;gap:.6rem;cursor:pointer;text-align:center;box-shadow:var(--shadow-soft);font-weight:800;transition:transform var(--t-fast),box-shadow var(--t-fast),border-color var(--t-fast)}
+    .model[aria-selected="true"]{border-color:#cfe0ff;box-shadow:0 0 0 3px rgba(74,147,240,.10),0 12px 28px rgba(47,125,217,.08);transform:translateY(-1px) scale(1.02)}
+
+    .fee-row{display:none;place-content:center;margin-top:4px}
+    .fee-chip{display:inline-flex;align-items:center;gap:.5rem;padding:.45rem .8rem;border:1px solid #cfe0ff;border-radius:999px;background:#eef4ff;color:#2F7DD9;font-weight:800;box-shadow:var(--shadow-soft)}
+    .fee-row.is-visible{display:grid}
+
+    .org-panel{background:#fff;border:1px solid #e5ecff;border-radius:calc(var(--s2));padding:var(--s3);box-shadow:var(--shadow);margin-top:var(--s2)}
+    .org-notice{margin-bottom:var(--s1);font-weight:700}
+    .panel-grid{display:grid;grid-template-columns:1fr;gap:var(--s2)}
+    @media(min-width:820px){ .panel-grid{grid-template-columns:1.1fr .9fr} }
+    .panel-card{background:#f9fbff;border:1px solid #e5ecff;border-radius:calc(var(--s1));padding:var(--s2)}
+    #org-detail.is-disabled{opacity:.55;pointer-events:none}
+
+    .cmd-list{display:grid;gap:8px}
+    .cmd{display:grid;grid-template-columns:1fr max-content;gap:6px;align-items:center;background:#fff;border:1px solid #e5ecff;border-radius:12px;padding:10px 12px}
+    .cmd code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.95rem;color:#0b1220}
+    .cmd small{grid-column:1 / -1;color:var(--muted)}
+    .cmd .copy{appearance:none;border:1px solid #e5ecff;background:#fff;border-radius:10px;padding:.4rem .6rem;cursor:pointer;font-weight:700;color:#2F7DD9}
+
+    details.disclosure{border:0;padding:0;margin:0}
+    .disclosure__summary{list-style:none;cursor:pointer;user-select:none;display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:.75rem 1rem;border:1px solid #e5ecff;border-radius:12px;background:#fff;box-shadow:var(--shadow-soft);font-weight:800;outline:none}
+    .disclosure__summary::-webkit-details-marker{display:none}
+
+    .calc{display:grid;gap:10px}
+    .calc-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .calc input{width:100%;border:1px solid #e5ecff;border-radius:12px;padding:.7rem .8rem;font:inherit}
+    .calc input:disabled{background:#f3f6ff;color:#8796b0}
+    .calc small{color:var(--muted)}
+    .calc-result{background:#fff;border:1px dashed #dbe5ff;border-radius:12px;padding:.75rem .9rem;font-weight:800;display:flex;justify-content:space-between;align-items:center}
+    .panel-cta{display:grid;grid-template-columns:1fr;gap:var(--s1);margin-top:var(--s2)}
+    @media(min-width:560px){.panel-cta{grid-template-columns:max-content max-content}}
+
     footer{background:#fff;border-top:1px solid #e7eefb;margin-top:var(--s4)}
     .foot{max-width:var(--container-max);margin:0 auto;padding:var(--s3) var(--s3)}
     .foot-block{display:grid;gap:var(--s2);justify-items:center;text-align:center}
@@ -121,7 +178,24 @@
     .legal{display:flex;flex-wrap:wrap;gap:var(--s1);justify-content:center;margin-top:calc(var(--s0)*1.2)}
     .legal a{text-decoration:underline;font-weight:600}
     .foot-meta{display:flex;flex-wrap:wrap;gap:10px;align-items:center;color:#667792;justify-content:center}
-    @media print{header,footer,.cta-row,.toast,button.view{display:none!important}.container{max-width:100%;padding:0}.card,.panel-card,.std-card{box-shadow:none!important;border:1px solid #999!important}.status-line{color:#000!important}a:link,a:visited{text-decoration:underline;color:#000!important}a[href]:after{content:" <" attr(href) ">";font-size:.9em}}
+
+    @media print{
+      header,footer,.cta-row,.toast,button.view{display:none!important}
+      .container{max-width:100%;padding:0}
+      .card,.panel-card,.std-card{box-shadow:none!important;border:1px solid #999!important}
+      .status-line{color:#000!important}
+      a:link,a:visited{text-decoration:underline;color:#000!important}
+      a[href]:after{content:" <" attr(href) ">";font-size:.9em}
+    }
+
+    /* acessibilidade extra na seção organizadores (evita rings exagerados) */
+    #organizadores :focus,#organizadores :focus-visible{box-shadow:none!important;outline:none!important}
+    #organizadores .disclosure__summary:focus,
+    #organizadores .disclosure__summary:focus-visible,
+    #organizadores .model:focus,#organizadores .model:focus-visible,
+    #organizadores a:focus,#organizadores a:focus-visible,
+    #organizadores button:focus,#organizadores button:focus-visible,
+    #organizadores input:focus,#organizadores input:focus-visible{box-shadow:none!important;outline:none!important}
   </style>
 </head>
 <body>
@@ -151,7 +225,51 @@
       <a href="#organizadores" class="btn btn--secondary btn--sm" id="cta-organizadores" aria-label="Abrir soluções para organizadores">Soluções para organizadores</a>
     </div>
 
-    <section class="section" aria-labelledby="vitrine-title" id="vitrine" tabindex="-1">
+    <section class="proofs" aria-labelledby="proofs-title">
+      <h2 id="proofs-title" class="sr-only">Provas de valor</h2>
+      <div class="features" aria-label="Provas de valor">
+        <div class="feature">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3.6" y="6.6" width="16.8" height="10.8" rx="2.4" />
+            <circle class="cut" cx="3.6" cy="12" r="1" />
+            <circle class="cut" cx="20.4" cy="12" r="1" />
+            <path class="bolt" d="M12 9.4 L10.2 12 h1.55 l-.75 3.0 L14 11.2 h-1.6 z" />
+          </svg>
+          <div class="meta"><strong>Venda automatizada</strong><small>via WhatsApp</small></div>
+        </div>
+        <div class="feature">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 10a8 8 0 0 1 14-2" />
+            <path d="M4 6v4h4" />
+            <path d="M20 14a8 8 0 0 1-14 2" />
+            <path d="M20 18v-4h-4" />
+          </svg>
+          <div class="meta"><strong>Repasse imediato</strong><small>via Pix</small></div>
+        </div>
+        <div class="feature">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3" y="3" width="7" height="7" rx="1.1" />
+            <rect class="qr-fill" x="5.6" y="5.6" width="2.8" height="2.8" rx=".35" />
+            <rect x="14" y="3" width="7" height="7" rx="1.1" />
+            <rect class="qr-fill" x="16.6" y="5.6" width="2.8" height="2.8" rx=".35" />
+            <rect x="3" y="14" width="7" height="7" rx="1.1" />
+            <rect class="qr-fill" x="5.6" y="16.6" width="2.8" height="2.8" rx=".35" />
+          </svg>
+          <div class="meta"><strong>QR Code Antifraude</strong><small>+ validador web</small></div>
+        </div>
+        <div class="feature">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9 7h11M9 12h11M9 17h11" />
+            <rect x="4" y="6" width="2.2" height="2.2" rx=".35" />
+            <rect x="4" y="11" width="2.2" height="2.2" rx=".35" />
+            <rect x="4" y="16" width="2.2" height="2.2" rx=".35" />
+          </svg>
+          <div class="meta"><strong>Comandos &amp; Dashboard</strong><small>Compradores &amp; acesso</small></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="vitrine" class="section" aria-labelledby="vitrine-title" tabindex="-1">
       <h2 id="vitrine-title">Eventos em destaque</h2>
       <div class="filters" aria-label="Filtros de eventos">
         <div class="search">
@@ -163,6 +281,77 @@
       <div class="cards" id="lista-eventos" aria-live="polite"></div>
     </section>
 
+    <!-- === ORGANIZADORES — COMPLETO === -->
+    <section id="organizadores" class="section" aria-labelledby="orgs-title" tabindex="-1" hidden>
+      <h2 id="orgs-title">Soluções para organizadores</h2>
+      <div id="std-card" class="std-card"></div>
+      <div id="org-models" class="model-grid" role="tablist" aria-label="Modelos de organizador"></div>
+      <div class="fee-row" id="fee-row"><span class="fee-chip" id="fee-chip">Taxa</span></div>
+
+      <div id="org-detail" class="org-panel is-disabled" role="tabpanel" tabindex="0" aria-live="polite">
+        <div class="org-notice subtle" id="org-notice">Selecione um dos planos acima para liberar os botões.</div>
+
+        <div class="panel-grid">
+          <div class="panel-card">
+            <details class="disclosure">
+              <summary class="disclosure__summary">Comandos do bot</summary>
+              <div class="cmd-list" id="cmd-list"></div>
+            </details>
+          </div>
+
+          <div class="panel-card">
+            <details class="disclosure">
+              <summary class="disclosure__summary">Calculadora de taxa</summary>
+              <div class="calc" id="calc-box" data-fee="">
+                <div class="calc-row">
+                  <div>
+                    <label for="preco">Preço</label>
+                    <input id="preco" type="text" inputmode="decimal" placeholder="R$ 60,00" aria-label="Preço do ingresso" disabled />
+                  </div>
+                  <div>
+                    <label for="qtd">Qtd</label>
+                    <input id="qtd" type="number" placeholder="1" min="1" step="1" aria-label="Quantidade de ingressos" disabled />
+                  </div>
+                </div>
+                <small id="calc-note">Selecione um plano acima para aplicar a taxa.</small>
+                <div class="calc-result" id="calc-gross-row"><span>Total bruto</span><strong id="calc-gross">R$ 0,00</strong></div>
+                <div class="calc-result"><span>Você recebe</span><strong id="calc-net">R$ 0,00</strong></div>
+              </div>
+
+              <div class="panel-cta" style="margin-top:var(--s2)">
+                <a class="btn btn--secondary is-disabled" id="org-quick" aria-disabled="true">Criar evento no WhatsApp</a>
+                <a class="btn btn--secondary" href="https://wa.me/5534999992747" target="_blank" rel="noopener noreferrer">Falar com suporte</a>
+              </div>
+            </details>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="como-funciona" class="section" aria-labelledby="como-title">
+      <h2 id="como-title">Como funciona</h2>
+      <div class="cards" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:var(--s2)">
+        <div class="card">
+          <h3 class="card-title" style="font-size:clamp(1rem,2.4vw,1.2rem)">Para quem compra</h3>
+          <ol style="margin:0;padding-left:var(--s2);display:grid;gap:calc(var(--s0)*1.1)">
+            <li>Escolha o evento</li>
+            <li>Pague com rapidez via WhatsApp</li>
+            <li>Receba o ingresso com QR Code</li>
+          </ol>
+        </div>
+        <div class="card">
+          <h3 class="card-title" style="font-size:clamp(1rem,2.4vw,1.2rem)">Para quem organiza</h3>
+          <ol style="margin:0;padding-left:var(--s2);display:grid;gap:calc(var(--s0)*1.1)">
+            <li>Crie seu evento pelo WhatsApp</li>
+            <li>Compartilhe o link</li>
+            <li>Acompanhe vendas</li>
+            <li>Valide na entrada</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bottom sheet -->
     <div class="sheet-backdrop" id="sheet-backdrop" aria-hidden="true"></div>
     <aside class="sheet" id="sheet" aria-hidden="true" role="dialog" aria-modal="true">
       <button class="sheet-close" id="sheet-close" aria-label="Fechar detalhes">
@@ -224,45 +413,52 @@
 
     /* ========= HELPERS ========= */
     function formatDate(iso){try{const d=new Date(iso);return d.toLocaleString('pt-BR',{dateStyle:'medium',timeStyle:'short'})}catch{return iso}}
+    function waHref(text){return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`}
     function animatePress(el){try{el.classList.add('btn-press');el.addEventListener('animationend',()=>el.classList.remove('btn-press'),{once:true})}catch{}}
+    function smoothGoTo(id){const target=document.getElementById(id);if(!target)return;const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;target.scrollIntoView({behavior:reduced?'auto':'smooth',block:'start'});try{target.focus({preventScroll:true})}catch{}}
 
     /* ========= DOM ========= */
     const lista=document.getElementById('lista-eventos');
     const inputBusca=document.getElementById('busca-eventos');
     const chipsRow=document.getElementById('filtro-cidades');
+    const std=document.getElementById('std-card');
+    const modelsBox=document.getElementById('org-models');
+    const feeRow=document.getElementById('fee-row');
+    const feeChip=document.getElementById('fee-chip');
+    const detail=document.getElementById('org-detail');
+    const orgNotice=document.getElementById('org-notice');
+    const cmdList=document.getElementById('cmd-list');
+    const calcBox=document.getElementById('calc-box');
+    const calcNote=document.getElementById('calc-note');
+    const calcNet=document.getElementById('calc-net');
+    const calcGross=document.getElementById('calc-gross');
+    const orgQuick=document.getElementById('org-quick');
     const sheet=document.getElementById('sheet');
     const sheetBody=document.getElementById('sheet-body');
     const sheetBackdrop=document.getElementById('sheet-backdrop');
     const sheetClose=document.getElementById('sheet-close');
 
-    /* ========= HEADER ANIMA ========= */
-    document.addEventListener('DOMContentLoaded',()=>{document.querySelectorAll('a[href^="#organizadores"]').forEach(a=>{a.addEventListener('click',e=>{e.preventDefault();animatePress(a);document.getElementById('organizadores')?.removeAttribute('hidden');document.getElementById('organizadores')?.scrollIntoView({behavior:'smooth'})})})});
+    /* ========= HEADER ANIMA + CTA ORGANIZADORES ========= */
     document.addEventListener('click',e=>{const el=e.target.closest('.btn,.view');if(el)animatePress(el)});
     (function(){const hero=document.querySelector('.hero');const header=document.querySelector('header');const HIDE_START=16,HIDE_END=240;let ticking=false;function onScroll(){if(ticking)return;ticking=true;requestAnimationFrame(()=>{const y=window.scrollY||document.documentElement.scrollTop||0;header&&header.classList.toggle('is-scrolled',y>8);const p=Math.min(1,Math.max(0,(y-HIDE_START)/(HIDE_END-HIDE_START)));if(hero){hero.style.setProperty('--hero-p',p.toFixed(3));hero.classList.toggle('is-hidden',p>=1)}ticking=false})}onScroll();window.addEventListener('scroll',onScroll,{passive:true})})();
+
+    document.addEventListener('DOMContentLoaded',()=> {
+      // Abrir seção organizadores via CTA e via hash
+      const sec=document.getElementById('organizadores');
+      const cta=document.getElementById('cta-organizadores');
+      function openOrganizadores(){ if(sec){ sec.removeAttribute('hidden'); smoothGoTo('organizadores'); } }
+      cta?.addEventListener('click', (e)=>{ if (cta.getAttribute('href')?.startsWith('#organizadores')) { e.preventDefault(); openOrganizadores(); } });
+      if (location.hash === '#organizadores') openOrganizadores();
+    });
 
     /* ========= VITRINE ========= */
     const MAIN_CITIES=['Uberaba','Uberlândia','Belo Horizonte','Ribeirão Preto','Franca'];
     let selectedCity='Todas';
     let query='';
 
-    function normalizeStatusLabel(s){ if(!s) return ''; return s.replace('Últimos ingressos','Último lote'); }
-    function filterEventos(data,q,city){
-      const qn=(q||'').trim().toLowerCase(); const citySel=city||'Todas';
-      return data.filter(ev=>{
-        const matchCity=citySel==='Todas'?true:(ev.cidade||'').toLowerCase()===citySel.toLowerCase();
-        const matchQuery=!qn?true:(ev.nome.toLowerCase().includes(qn)||(ev.descricao||'').toLowerCase().includes(qn));
-        return matchCity&&matchQuery;
-      });
-    }
-    function buildChips(){
-      chipsRow.innerHTML='';
-      const cities=Array.from(new Set(MAIN_CITIES.concat(eventos.map(e=>e.cidade).filter(Boolean))));
-      ['Todas',...cities].forEach(c=>{
-        const btn=document.createElement('button');
-        btn.className='chip'; btn.type='button'; btn.textContent=c; btn.setAttribute('role','tab');
-        btn.setAttribute('aria-selected',c===selectedCity?'true':'false'); btn.dataset.city=c; chipsRow.appendChild(btn);
-      })
-    }
+    function normalizeStatusLabel(s){if(!s)return'';return s.replace('Últimos ingressos','Último lote')}
+    function filterEventos(data,q,city){const qn=(q||'').trim().toLowerCase();const citySel=city||'Todas';return data.filter(ev=>{const matchCity=citySel==='Todas'?true:ev.cidade.toLowerCase()===citySel.toLowerCase();const matchQuery=!qn?true:(ev.nome.toLowerCase().includes(qn)||ev.descricao.toLowerCase().includes(qn));return matchCity&&matchQuery})}
+    function buildChips(){chipsRow.innerHTML='';const cities=Array.from(new Set(MAIN_CITIES.concat(eventos.map(e=>e.cidade).filter(Boolean))));['Todas',...cities].forEach(c=>{const btn=document.createElement('button');btn.className='chip';btn.type='button';btn.textContent=c;btn.setAttribute('role','tab');btn.setAttribute('aria-selected',c===selectedCity?'true':'false');btn.dataset.city=c;chipsRow.appendChild(btn)})}
     function renderCards(){
       const data=filterEventos(eventos,query,selectedCity);
       lista.innerHTML='';
@@ -287,10 +483,7 @@
             <div>
               <div class="card-title" id="card-title-${ev.id}">${ev.nome}</div>
               <div class="card-city">${ev.cidade || ''}</div>
-              <div class="status-line status--${statusKey}">
-                <span class="status-dot" aria-hidden="true"></span>
-                <span class="status-label">${statusLabel || 'Em breve'}</span>
-              </div>
+              <div class="status-line status--${statusKey}"><span class="status-dot" aria-hidden="true"></span><span class="status-label">${statusLabel || 'Em breve'}</span></div>
             </div>
           </div>
           <button type="button" class="view" data-open="${ev.id}" aria-label="Ver detalhes de ${ev.nome}">Ver detalhes</button>`;
@@ -313,9 +506,14 @@
       media.className='sheet-media';
       if(ev.img){
         const img=document.createElement('img');
-        img.src=ev.img; img.alt='Imagem do evento '+ev.nome; img.loading='lazy'; img.decoding='async';
+        img.src=ev.img;
+        img.alt='Imagem do evento '+ev.nome;
+        img.loading='lazy';
+        img.decoding='async';
         media.appendChild(img);
-      }else{ media.textContent='Mídia do evento'; }
+      }else{
+        media.textContent='Mídia do evento';
+      }
 
       const head=document.createElement('div');
       head.className='sheet-head';
@@ -342,11 +540,16 @@
       if(sold){
         actions.innerHTML=`<span class="status-line status--sold"><span class="status-dot" aria-hidden="true"></span><span class="status-label">Esgotado</span></span><a class="btn btn--secondary btn--sm" href="#vitrine">Ver outros eventos</a>`;
       }else{
-        actions.innerHTML=`<button type="button" class="btn btn--secondary btn--sm" data-buy="${ev.id}">Comprar ingresso (teste)</button>`;
+        actions.innerHTML=`
+          <button type="button" class="btn btn--secondary btn--sm" data-buy="${ev.id}">
+            Comprar ingresso (teste)
+          </button>`;
       }
 
+      /* order: mídia → cabeçalho → meta → desc → ações */
       sheetBody.replaceChildren(media, head, meta1, meta2, meta3, desc, actions);
 
+      /* compra via backend (mock simples—troque para seu endpoint real se quiser) */
       actions.querySelector('[data-buy]')?.addEventListener('click', async () => {
         const to = prompt('Seu WhatsApp (DDI+DDD+NÚMERO, ex: 5534991551802):')?.trim();
         if (!/^\d{10,15}$/.test(to || '')) { alert('Número inválido.'); return; }
@@ -373,29 +576,63 @@
       document.body.style.overflow='hidden';
     }
     function closeSheet(){sheet.classList.remove('is-open');sheetBackdrop.classList.remove('is-open');sheet.removeAttribute('aria-labelledby');sheet.setAttribute('aria-hidden','true');sheetBackdrop.setAttribute('aria-hidden','true');document.body.style.overflow=''}
-    document.getElementById('sheet-close').addEventListener('click',closeSheet);
-    sheetBackdrop.addEventListener('click',closeSheet);
-    document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet()});
-    // 👇 Como antes: só abre ao clicar no botão "Ver detalhes"
-    lista.addEventListener('click',e=>{
-      const btn=e.target.closest('[data-open]'); if(!btn) return;
-      const ev=evIndex[btn.dataset.open]; if(!ev) return;
-      openSheet(ev);
-    });
+    sheetClose.addEventListener('click',closeSheet);sheetBackdrop.addEventListener('click',closeSheet);document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet()});
+    // mantém a experiência “como antes”: abre só ao clicar no botão "Ver detalhes"
+    lista.addEventListener('click',e=>{const btn=e.target.closest('[data-open]');if(!btn)return;const ev=evIndex[btn.dataset.open];if(!ev)return;openSheet(ev)});
 
-    /* ========= CHIPS ========= */
-    chipsRow.addEventListener('click',e=>{const b=e.target.closest('button.chip');if(!b)return;selectedCity=b.dataset.city;chipsRow.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-selected','false'));b.setAttribute('aria-selected','true');renderCards()});
+    /* ========= ORGANIZADORES ========= */
+    const commonFeatures=['Criação de evento 100% pelo WhatsApp','Geração automática de ingresso com QR Code','Link público de vendas e acompanhamento em tempo real','Repasse na hora ao organizador','Página de validador liberada ao criar o evento','Lista de compradores atualizada'];
+    std.innerHTML='<ul class="std-list">'+commonFeatures.map(f=>'\n<li>'+f+'</li>').join('')+'</ul>';
+
+    const categorias=[
+      {key:'aret',title:'Atléticas & Repúblicas',taxa:'8%',feePct:8,ctaMsg:'Olá! Quero criar um evento como Atléticas & Repúblicas. Nome do evento: . Cidade: . Data: . Lotes: .'},
+      {key:'prod',title:'Produtoras Independentes',taxa:'10%',feePct:10,ctaMsg:'Olá! Quero criar um evento como Produtora Independente. Nome do evento: . Cidade: . Data: . Lotes: .'},
+      {key:'locais',title:'Locais Independentes',taxa:'10%',feePct:10,ctaMsg:'Olá! Quero criar um evento como Local Independente. Nome do evento: . Cidade: . Data: . Capacidade: .'}
+    ];
+    modelsBox.innerHTML=categorias.map(m=>'<button type="button" class="model" role="tab" aria-selected="false" data-key="'+m.key+'">'+m.title+'</button>').join('');
+
+    const BRL=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
+    const parseBR=v=>Number(String(v).replace(/[^\d,.-]/g,'').replace(/\./g,'').replace(',', '.'))||0;
+    const money=v=>BRL.format(isFinite(v)?v:0);
+    function computeGross(preco,qtd){return Math.max(0,Number(preco)||0)*Math.max(1,parseInt(qtd||1,10))}
+    function computeNet(preco,qtd,feePct){const bruto=computeGross(preco,qtd);return Number((bruto*(1-(Number(feePct)||0)/100)).toFixed(2))}
+    function applyPlan(key){
+      const plan=categorias.find(x=>x.key===key)||null;
+      if(plan){feeChip.textContent='Taxa '+plan.taxa;feeRow.classList.add('is-visible');orgNotice.classList.add('is-hidden');detail.classList.remove('is-disabled')}
+      else{feeRow.classList.remove('is-visible');orgNotice.classList.remove('is-hidden');detail.classList.add('is-disabled')}
+      const cmdData=[
+        {cmd:'criar evento',desc:'Inicia o fluxo para cadastro de um novo evento.'},
+        {cmd:'adicionar lote',desc:'Inclui um novo lote com preço/quantidade.'},
+        {cmd:'fechar vendas',desc:'Pausa as vendas imediatamente.'},
+        {cmd:'link do evento',desc:'Retorna o link público de vendas.'},
+        {cmd:'lista de vendas',desc:'Mostra compradores e status de pagamento.'},
+        {cmd:'validador',desc:'Abre a página de validação de QR Code.'},
+        {cmd:'enviar ingresso <telefone>',desc:'Reenvia o ingresso ao comprador indicado.'}
+      ];
+      cmdList.innerHTML=cmdData.map(({cmd,desc})=>'<div class="cmd"><code>'+cmd+'</code><button type="button" class="copy" data-cmd="'+cmd+'">Copiar</button><small>'+desc+'</small></div>').join('');
+      calcBox.dataset.fee=plan?plan.feePct:'';
+      calcNote.innerHTML=plan?'Taxa aplicada: <strong>'+plan.taxa+'</strong>. O restante é repassado ao organizador na hora.':'Selecione um plano acima para aplicar a taxa.';
+      const preco=document.getElementById('preco');const qtd=document.getElementById('qtd');
+      preco.disabled=!plan;qtd.disabled=!plan;calcGross.textContent=BRL.format(0);calcNet.textContent=BRL.format(0);
+      if(plan){orgQuick.classList.remove('is-disabled');orgQuick.removeAttribute('aria-disabled');orgQuick.onclick=e=>{e.currentTarget.href=waHref(plan.ctaMsg);e.currentTarget.target='_blank';e.currentTarget.rel='noopener noreferrer'}}
+      else{orgQuick.classList.add('is-disabled');orgQuick.setAttribute('aria-disabled','true');orgQuick.removeAttribute('href');orgQuick.onclick=null}
+      detail.querySelectorAll('button.copy').forEach(b=>{b.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(b.dataset.cmd)}catch{}})});
+      const recompute=()=>{const fee=Number(calcBox.dataset.fee)||0;const p=parseBR(preco.value||'0');const q=Math.max(1,parseInt(qtd.value||'1',10));const bruto=computeGross(p,q);calcGross.textContent=money(bruto);calcNet.textContent=money(computeNet(p,q,fee))};
+      preco.addEventListener('input',recompute);qtd.addEventListener('input',recompute)
+    }
+    modelsBox.addEventListener('click',e=>{const b=e.target.closest('button.model');if(!b)return;modelsBox.querySelectorAll('button.model').forEach(x=>x.setAttribute('aria-selected','false'));b.setAttribute('aria-selected','true');applyPlan(b.dataset.key)});
+    applyPlan(null);
 
     /* ========= FETCH /events + EVENTO_DE_TESTE ========= */
     async function fetchEventosDoBackend() {
-      // Evento de teste (sempre presente para validar UX)
+      // Evento de teste (sempre presente para validar UX) — remova depois
       const EVENTO_DE_TESTE = {
         id: 'TST-INGRESSAI',
         title: 'Evento Teste IngressAI',
         city: 'Uberaba',
         startsAt: new Date(Date.now() + 2*24*60*60*1000).toISOString(), // +2 dias
         venue: 'Espaço Demo',
-        bannerUrl: '', // pode inserir uma URL se quiser
+        bannerUrl: '',
         status: 'Último lote'
       };
 
@@ -404,8 +641,8 @@
         const r = await fetch(`${BASE}/events`, { mode: 'cors' });
         const j = await r.json();
         if (j?.ok && Array.isArray(j.events)) arr = j.events;
-      } catch(e) {
-        console.warn('Falha no backend, usando apenas evento de teste.', e);
+      } catch (e) {
+        console.warn('events load failed', e);
       }
 
       // Mapeia + injeta evento de teste no topo
@@ -442,10 +679,7 @@
     /* ========= INIT ========= */
     (async () => {
       await fetchEventosDoBackend();
-      // Chips a partir das cidades presentes (inclui a do evento teste)
-      const MAIN_CITIES=['Uberaba','Uberlândia','Belo Horizonte','Ribeirão Preto','Franca'];
-      const cities=Array.from(new Set(MAIN_CITIES.concat(eventos.map(e=>e.cidade).filter(Boolean))));
-      chipsRow.innerHTML=''; ['Todas',...cities].forEach(c=>{const b=document.createElement('button');b.className='chip';b.type='button';b.textContent=c;b.setAttribute('role','tab');b.setAttribute('aria-selected',c==='Todas'?'true':'false');b.dataset.city=c;chipsRow.appendChild(b);});
+      buildChips();
       renderCards();
 
       // schema.org (dinâmico)
