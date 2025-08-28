@@ -22,18 +22,7 @@
   <link rel="icon" href="/favicon.png" type="image/png" sizes="32x32" />
   <link rel="preload" as="image" href="/logo_ingressai.png" />
   <style>
-    :root{
-      --phi:1.618;--s0:8px;--s1:calc(var(--s0)*var(--phi));--s2:calc(var(--s1)*var(--phi));
-      --s3:calc(var(--s2)*var(--phi));--s4:calc(var(--s3)*var(--phi));
-      --fs-0:1rem;--fs--1:calc(var(--fs-0)/var(--phi));--fs-1:calc(var(--fs-0)*var(--phi));
-      --fs-2:calc(var(--fs-1)*var(--phi));--lh-compact:1.22;--lh:1.45;
-      --ink:#0b1220;--muted:#5b6b86;--bg:#f6f8fc;--card:#ffffff;
-      --blue-1:#4A93F0;--blue-2:#2F7DD9;--blue-3:#1B5FB3;--blue-soft:#eaf3ff;--red-soft:#c94747;
-      --shadow:0 10px 28px rgba(47,125,217,.14),0 2px 6px rgba(11,18,32,.08);
-      --shadow-soft:0 6px 18px rgba(47,125,217,.12);--ring:0 0 0 2px rgba(74,147,240,.18);
-      --container-max:calc(680px*var(--phi));--ico:clamp(40px,7vw,64px);--btn-h:52px;--radius-pill:999px;
-      --t-fast:.18s;--t-med:.28s
-    }
+    :root{--phi:1.618;--s0:8px;--s1:calc(var(--s0)*var(--phi));--s2:calc(var(--s1)*var(--phi));--s3:calc(var(--s2)*var(--phi));--s4:calc(var(--s3)*var(--phi));--fs-0:1rem;--fs--1:calc(var(--fs-0)/var(--phi));--fs-1:calc(var(--fs-0)*var(--phi));--fs-2:calc(var(--fs-1)*var(--phi));--lh-compact:1.22;--lh:1.45;--ink:#0b1220;--muted:#5b6b86;--bg:#f6f8fc;--card:#ffffff;--blue-1:#4A93F0;--blue-2:#2F7DD9;--blue-3:#1B5FB3;--blue-soft:#eaf3ff;--red-soft:#c94747;--shadow:0 10px 28px rgba(47,125,217,.14),0 2px 6px rgba(11,18,32,.08);--shadow-soft:0 6px 18px rgba(47,125,217,.12);--ring:0 0 0 2px rgba(74,147,240,.18);--container-max:calc(680px*var(--phi));--ico:clamp(40px,7vw,64px);--btn-h:52px;--radius-pill:999px;--t-fast:.18s;--t-med:.28s}
     *{box-sizing:border-box}
     html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font:16px/var(--lh) -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Ubuntu,Inter,system-ui,sans-serif}
     a{color:inherit;text-decoration:none}
@@ -179,31 +168,13 @@
     .legal a{text-decoration:underline;font-weight:600}
     .foot-meta{display:flex;flex-wrap:wrap;gap:10px;align-items:center;color:#667792;justify-content:center}
 
-    @media print{
-      header,footer,.cta-row,.toast,button.view{display:none!important}
-      .container{max-width:100%;padding:0}
-      .card,.panel-card,.std-card{box-shadow:none!important;border:1px solid #999!important}
-      .status-line{color:#000!important}
-      a:link,a:visited{text-decoration:underline;color:#000!important}
-      a[href]:after{content:" <" attr(href) ">";font-size:.9em}
-    }
+    @media print{header,footer,.cta-row,.toast,button.view{display:none!important}.container{max-width:100%;padding:0}.card,.panel-card,.std-card{box-shadow:none!important;border:1px solid #999!important}.status-line{color:#000!important}a:link,a:visited{text-decoration:underline;color:#000!important}a[href]:after{content:" <" attr(href) ">";font-size:.9em}}
 
-    /* ===== Patch: remove moldura azul só em #organizadores ===== */
     #organizadores *:focus,
     #organizadores *:focus-visible { outline:none !important; box-shadow:none !important; }
     #organizadores input:focus { border-color:#d7e1f5; }
 
-    /* ===== X do sheet: maior hit-area + z-index + svg não captura clique ===== */
-    .sheet-close{
-      position:absolute; right:10px; top:10px;
-      appearance:none; background:#fff; border:1px solid #ffd6d6; color:#c94747;
-      border-radius:14px; padding:.8rem;
-      display:grid; place-items:center;
-      box-shadow:0 8px 20px rgba(201,71,71,.18);
-      z-index:9999;
-      touch-action:manipulation;
-      cursor:pointer;
-    }
+    .sheet-close{position:absolute; right:10px; top:10px;appearance:none; background:#fff; border:1px solid #ffd6d6; color:#c94747;border-radius:14px; padding:.8rem;display:grid; place-items:center;box-shadow:0 8px 20px rgba(201,71,71,.18);z-index:9999;touch-action:manipulation;cursor:pointer}
     .sheet-close:hover{background:#fff5f5}
     .sheet-close:active{filter:saturate(1.1)}
     .sheet-close svg{width:22px;height:22px;stroke:currentColor;pointer-events:none}
@@ -362,7 +333,6 @@
       </div>
     </section>
 
-    <!-- Bottom sheet -->
     <div class="sheet-backdrop" id="sheet-backdrop" aria-hidden="true"></div>
     <aside class="sheet" id="sheet" aria-hidden="true" role="dialog" aria-modal="true">
       <button type="button" class="sheet-close" id="sheet-close" data-close="sheet" aria-label="Fechar detalhes">
@@ -430,6 +400,13 @@
     function animatePress(el){try{el.classList.add('btn-press');el.addEventListener('animationend',()=>el.classList.remove('btn-press'),{once:true})}catch{}}
     function smoothGoTo(id){const target=document.getElementById(id);if(!target)return;const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;target.scrollIntoView({behavior:reduced?'auto':'smooth',block:'start'});try{target.focus({preventScroll:true})}catch{}}
 
+    async function fetchJson(url, opts){
+      const r = await fetch(url, { headers: { 'Accept':'application/json', ...(opts&&opts.headers||{}) }, ...opts });
+      let j = null; try { j = await r.json(); } catch {}
+      if (!r.ok) throw new Error(j?.error || r.statusText || 'Request failed');
+      return j;
+    }
+
     /* ========= DOM ========= */
     const lista=document.getElementById('lista-eventos');
     const inputBusca=document.getElementById('busca-eventos');
@@ -449,7 +426,6 @@
     const sheet=document.getElementById('sheet');
     const sheetBody=document.getElementById('sheet-body');
     const sheetBackdrop=document.getElementById('sheet-backdrop');
-    const sheetClose=document.getElementById('sheet-close'); /* mantém referência, mas não dependemos dela */
 
     /* ========= HEADER ANIMA + CTA ORGANIZADORES ========= */
     document.addEventListener('click',e=>{const el=e.target.closest('.btn,.view');if(el)animatePress(el)});
@@ -531,6 +507,26 @@
 
     function buildStatusChip(statusLabel){const key=statusLabel==='Esgotado'?'sold':(statusLabel==='Último lote'?'low':'soon');const lbl=statusLabel||'Em breve';return `<span class="status-chip ${key}"><span class="dot" aria-hidden="true"></span>${lbl}</span>`}
 
+    async function backendOrderAndSend(to, ev){
+      // 1) cria pedido
+      const order = await fetchJson(`${BASE}/orders`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ eventId: ev.id, qty: 1, buyer: { name: 'Visitante', phone: to } })
+      });
+      const orderId = order.orderId;
+      if (!orderId) throw new Error('orderId ausente');
+      // 2) emite ticket
+      await fetchJson(`${BASE}/tickets/issue`, {
+        method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ orderId })
+      });
+      // 3) envia link por WhatsApp (simulado se sem credenciais)
+      await fetchJson(`${BASE}/test/send-ticket`, {
+        method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ phone: to, orderId })
+      });
+      return true;
+    }
+
     function openSheet(ev){
       ev = ev || {};
       const nome = ev.nome || 'Evento';
@@ -596,17 +592,11 @@
         const to = prompt('Seu WhatsApp (DDI+DDD+NÚMERO, ex: 5534991551802):')?.trim();
         if (!/^\d{10,15}$/.test(to || '')) { alert('Número inválido.'); return; }
         try {
-          const r = await fetch(`${BASE}/purchase/start`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ to, eventId: ev.id || 'TST', name: 'Visitante' })
-          });
-          const j = await r.json().catch(()=>({ok:false}));
-          if (!j.ok) throw new Error(j?.error || 'Falha ao enviar');
-          alert('🎟️ Ingresso de teste enviado no seu WhatsApp!');
+          await backendOrderAndSend(to, ev);
+          alert('🎟️ Ingresso enviado no seu WhatsApp! (se simulado, você verá os links no console)');
         } catch (e) {
           console.error(e);
-          alert('Não consegui enviar agora. Tente mandar "menu" pro bot e repetir.');
+          alert('Não consegui enviar agora. Você pode tentar pelo WhatsApp: '+ waHref(`ingressai:start ev=${ev.id} qty=1 autopay=1 name=`));
         }
       });
 
@@ -619,7 +609,6 @@
       document.body.style.overflow='hidden';
     }
 
-    // ===== FECHAR SHEET (X, backdrop e ESC) — delegação segura =====
     function closeSheetSafe(e){
       try{ e && e.preventDefault && e.preventDefault(); }catch{}
       try{
@@ -629,24 +618,14 @@
         sheet?.setAttribute?.('aria-hidden','true');
         sheetBackdrop?.setAttribute?.('aria-hidden','true');
         document.body.style.overflow = '';
-      }catch(err){
-        console.error('closeSheet fail:', err);
-      }
+      }catch(err){ console.error('closeSheet fail:', err); }
     }
-    // Delegação: funciona mesmo se algum nó for recriado
-    document.addEventListener('click', (e)=>{
-      const btn = e.target.closest('[data-close="sheet"]');
-      if(btn) closeSheetSafe(e);
-    });
-    // Backdrop fecha
+    document.addEventListener('click', (e)=>{ const btn = e.target.closest('[data-close="sheet"]'); if(btn) closeSheetSafe(e); });
     sheetBackdrop?.addEventListener('click', closeSheetSafe);
-    // ESC fecha
-    document.addEventListener('keydown', (e)=>{
-      if(e.key === 'Escape' && sheet?.classList?.contains('is-open')) closeSheetSafe(e);
-    });
+    document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && sheet?.classList?.contains('is-open')) closeSheetSafe(e); });
 
-    // Abrir pelo clique no card
-    lista.addEventListener('click',e=>{const btn=e.target.closest('[data-open]');if(!btn)return;const ev=evIndex[btn.dataset.open];if(!ev)return;openSheet(ev)});
+    const listaEl=document.getElementById('lista-eventos');
+    listaEl.addEventListener('click',e=>{const btn=e.target.closest('[data-open]');if(!btn)return;const ev=evIndex[btn.dataset.open];if(!ev)return;openSheet(ev)});
 
     /* ========= ORGANIZADORES ========= */
     const commonFeatures=['Criação de evento 100% pelo WhatsApp','Geração automática de ingresso com QR Code','Link público de vendas e acompanhamento em tempo real','Repasse na hora ao organizador','Página de validador liberada ao criar o evento','Lista de compradores atualizada'];
@@ -691,54 +670,54 @@
     modelsBox.addEventListener('click',e=>{const b=e.target.closest('button.model');if(!b)return;modelsBox.querySelectorAll('button.model').forEach(x=>x.setAttribute('aria-selected','false'));b.setAttribute('aria-selected','true');applyPlan(b.dataset.key)});
     applyPlan(null);
 
-    /* ========= FETCH /events + EVENTO_DE_TESTE ========= */
+    /* ========= FETCH /events + FALLBACK ========= */
     async function fetchEventosDoBackend() {
       const EVENTO_DE_TESTE = {
         id: 'TST-INGRESSAI',
         title: 'Evento Teste IngressAI',
-        city: 'Uberaba',
-        startsAt: new Date(Date.now() + 2*24*60*60*1000).toISOString(),
+        city: 'Uberaba-MG',
+        date: new Date(Date.now() + 2*24*60*60*1000).toISOString(),
         venue: 'Espaço Demo',
-        bannerUrl: '',
-        status: 'Último lote'
+        image: '',
+        statusLabel: 'Último lote'
       };
 
       let arr = [];
       try {
-        const r = await fetch(`${BASE}/events`, { mode: 'cors' });
-        const j = await r.json();
-        if (j?.ok && Array.isArray(j.events)) arr = j.events;
+        const j = await fetchJson(`${BASE}/events`);
+        if (Array.isArray(j?.items)) arr = j.items;
+        else if (Array.isArray(j?.events)) arr = j.events; // compat
       } catch (e) {
         console.warn('events load failed', e);
       }
 
       const mapped = arr.map(e => ({
         id: String(e.id),
-        nome: e.title,
-        cidade: e.city || '',
-        dataISO: e.startsAt || new Date().toISOString(),
-        localNome: e.venue || '',
-        localUrl: 'https://maps.google.com/?q=' + encodeURIComponent(`${e.venue||''} ${e.city||''}`),
-        categoria: 'IngressAI',
-        status: 'Em breve',
-        descricao: e.title,
-        img: e.bannerUrl || ''
+        nome: e.title || e.nome || 'Evento',
+        cidade: e.city || e.cidade || '',
+        dataISO: e.date || e.startsAt || e.dataISO || new Date().toISOString(),
+        localNome: e.venue || e.local || '',
+        localUrl: 'https://maps.google.com/?q=' + encodeURIComponent(`${e.venue||e.local||''} ${e.city||e.cidade||''}`),
+        categoria: e.category || 'IngressAI',
+        status: e.statusLabel || 'Em breve',
+        descricao: e.description || e.title || e.nome || '',
+        img: e.image || e.bannerUrl || ''
       }));
 
       const testMapped = {
-        id: EVENTO_DE_TESTE.id,
+        id: String(EVENTO_DE_TESTE.id),
         nome: EVENTO_DE_TESTE.title,
         cidade: EVENTO_DE_TESTE.city,
-        dataISO: EVENTO_DE_TESTE.startsAt,
+        dataISO: EVENTO_DE_TESTE.date,
         localNome: EVENTO_DE_TESTE.venue,
         localUrl: 'https://maps.google.com/?q=' + encodeURIComponent(`${EVENTO_DE_TESTE.venue} ${EVENTO_DE_TESTE.city}`),
         categoria: 'IngressAI',
-        status: EVENTO_DE_TESTE.status,
+        status: EVENTO_DE_TESTE.statusLabel,
         descricao: EVENTO_DE_TESTE.title,
-        img: EVENTO_DE_TESTE.bannerUrl
+        img: EVENTO_DE_TESTE.image
       };
 
-      eventos = [testMapped, ...mapped];
+      eventos = mapped.length ? mapped : [testMapped];
       evIndex = Object.fromEntries(eventos.map(e=>[e.id,e]));
     }
 
@@ -748,7 +727,6 @@
       buildChips();
       renderCards();
 
-      // schema.org (dinâmico)
       try {
         const nodes = eventos.map(ev=>({
           "@context":"https://schema.org","@type":"Event","name":ev.nome,"startDate":ev.dataISO,
@@ -767,3 +745,4 @@
   </script>
 </body>
 </html>
+
