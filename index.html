@@ -310,29 +310,6 @@
       </div>
     </section>
 
-    <section id="como-funciona" class="section" aria-labelledby="como-title">
-      <h2 id="como-title">Como funciona</h2>
-      <div class="cards" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:var(--s2)">
-        <div class="card">
-          <h3 class="card-title" style="font-size:clamp(1rem,2.4vw,1.2rem)">Para quem compra</h3>
-          <ol style="margin:0;padding-left:var(--s2);display:grid;gap:calc(var(--s0)*1.1)">
-            <li>Escolha o evento</li>
-            <li>Pague com rapidez via WhatsApp</li>
-            <li>Receba o ingresso com QR Code</li>
-          </ol>
-        </div>
-        <div class="card">
-          <h3 class="card-title" style="font-size:clamp(1rem,2.4vw,1.2rem)">Para quem organiza</h3>
-          <ol style="margin:0;padding-left:var(--s2);display:grid;gap:calc(var(--s0)*1.1)">
-            <li>Crie seu evento pelo WhatsApp</li>
-            <li>Compartilhe o link</li>
-            <li>Acompanhe vendas</li>
-            <li>Valide na entrada</li>
-          </ol>
-        </div>
-      </div>
-    </section>
-
     <div class="sheet-backdrop" id="sheet-backdrop" aria-hidden="true"></div>
     <aside class="sheet" id="sheet" aria-hidden="true" role="dialog" aria-modal="true">
       <button type="button" class="sheet-close" id="sheet-close" data-close="sheet" aria-label="Fechar detalhes">
@@ -427,7 +404,7 @@
     const sheetBody=document.getElementById('sheet-body');
     const sheetBackdrop=document.getElementById('sheet-backdrop');
 
-    /* ========= HEADER ANIMA + CTA ORGANIZADORES ========= */
+    /* ========= HEADER + CTA ========= */
     document.addEventListener('click',e=>{const el=e.target.closest('.btn,.view');if(el)animatePress(el)});
     (function(){const hero=document.querySelector('.hero');const header=document.querySelector('header');const HIDE_START=16,HIDE_END=240;let ticking=false;function onScroll(){if(ticking)return;ticking=true;requestAnimationFrame(()=>{const y=window.scrollY||document.documentElement.scrollTop||0;header&&header.classList.toggle('is-scrolled',y>8);const p=Math.min(1,Math.max(0,(y-HIDE_START)/(HIDE_END-HIDE_START)));if(hero){hero.style.setProperty('--hero-p',p.toFixed(3));hero.classList.toggle('is-hidden',p>=1)}ticking=false})}onScroll();window.addEventListener('scroll',onScroll,{passive:true})})();
 
@@ -485,7 +462,7 @@
         card.dataset.key=ev.id;
         card.setAttribute('tabindex','0');
         card.setAttribute('aria-labelledby',`card-title-${ev.id}`);
-        card.innerHTML=`
+        card.innerHTML = `
           <div class="card-media">${ev.img?`<img src="${ev.img}" alt="Imagem do evento ${ev.nome}" loading="lazy" decoding="async">`:'Mídia do evento'}</div>
           <div class="card-header">
             <div>
@@ -497,7 +474,10 @@
               </div>
             </div>
           </div>
-          <button type="button" class="view" data-open="${ev.id}" aria-label="Ver detalhes de ${ev.nome}">Ver detalhes</button>`;
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px">
+            <button type="button" class="view" data-open="${ev.id}" aria-label="Ver detalhes de ${ev.nome}">Ver detalhes</button>
+            <a class="view" href="${waHref(`ingressai:start ev=${ev.id} name=`)}" target="_blank" rel="noopener">Comprar no WhatsApp</a>
+          </div>`;
         lista.appendChild(card)
       })
     }
@@ -507,23 +487,12 @@
 
     function buildStatusChip(statusLabel){const key=statusLabel==='Esgotado'?'sold':(statusLabel==='Último lote'?'low':'soon');const lbl=statusLabel||'Em breve';return `<span class="status-chip ${key}"><span class="dot" aria-hidden="true"></span>${lbl}</span>`}
 
-    async function backendOrderAndSend(to, ev){
-      // 1) cria pedido
-      const order = await fetchJson(`${BASE}/orders`, {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ eventId: ev.id, qty: 1, buyer: { name: 'Visitante', phone: to } })
-      });
-      const orderId = order.orderId;
-      if (!orderId) throw new Error('orderId ausente');
-      // 2) emite ticket
-      await fetchJson(`${BASE}/tickets/issue`, {
-        method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ orderId })
-      });
-      // 3) envia link por WhatsApp (simulado se sem credenciais)
-      await fetchJson(`${BASE}/test/send-ticket`, {
-        method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ phone: to, orderId })
-      });
+    // fluxo teste direto (sem deep-link), chamando endpoints já existentes
+    async function backendIssueAndSend(to, ev){
+      const url = `${BASE}/test/send-ticket?to=${encodeURIComponent(to)}&name=${encodeURIComponent('Visitante')}&ev=${encodeURIComponent(ev.id||'')}`;
+      const r = await fetch(url);
+      const j = await r.json().catch(()=>null);
+      if (!r.ok || !j?.ok) throw new Error(j?.error || 'Falha ao emitir/enviar ticket');
       return true;
     }
 
@@ -540,47 +509,55 @@
 
       sheetBody.innerHTML='';
 
+      // mídia
       const media=document.createElement('div');
       media.className='sheet-media';
       if(ev.img){
         const img=document.createElement('img');
         img.src=ev.img; img.alt='Imagem do evento '+nome; img.loading='lazy'; img.decoding='async';
         media.appendChild(img);
-      }else{
+      } else {
         media.textContent='Mídia do evento';
       }
 
+      // cabeçalho: título sem cidade
       const head=document.createElement('div');
       head.className='sheet-head';
-      head.innerHTML=`<h3 id="sheet-title">${nome} — ${cidade}</h3>${buildStatusChip(statusLabel)}`;
+      head.innerHTML=`<h3 id="sheet-title">${nome}</h3>${buildStatusChip(statusLabel)}`;
 
+      // meta (cidade + data) em cinza
       const meta1=document.createElement('div');
-      meta1.className='meta-line';
-      meta1.innerHTML=`<strong>Data:</strong> <span>${dataISO ? formatDate(dataISO) : 'A confirmar'}</span>`;
+      meta1.className='meta-line subtle';
+      const d = dataISO ? new Date(dataISO) : null;
+      const dt = d ? d.toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' }) : 'A confirmar';
+      const tm = d ? (d.getMinutes()===0 ? `${d.getHours()} horas` : `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')} horas`) : '';
+      meta1.textContent = `${cidade}${cidade && (dt||tm) ? ', ' : ''}${dt}${tm ? ' às ' + tm : ''}`;
 
+      // local
       const meta2=document.createElement('div');
       meta2.className='meta-line';
       meta2.innerHTML= localUrl
         ? `<strong>Local:</strong> <a href="${localUrl}" target="_blank" rel="noopener noreferrer">${localNome}</a>`
         : `<strong>Local:</strong> <span>${localNome}</span>`;
 
-      const meta3=document.createElement('div');
-      meta3.className='meta-line';
-      meta3.innerHTML=`<strong>Categoria:</strong> <span>${ev.categoria || 'IngressAI'}</span>`;
-
       const desc=document.createElement('p');
       desc.className='subtle';
       desc.textContent=descricao;
 
+      // ações
       const actions=document.createElement('div');
       actions.className='actions';
       if(sold){
         actions.innerHTML=`<span class="status-line status--sold"><span class="status-dot" aria-hidden="true"></span><span class="status-label">Esgotado</span></span><a class="btn btn--secondary btn--sm" href="#vitrine">Ver outros eventos</a>`;
-      }else{
-        actions.innerHTML=`<button type="button" class="btn btn--secondary btn--sm" data-buy="${ev.id || 'TST'}">Comprar ingresso (teste)</button>`;
+      } else {
+        actions.innerHTML = `
+          <div style="display:grid;grid-template-columns:1fr;gap:8px">
+            <a class="btn btn--secondary btn--sm" href="${waHref(`ingressai:start ev=${ev.id} name=`)}" target="_blank" rel="noopener">Comprar pelo WhatsApp</a>
+            <button type="button" class="btn btn--ghost btn--sm" data-buy="${ev.id || 'TST'}">Receber PDF agora (teste)</button>
+          </div>`;
       }
 
-      const nodes=[media, head, meta1, meta2, meta3, desc, actions];
+      const nodes=[media, head, meta1, meta2, desc, actions];
       if (typeof sheetBody.replaceChildren === 'function') {
         sheetBody.replaceChildren(...nodes);
       } else {
@@ -588,15 +565,16 @@
         nodes.forEach(n=>sheetBody.appendChild(n));
       }
 
+      // ação “PDF agora (teste)”
       actions.querySelector('[data-buy]')?.addEventListener('click', async () => {
         const to = prompt('Seu WhatsApp (DDI+DDD+NÚMERO, ex: 5534991551802):')?.trim();
         if (!/^\d{10,15}$/.test(to || '')) { alert('Número inválido.'); return; }
         try {
-          await backendOrderAndSend(to, ev);
-          alert('🎟️ Ingresso enviado no seu WhatsApp! (se simulado, você verá os links no console)');
+          await backendIssueAndSend(to, ev);
+          alert('🎟️ Ingresso enviado no seu WhatsApp!');
         } catch (e) {
           console.error(e);
-          alert('Não consegui enviar agora. Você pode tentar pelo WhatsApp: '+ waHref(`ingressai:start ev=${ev.id} qty=1 autopay=1 name=`));
+          alert('Não consegui enviar agora. Tente pelo WhatsApp: '+ waHref(`ingressai:start ev=${ev.id} name=`));
         }
       });
 
@@ -670,28 +648,31 @@
     modelsBox.addEventListener('click',e=>{const b=e.target.closest('button.model');if(!b)return;modelsBox.querySelectorAll('button.model').forEach(x=>x.setAttribute('aria-selected','false'));b.setAttribute('aria-selected','true');applyPlan(b.dataset.key)});
     applyPlan(null);
 
-    /* ========= FETCH /events + FALLBACK ========= */
+    /* ========= FETCH /events (flatten) + FALLBACK ========= */
     async function fetchEventosDoBackend() {
       const EVENTO_DE_TESTE = {
-        id: 'TST-INGRESSAI',
-        title: 'Evento Teste IngressAI',
-        city: 'Uberaba-MG',
-        date: new Date(Date.now() + 2*24*60*60*1000).toISOString(),
-        venue: 'Espaço Demo',
+        id: 'hello-world-uberaba',
+        title: 'Hello World — Uberaba',
+        city: 'Uberaba',
+        date: '2025-09-15T23:00:00-03:00',
+        venue: 'Espaço Central',
         image: '',
         statusLabel: 'Último lote'
       };
 
-      let arr = [];
+      let items = [];
       try {
         const j = await fetchJson(`${BASE}/events`);
-        if (Array.isArray(j?.items)) arr = j.items;
-        else if (Array.isArray(j?.events)) arr = j.events; // compat
+        if (Array.isArray(j?.items)) {
+          items = j.items;
+        } else if (j?.events && typeof j.events === 'object') {
+          items = Object.values(j.events).flat();
+        }
       } catch (e) {
         console.warn('events load failed', e);
       }
 
-      const mapped = arr.map(e => ({
+      const mapped = items.map(e => ({
         id: String(e.id),
         nome: e.title || e.nome || 'Evento',
         cidade: e.city || e.cidade || '',
@@ -704,7 +685,7 @@
         img: e.image || e.bannerUrl || ''
       }));
 
-      const testMapped = {
+      eventos = mapped.length ? mapped : [{
         id: String(EVENTO_DE_TESTE.id),
         nome: EVENTO_DE_TESTE.title,
         cidade: EVENTO_DE_TESTE.city,
@@ -715,9 +696,8 @@
         status: EVENTO_DE_TESTE.statusLabel,
         descricao: EVENTO_DE_TESTE.title,
         img: EVENTO_DE_TESTE.image
-      };
+      }];
 
-      eventos = mapped.length ? mapped : [testMapped];
       evIndex = Object.fromEntries(eventos.map(e=>[e.id,e]));
     }
 
@@ -745,4 +725,3 @@
   </script>
 </body>
 </html>
-
