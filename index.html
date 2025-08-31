@@ -463,7 +463,12 @@
         card.setAttribute('tabindex','0');
         card.setAttribute('aria-labelledby',`card-title-${ev.id}`);
         card.innerHTML = `
-          <div class="card-media">${ev.img?`<img src="${ev.img}" alt="Imagem do evento ${ev.nome}" loading="lazy" decoding="async">`:'Mídia do evento'}</div>
+          <div class="card-media">${
+            ev.img
+              ? `<img src="${ev.img}" alt="Imagem do evento ${ev.nome}" loading="lazy" decoding="async"
+                   onerror="this.closest('.card-media').textContent='Mídia do evento'; this.remove();">`
+              : 'Mídia do evento'
+          }</div>
           <div class="card-header">
             <div>
               <div class="card-title" id="card-title-${ev.id}">${ev.nome}</div>
@@ -515,6 +520,7 @@
       if(ev.img){
         const img=document.createElement('img');
         img.src=ev.img; img.alt='Imagem do evento '+nome; img.loading='lazy'; img.decoding='async';
+        img.onerror=()=>{ media.textContent='Mídia do evento'; img.remove(); };
         media.appendChild(img);
       } else {
         media.textContent='Mídia do evento';
@@ -648,7 +654,7 @@
     modelsBox.addEventListener('click',e=>{const b=e.target.closest('button.model');if(!b)return;modelsBox.querySelectorAll('button.model').forEach(x=>x.setAttribute('aria-selected','false'));b.setAttribute('aria-selected','true');applyPlan(b.dataset.key)});
     applyPlan(null);
 
-    /* ========= FETCH /events (flatten) + FALLBACK ========= */
+    /* ========= FETCH /events (suporta array) ========= */
     async function fetchEventosDoBackend() {
       const EVENTO_DE_TESTE = {
         id: 'hello-world-uberaba',
@@ -663,10 +669,13 @@
       let items = [];
       try {
         const j = await fetchJson(`${BASE}/events`);
-        if (Array.isArray(j?.items)) {
+        if (Array.isArray(j)) {
+          items = j;
+        } else if (Array.isArray(j?.items)) {
           items = j.items;
-        } else if (j?.events && typeof j.events === 'object') {
-          items = Object.values(j.events).flat();
+        } else if (j?.events) {
+          if (Array.isArray(j.events)) items = j.events;
+          else if (typeof j.events === 'object') items = Object.values(j.events).flat();
         }
       } catch (e) {
         console.warn('events load failed', e);
@@ -682,7 +691,7 @@
         categoria: e.category || 'IngressAI',
         status: e.statusLabel || 'Em breve',
         descricao: e.description || e.title || e.nome || '',
-        img: e.image || e.bannerUrl || ''
+        img: e.imageUrl || e.image || e.bannerUrl || '' // ✅ usa a imagem enviada pelo bot
       }));
 
       eventos = mapped.length ? mapped : [{
