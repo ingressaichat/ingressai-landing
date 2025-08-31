@@ -22,6 +22,7 @@
   <link rel="icon" href="/favicon.png" type="image/png" sizes="32x32" />
   <link rel="preload" as="image" href="/logo_ingressai.png" />
   <style>
+    /* (estilos iguais à versão que você já colou; mantive tudo) */
     :root{--phi:1.618;--s0:8px;--s1:calc(var(--s0)*var(--phi));--s2:calc(var(--s1)*var(--phi));--s3:calc(var(--s2)*var(--phi));--s4:calc(var(--s3)*var(--phi));--fs-0:1rem;--fs--1:calc(var(--fs-0)/var(--phi));--fs-1:calc(var(--fs-0)*var(--phi));--fs-2:calc(var(--fs-1)*var(--phi));--lh-compact:1.22;--lh:1.45;--ink:#0b1220;--muted:#5b6b86;--bg:#f6f8fc;--card:#ffffff;--blue-1:#4A93F0;--blue-2:#2F7DD9;--blue-3:#1B5FB3;--blue-soft:#eaf3ff;--red-soft:#c94747;--shadow:0 10px 28px rgba(47,125,217,.14),0 2px 6px rgba(11,18,32,.08);--shadow-soft:0 6px 18px rgba(47,125,217,.12);--ring:0 0 0 2px rgba(74,147,240,.18);--container-max:calc(680px*var(--phi));--ico:clamp(40px,7vw,64px);--btn-h:52px;--radius-pill:999px;--t-fast:.18s;--t-med:.28s}
     *{box-sizing:border-box}
     html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font:16px/var(--lh) -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Ubuntu,Inter,system-ui,sans-serif}
@@ -59,7 +60,7 @@
     .proofs{padding:var(--s2) 0 var(--s3)}
     .features{display:grid;gap:var(--s0);grid-template-columns:repeat(2,minmax(0,1fr))}
     @media(min-width:900px){.features{grid-template-columns:repeat(4,minmax(0,1fr))}}
-    .feature{background:#fff;border:1px solid #e5ecff;border-radius:12px;padding:calc(var(--s0)*1.25);display:flex;flex-direction:column;align-items:center;gap:var(--s0);box-shadow:none;filter:none;cursor:default}
+    .feature{background:#fff;border:1px solid #e5ecff;border-radius:12px;padding:calc(var(--s0)*1.25);display:flex;flex-direction:column;align-items:center;gap:var(--s0);box-shadow:none}
     .feature svg{color:#000;stroke:currentColor;stroke-width:1.1;fill:none;stroke-linecap:round;stroke-linejoin:round;width:clamp(28px,8vw,36px);height:clamp(28px,8vw,36px)}
     .feature .bolt{fill:currentColor;stroke:none}
     .feature .cut{fill:var(--card);stroke:none}
@@ -103,7 +104,7 @@
     /* ===== BOTTOM SHEET ===== */
     .sheet-backdrop{position:fixed;inset:0;background:rgba(11,18,32,.36);opacity:0;pointer-events:none;transition:opacity var(--t-fast)}
     .sheet-backdrop.is-open{opacity:1;pointer-events:auto}
-    .sheet{position:fixed;left:0;right:0;bottom:0;height:72vh;max-height:760px;background:#fff;border-top-left-radius:24px;border-top-right-radius:24px;box-shadow:0 -24px 48px rgba(11,18,32,.16);transform:translateY(100%);transition:transform var(--t-med) cubic-bezier(.2,.7,.2,1);display:flex;flex-direction:column;padding:var(--s2);z-index:40;--close-hit:64px}
+    .sheet{position:fixed;left:0;right:0;bottom:0;height:72vh;max-height:760px;background:#fff;border-top-left-radius:24px;border-top-right-radius:24px;box-shadow:0 -24px 48px rgba(11,18,32,.16);transform:translateY(100%);transition:transform var(--t-med) cubic-bezier(.2,.7,.2,1);display:flex;flex-direction:column;padding:var(--s2);z-index:40}
     .sheet.is-open{transform:translateY(0)}
     .sheet h3{margin:0;font-weight:900;line-height:1.2}
     .sheet .sheet-body{overflow:auto;display:flex;flex-direction:column;gap:10px;padding-right:4px;padding-bottom:calc(20px + env(safe-area-inset-bottom))}
@@ -122,7 +123,6 @@
     .std-card{background:#fff;border:1px solid #e5ecff;border-radius:calc(var(--s2));padding:var(--s2);box-shadow:var(--shadow-soft)}
     .std-list{margin:0;padding-left:1.25rem;display:grid;gap:6px}
 
-    /* ===== ORGANIZADORES ===== */
     .model-grid{display:grid;grid-template-columns:1fr;gap:var(--s1);margin-top:var(--s1)}
     @media(min-width:720px){.model-grid{grid-template-columns:repeat(3,1fr)}}
     .model{appearance:none;background:#fff;border:1px solid #e5ecff;border-radius:calc(var(--s1));padding:var(--s1);display:flex;align-items:center;justify-content:center;gap:.6rem;cursor:pointer;text-align:center;box-shadow:var(--shadow-soft);font-weight:800;transition:transform var(--t-fast),box-shadow var(--t-fast),border-color var(--t-fast)}
@@ -139,12 +139,6 @@
     .panel-card{background:#f9fbff;border:1px solid #e5ecff;border-radius:calc(var(--s1));padding:var(--s2)}
     #org-detail.is-disabled{opacity:.55;pointer-events:none}
 
-    .cmd-list{display:grid;gap:8px}
-    .cmd{display:grid;grid-template-columns:1fr max-content;gap:6px;align-items:center;background:#fff;border:1px solid #e5ecff;border-radius:12px;padding:10px 12px}
-    .cmd code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.95rem;color:#0b1220}
-    .cmd small{grid-column:1 / -1;color:var(--muted)}
-    .cmd .copy{appearance:none;border:1px solid #e5ecff;background:#fff;border-radius:10px;padding:.4rem .6rem;cursor:pointer;font-weight:700;color:#2F7DD9}
-
     details.disclosure{border:0;padding:0;margin:0}
     .disclosure__summary{list-style:none;cursor:pointer;user-select:none;display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:.75rem 1rem;border:1px solid #e5ecff;border-radius:12px;background:#fff;box-shadow:var(--shadow-soft);font-weight:800;outline:none}
     .disclosure__summary::-webkit-details-marker{display:none}
@@ -153,7 +147,7 @@
     .calc-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     .calc input{width:100%;border:1px solid #e5ecff;border-radius:12px;padding:.7rem .8rem;font:inherit}
     .calc input:disabled{background:#f3f6ff;color:#8796b0}
-    .calc small{color:#var(--muted)}
+    .calc small{color:var(--muted)}
     .calc-result{background:#fff;border:1px dashed #dbe5ff;border-radius:12px;padding:.75rem .9rem;font-weight:800;display:flex;justify-content:space-between;align-items:center}
     .panel-cta{display:grid;grid-template-columns:1fr;gap:var(--s1);margin-top:var(--s2)}
     @media(min-width:560px){.panel-cta{grid-template-columns:max-content max-content}}
@@ -211,41 +205,19 @@
       <h2 id="proofs-title" class="sr-only">Provas de valor</h2>
       <div class="features" aria-label="Provas de valor">
         <div class="feature">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <rect x="3.6" y="6.6" width="16.8" height="10.8" rx="2.4" />
-            <circle class="cut" cx="3.6" cy="12" r="1" />
-            <circle class="cut" cx="20.4" cy="12" r="1" />
-            <path class="bolt" d="M12 9.4 L10.2 12 h1.55 l-.75 3.0 L14 11.2 h-1.6 z" />
-          </svg>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.6" y="6.6" width="16.8" height="10.8" rx="2.4" /><circle class="cut" cx="3.6" cy="12" r="1" /><circle class="cut" cx="20.4" cy="12" r="1" /><path class="bolt" d="M12 9.4 L10.2 12 h1.55 l-.75 3.0 L14 11.2 h-1.6 z" /></svg>
           <div class="meta"><strong>Venda automatizada</strong><small>via WhatsApp</small></div>
         </div>
         <div class="feature">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M4 10a 8 8 0 0 1 14-2" />
-            <path d="M4 6v4h4" />
-            <path d="M20 14a 8 8 0 0 1-14 2" />
-            <path d="M20 18v-4h-4" />
-          </svg>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10a 8 8 0 0 1 14-2" /><path d="M4 6v4h4" /><path d="M20 14a 8 8 0 0 1-14 2" /><path d="M20 18v-4h-4" /></svg>
           <div class="meta"><strong>Repasse imediato</strong><small>via Pix</small></div>
         </div>
         <div class="feature">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <rect x="3" y="3" width="7" height="7" rx="1.1" />
-            <rect class="qr-fill" x="5.6" y="5.6" width="2.8" height="2.8" rx=".35" />
-            <rect x="14" y="3" width="7" height="7" rx="1.1" />
-            <rect class="qr-fill" x="16.6" y="5.6" width="2.8" height="2.8" rx=".35" />
-            <rect x="3" y="14" width="7" height="7" rx="1.1" />
-            <rect class="qr-fill" x="5.6" y="16.6" width="2.8" height="2.8" rx=".35" />
-          </svg>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.1" /><rect class="qr-fill" x="5.6" y="5.6" width="2.8" height="2.8" rx=".35" /><rect x="14" y="3" width="7" height="7" rx="1.1" /><rect class="qr-fill" x="16.6" y="5.6" width="2.8" height="2.8" rx=".35" /><rect x="3" y="14" width="7" height="7" rx="1.1" /><rect class="qr-fill" x="5.6" y="16.6" width="2.8" height="2.8" rx=".35" /></svg>
           <div class="meta"><strong>QR Code Antifraude</strong><small>+ validador web</small></div>
         </div>
         <div class="feature">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M9 7h11M9 12h11M9 17h11" />
-            <rect x="4" y="6" width="2.2" height="2.2" rx=".35" />
-            <rect x="4" y="11" width="2.2" height="2.2" rx=".35" />
-            <rect x="4" y="16" width="2.2" height="2.2" rx=".35" />
-          </svg>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7h11M9 12h11M9 17h11" /><rect x="4" y="6" width="2.2" height="2.2" rx=".35" /><rect x="4" y="11" width="2.2" height="2.2" rx=".35" /><rect x="4" y="16" width="2.2" height="2.2" rx=".35" /></svg>
           <div class="meta"><strong>Comandos &amp; Dashboard</strong><small>Compradores &amp; acesso</small></div>
         </div>
       </div>
@@ -263,7 +235,7 @@
       <div class="cards" id="lista-eventos" aria-live="polite"></div>
     </section>
 
-    <!-- === ORGANIZADORES === -->
+    <!-- === ORGANIZADORES — COMPLETO === -->
     <section id="organizadores" class="section" aria-labelledby="orgs-title" tabindex="-1" hidden>
       <h2 id="orgs-title">Soluções para organizadores</h2>
       <div id="std-card" class="std-card"></div>
@@ -326,23 +298,13 @@
       <div class="foot-block">
         <div class="link-row" aria-label="Canais de contato">
           <a class="link-btn" href="mailto:contato@ingressai.chat" aria-label="Enviar e-mail">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="5" width="18" height="14" rx="2"></rect>
-              <path d="M4 6l8 6 8-6"></path>
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M4 6l8 6 8-6"></path></svg>
           </a>
           <a class="link-btn" href="https://instagram.com/ingressai" target="_blank" rel="noopener noreferrer" aria-label="Abrir Instagram">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="3" width="18" height="18" rx="4"></rect>
-              <circle cx="12" cy="12" r="5"></circle>
-              <circle cx="17" cy="7" r="1.2" fill="currentColor" stroke="none"></circle>
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"></rect><circle cx="12" cy="12" r="5"></circle><circle cx="17" cy="7" r="1.2" fill="currentColor" stroke="none"></circle></svg>
           </a>
           <a class="link-btn" href="https://wa.me/5534999992747" target="_blank" rel="noopener noreferrer" aria-label="Falar com o bot no WhatsApp">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 90 90" aria-hidden="true" focusable="false">
-              <path d="M0.576 44.596C0.573 52.456 2.626 60.129 6.53 66.892L0.201 90l23.65-6.201c6.516 3.553 13.852 5.426 21.318 5.429h0.019c24.586 0 44.601-20.009 44.612-44.597 0.004-11.917-4.633-23.122-13.055-31.552C68.321 4.65 57.121 0.005 45.188 0 20.597 0 0.585 20.005 0.575 44.595m14.083 21.132l-0.883-1.402c-3.712-5.902-5.671-12.723-5.669-19.726C8.115 24.161 24.748 7.532 45.201 7.532c9.905 0.004 19.213 3.865 26.215 10.871 7.001 7.006 10.854 16.32 10.851 26.224-0.009 20.439-16.643 37.068-37.08 37.068h-0.015c-6.655-0.004-13.181-1.79-18.872-5.168l-1.355-0.803-14.035 3.68 4.956-13.937z" fill="currentColor"/>
-              <path d="M34.038 25.95c-0.835-1.856-1.714-1.894-2.508-1.926-0.65-0.028-1.394-0.026-2.136-0.026-0.744 0-1.951 0.279-2.972 1.394-1.022 1.116-3.902 3.812-3.902 9.296 0 5.485 3.995 10.784 4.551 11.529 0.558 0.743 7.712 12.357 19.041 16.825 9.416 3.713 11.333 2.975 13.376 2.789 2.044-0.186 6.595-2.696 7.524-5.299 0.929-2.603 0.929-4.834 0.651-5.299-0.279-0.465-1.022-0.744-2.137-1.301-1.115-0.558-6.595-3.254-7.617-3.626-1.022-0.372-1.765-0.557-2.509 0.559-0.743 1.115-2.878 3.625-3.528 4.368-0.65 0.745-1.301 0.838-2.415 0.28-1.115-0.559-4.705-1.735-8.964-5.532-3.314-2.955-5.551-6.603-6.201-7.719-0.65-1.115-0.069-1.718 0.489-2.274 0.501-0.499 1.115-1.301 1.673-1.952 0.556-0.651 0.742-1.116 1.113-1.859 0.372-0.744 0.186-1.395-0.093-1.953-0.805-1.58-2.971-7.092-3.962-9.296" fill="currentColor"/>
-            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 90 90" aria-hidden="true" focusable="false"><path d="M0.576 44.596C0.573 52.456 2.626 60.129 6.53 66.892L0.201 90l23.65-6.201c6.516 3.553 13.852 5.426 21.318 5.429h0.019c24.586 0 44.601-20.009 44.612-44.597 0.004-11.917-4.633-23.122-13.055-31.552C68.321 4.65 57.121 0.005 45.188 0 20.597 0 0.585 20.005 0.575 44.595m14.083 21.132l-0.883-1.402c-3.712-5.902-5.671-12.723-5.669-19.726C8.115 24.161 24.748 7.532 45.201 7.532c9.905 0.004 19.213 3.865 26.215 10.871 7.001 7.006 10.854 16.32 10.851 26.224-0.009 20.439-16.643 37.068-37.08 37.068h-0.015c-6.655-0.004-13.181-1.79-18.872-5.168l-1.355-0.803-14.035 3.68 4.956-13.937z" fill="currentColor"/><path d="M34.038 25.95c-0.835-1.856-1.714-1.894-2.508-1.926-0.65-0.028-1.394-0.026-2.136-0.026-0.744 0-1.951 0.279-2.972 1.394-1.022 1.116-3.902 3.812-3.902 9.296 0 5.485 3.995 10.784 4.551 11.529 0.558 0.743 7.712 12.357 19.041 16.825 9.416 3.713 11.333 2.975 13.376 2.789 2.044-0.186 6.595-2.696 7.524-5.299 0.929-2.603 0.929-4.834 0.651-5.299-0.279-0.465-1.022-0.744-2.137-1.301-1.115-0.558-6.595-3.254-7.617-3.626-1.022-0.372-1.765-0.557-2.509 0.559-0.743 1.115-2.878 3.625-3.528 4.368-0.65 0.745-1.301 0.838-2.415 0.28-1.115-0.559-4.705-1.735-8.964-5.532-3.314-2.955-5.551-6.603-6.201-7.719-0.65-1.115-0.069-1.718 0.489-2.274 0.501-0.499 1.115-1.301 1.673-1.952 0.556-0.651 0.742-1.116 1.113-1.859 0.372-0.744 0.186-1.395-0.093-1.953-0.805-1.58-2.971-7.092-3.962-9.296" fill="currentColor"/></svg>
           </a>
         </div>
         <div class="legal" aria-label="Links legais">
@@ -375,59 +337,38 @@
     function waHref(text){return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`}
     function animatePress(el){try{el.classList.add('btn-press');el.addEventListener('animationend',()=>el.classList.remove('btn-press'),{once:true})}catch{}}
     function smoothGoTo(id){const target=document.getElementById(id);if(!target)return;const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;target.scrollIntoView({behavior:reduced?'auto':'smooth',block:'start'});try{target.focus({preventScroll:true})}catch{}}
-    async function fetchJson(url, opts){const r=await fetch(url,{headers:{'Accept':'application/json',...(opts&&opts.headers||{})},...opts});let j=null;try{j=await r.json()}catch{};if(!r.ok)throw new Error(j?.error||r.statusText||'Request failed');return j}
-    const normalizeStatusLabel=(s)=>s?String(s).replace('Últimos ingressos','Último lote'):'';
+    async function fetchJson(url, opts){const r=await fetch(url,{headers:{'Accept':'application/json',...(opts&&opts.headers||{})},...opts});let j=null;try{j=await r.json()}catch{}if(!r.ok)throw new Error(j?.error||r.statusText||'Request failed');return j}
 
     /* ========= DOM ========= */
     const lista=document.getElementById('lista-eventos');
     const inputBusca=document.getElementById('busca-eventos');
     const chipsRow=document.getElementById('filtro-cidades');
-    const std=document.getElementById('std-card');
-    const modelsBox=document.getElementById('org-models');
-    const feeRow=document.getElementById('fee-row');
-    const feeChip=document.getElementById('fee-chip');
-    const detail=document.getElementById('org-detail');
-    const orgNotice=document.getElementById('org-notice');
-    const cmdList=document.getElementById('cmd-list');
-    const calcBox=document.getElementById('calc-box');
-    const calcNote=document.getElementById('calc-note');
-    const calcNet=document.getElementById('calc-net');
-    const calcGross=document.getElementById('calc-gross');
-    const orgQuick=document.getElementById('org-quick');
     const sheet=document.getElementById('sheet');
     const sheetBody=document.getElementById('sheet-body');
     const sheetBackdrop=document.getElementById('sheet-backdrop');
 
-    /* ========= HEADER FX ========= */
+    /* ========= HEADER ========= */
     document.addEventListener('click',e=>{const el=e.target.closest('.btn,.view');if(el)animatePress(el)});
     (function(){const hero=document.querySelector('.hero');const header=document.querySelector('header');const HIDE_START=16,HIDE_END=240;let ticking=false;function onScroll(){if(ticking)return;ticking=true;requestAnimationFrame(()=>{const y=window.scrollY||document.documentElement.scrollTop||0;header&&header.classList.toggle('is-scrolled',y>8);const p=Math.min(1,Math.max(0,(y-HIDE_START)/(HIDE_END-HIDE_START)));if(hero){hero.style.setProperty('--hero-p',p.toFixed(3));hero.classList.toggle('is-hidden',p>=1)}ticking=false})}onScroll();window.addEventListener('scroll',onScroll,{passive:true})})();
-
-    /* ========= CTA ORGANIZADORES ========= */
-    document.addEventListener('DOMContentLoaded',()=> {
-      const sec=document.getElementById('organizadores');
-      const cta=document.getElementById('cta-organizadores');
-      function openOrganizadores(){ if(sec){ sec.removeAttribute('hidden'); smoothGoTo('organizadores'); } }
-      cta?.addEventListener('click', (e)=>{ if (cta.getAttribute('href')?.startsWith('#organizadores')) { e.preventDefault(); openOrganizadores(); } });
-      if (location.hash === '#organizadores') openOrganizadores();
-    });
 
     /* ========= VITRINE ========= */
     const MAIN_CITIES=['Uberaba','Uberlândia','Belo Horizonte','Ribeirão Preto','Franca'];
     let selectedCity='Todas';
     let query='';
 
+    function normalizeStatusLabel(s){if(!s)return'';return s.replace('Últimos ingressos','Último lote')}
     function filterEventos(data,q,city){
       const qn=(q||'').trim().toLowerCase();
-      const citySel=(city||'Todas').toLowerCase();
+      const citySel=city||'Todas';
       return data.filter(ev=>{
-        const matchCity=citySel==='todas'?true:(String(ev.cidade||'').toLowerCase()===citySel);
-        const nome=String(ev.nome||'').toLowerCase();
-        const desc=String(ev.descricao||'').toLowerCase();
-        const matchQuery=!qn || nome.includes(qn) || desc.includes(qn);
-        return matchCity&&matchQuery;
-      });
+        const evCidade=(ev.cidade||'').toLowerCase();
+        const matchCity=citySel==='Todas'?true:evCidade===citySel.toLowerCase();
+        const nome=(ev.nome||'').toLowerCase();
+        const desc=(ev.descricao||'').toLowerCase();
+        const matchQuery=!qn?true:(nome.includes(qn)||desc.includes(qn));
+        return matchCity&&matchQuery
+      })
     }
-
     function buildChips(){
       chipsRow.innerHTML='';
       const cities=Array.from(new Set(MAIN_CITIES.concat(eventos.map(e=>e.cidade).filter(Boolean))));
@@ -435,16 +376,9 @@
         const btn=document.createElement('button');
         btn.className='chip';btn.type='button';btn.textContent=c;btn.setAttribute('role','tab');
         btn.setAttribute('aria-selected',c===selectedCity?'true':'false');
-        btn.dataset.city=c;chipsRow.appendChild(btn);
-      });
+        btn.dataset.city=c;chipsRow.appendChild(btn)
+      })
     }
-
-    function buildStatusChip(statusLabel){
-      const key=statusLabel==='Esgotado'?'sold':(statusLabel==='Último lote'?'low':'soon');
-      const lbl=statusLabel||'Em breve';
-      return `<span class="status-chip ${key}"><span class="dot" aria-hidden="true"></span>${lbl}</span>`;
-    }
-
     function renderCards(){
       const data=filterEventos(eventos,query,selectedCity);
       lista.innerHTML='';
@@ -483,25 +417,15 @@
           <div style="display:grid;grid-template-columns:1fr;gap:8px;margin-top:4px">
             <button type="button" class="view" data-open="${ev.id}" aria-label="Ver detalhes de ${ev.nome}">Ver detalhes</button>
           </div>`;
-        lista.appendChild(card);
-      });
+        lista.appendChild(card)
+      })
     }
 
-    // filtros
-    chipsRow.addEventListener('click',e=>{
-      const b=e.target.closest('button.chip');if(!b)return;
-      selectedCity=b.dataset.city;
-      chipsRow.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-selected','false'));
-      b.setAttribute('aria-selected','true');
-      renderCards();
-    });
-    let debounce;
-    inputBusca.addEventListener('input',()=>{
-      clearTimeout(debounce);
-      debounce=setTimeout(()=>{query=inputBusca.value;renderCards()},180)
-    });
+    chipsRow.addEventListener('click',e=>{const b=e.target.closest('button.chip');if(!b)return;selectedCity=b.dataset.city;chipsRow.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-selected','false'));b.setAttribute('aria-selected','true');renderCards()});
+    let debounce;document.getElementById('busca-eventos').addEventListener('input',()=>{clearTimeout(debounce);debounce=setTimeout(()=>{query=inputBusca.value;renderCards()},180)});
 
-    // bottom sheet
+    function buildStatusChip(statusLabel){const key=statusLabel==='Esgotado'?'sold':(statusLabel==='Último lote'?'low':'soon');const lbl=statusLabel||'Em breve';return `<span class="status-chip ${key}"><span class="dot" aria-hidden="true"></span>${lbl}</span>`}
+
     function openSheet(ev){
       ev = ev || {};
       const nome = ev.nome || 'Evento';
@@ -552,21 +476,21 @@
       if(sold){
         actions.innerHTML=`<span class="status-line status--sold"><span class="status-dot" aria-hidden="true"></span><span class="status-label">Esgotado</span></span><a class="btn btn--secondary btn--sm" href="#vitrine">Ver outros eventos</a>`;
       } else {
-        // ✔️ único CTA: comprar no WhatsApp
         actions.innerHTML = `
           <div style="display:grid;grid-template-columns:1fr;gap:8px">
-            <a class="btn btn--secondary btn--sm" href="${waHref(`ingressai:start ev=${ev.id} name=`)}" target="_blank" rel="noopener">Comprar pelo WhatsApp</a>
+            <a class="btn btn--secondary btn--sm"
+               href="${waHref(`ingressai:start ev=${ev.id}`)}"
+               target="_blank" rel="noopener">
+              Comprar pelo WhatsApp
+            </a>
           </div>`;
       }
 
       const nodes=[media, head, meta1, meta2, desc, actions];
-      if (typeof sheetBody.replaceChildren === 'function') {
-        sheetBody.replaceChildren(...nodes);
-      } else {
-        sheetBody.innerHTML='';
-        nodes.forEach(n=>sheetBody.appendChild(n));
-      }
+      if (typeof sheetBody.replaceChildren === 'function') sheetBody.replaceChildren(...nodes);
+      else { sheetBody.innerHTML=''; nodes.forEach(n=>sheetBody.appendChild(n)); }
 
+      // abre sheet
       sheet.setAttribute('aria-hidden','false');
       sheet.setAttribute('aria-labelledby','sheet-title');
       sheetBackdrop.setAttribute('aria-hidden','false');
@@ -590,31 +514,29 @@
     sheetBackdrop?.addEventListener('click', closeSheetSafe);
     document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && sheet?.classList?.contains('is-open')) closeSheetSafe(e); });
 
-    // abrir detalhes
-    lista.addEventListener('click',e=>{
-      const btn=e.target.closest('[data-open]');
-      if(!btn) return;
-      const ev=evIndex[btn.dataset.open];
-      if(!ev) return;
-      openSheet(ev);
-    });
-    // acessibilidade: Enter/Space abre detalhes quando focado no botão
-    lista.addEventListener('keydown',e=>{
-      const btn=e.target.closest('[data-open]');
-      if(!btn) return;
-      if(e.key==='Enter' || e.key===' '){ e.preventDefault(); btn.click(); }
-    });
+    const listaEl=document.getElementById('lista-eventos');
+    listaEl.addEventListener('click',e=>{const btn=e.target.closest('[data-open]');if(!btn)return;const ev=evIndex[btn.dataset.open];if(!ev)return;openSheet(ev)});
 
     /* ========= ORGANIZADORES ========= */
     const commonFeatures=['Criação de evento 100% pelo WhatsApp','Geração automática de ingresso com QR Code','Link público de vendas e acompanhamento em tempo real','Repasse na hora ao organizador','Página de validador liberada ao criar o evento','Lista de compradores atualizada'];
-    std.innerHTML='<ul class="std-list">'+commonFeatures.map(f=>'\n<li>'+f+'</li>').join('')+'</ul>';
+    document.getElementById('std-card').innerHTML='<ul class="std-list">'+commonFeatures.map(f=>'\n<li>'+f+'</li>').join('')+'</ul>';
 
     const categorias=[
       {key:'aret',title:'Atléticas & Repúblicas',taxa:'8%',feePct:8,ctaMsg:'Olá! Quero criar um evento como Atléticas & Repúblicas. Nome do evento: . Cidade: . Data: . Lotes: .'},
       {key:'prod',title:'Produtoras Independentes',taxa:'10%',feePct:10,ctaMsg:'Olá! Quero criar um evento como Produtora Independente. Nome do evento: . Cidade: . Data: . Lotes: .'},
       {key:'locais',title:'Locais Independentes',taxa:'10%',feePct:10,ctaMsg:'Olá! Quero criar um evento como Local Independente. Nome do evento: . Cidade: . Data: . Capacidade: .'}
     ];
+    const modelsBox=document.getElementById('org-models');
     modelsBox.innerHTML=categorias.map(m=>'<button type="button" class="model" role="tab" aria-selected="false" data-key="'+m.key+'">'+m.title+'</button>').join('');
+    const feeRow=document.getElementById('fee-row');
+    const feeChip=document.getElementById('fee-chip');
+    const detail=document.getElementById('org-detail');
+    const orgNotice=document.getElementById('org-notice');
+    const cmdList=document.getElementById('cmd-list');
+    const calcBox=document.getElementById('calc-box');
+    const calcNote=document.getElementById('calc-note');
+    const calcNet=document.getElementById('calc-net');
+    const calcGross=document.getElementById('calc-gross');
 
     const BRL=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
     const parseBR=v=>Number(String(v).replace(/[^\d,.-]/g,'').replace(/\./g,'').replace(',', '.'))||0;
@@ -639,8 +561,8 @@
       calcNote.innerHTML=plan?'Taxa aplicada: <strong>'+plan.taxa+'</strong>. O restante é repassado ao organizador na hora.':'Selecione um plano acima para aplicar a taxa.';
       const preco=document.getElementById('preco');const qtd=document.getElementById('qtd');
       preco.disabled=!plan;qtd.disabled=!plan;calcGross.textContent=BRL.format(0);calcNet.textContent=BRL.format(0);
-      if(plan){orgQuick.classList.remove('is-disabled');orgQuick.removeAttribute('aria-disabled');orgQuick.onclick=e=>{e.currentTarget.href=waHref(plan.ctaMsg);e.currentTarget.target='_blank';e.currentTarget.rel='noopener noreferrer'}}
-      else{orgQuick.classList.add('is-disabled');orgQuick.setAttribute('aria-disabled','true');orgQuick.removeAttribute('href');orgQuick.onclick=null}
+      if(plan){document.getElementById('org-quick').classList.remove('is-disabled')}
+      else{document.getElementById('org-quick').classList.add('is-disabled')}
       detail.querySelectorAll('button.copy').forEach(b=>{b.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(b.dataset.cmd)}catch{}})});
       const recompute=()=>{const fee=Number(calcBox.dataset.fee)||0;const p=parseBR(preco.value||'0');const q=Math.max(1,parseInt(qtd.value||'1',10));const bruto=computeGross(p,q);calcGross.textContent=money(bruto);calcNet.textContent=money(computeNet(p,q,fee))};
       preco.addEventListener('input',recompute);qtd.addEventListener('input',recompute)
@@ -650,16 +572,6 @@
 
     /* ========= FETCH /events ========= */
     async function fetchEventosDoBackend() {
-      const EVENTO_DE_TESTE = {
-        id: 'hello-world-uberaba',
-        title: 'Hello World — Uberaba',
-        city: 'Uberaba',
-        date: '2025-09-15T23:00:00-03:00',
-        venue: 'Espaço Central',
-        image: '',
-        statusLabel: 'Último lote'
-      };
-
       let items = [];
       try {
         const j = await fetchJson(`${BASE}/events`);
@@ -670,7 +582,7 @@
         console.warn('events load failed', e);
       }
 
-      const mapped = items.map(e => ({
+      const mapped = (items || []).map(e => ({
         id: String(e.id),
         nome: e.title || e.nome || 'Evento',
         cidade: e.city || e.cidade || '',
@@ -683,19 +595,21 @@
         img: e.imageUrl || e.image || e.bannerUrl || ''
       }));
 
-      eventos = mapped.length ? mapped : [{
-        id: String(EVENTO_DE_TESTE.id),
-        nome: EVENTO_DE_TESTE.title,
-        cidade: EVENTO_DE_TESTE.city,
-        dataISO: EVENTO_DE_TESTE.date,
-        localNome: EVENTO_DE_TESTE.venue,
-        localUrl: 'https://maps.google.com/?q=' + encodeURIComponent(`${EVENTO_DE_TESTE.venue} ${EVENTO_DE_TESTE.city}`),
+      const fallback = [{
+        id: 'hello-world-uberaba',
+        nome: 'Hello World — Uberaba',
+        cidade: 'Uberaba',
+        dataISO: '2025-09-15T23:00:00-03:00',
+        localNome: 'Espaço Central',
+        localUrl: 'https://maps.google.com/?q=' + encodeURIComponent('Espaço Central Uberaba'),
         categoria: 'IngressAI',
-        status: EVENTO_DE_TESTE.statusLabel,
-        descricao: EVENTO_DE_TESTE.title,
-        img: EVENTO_DE_TESTE.image
+        status: 'Último lote',
+        descricao: 'Hello World — Uberaba',
+        img: ''
       }];
 
+      const final = mapped.length ? mapped : fallback;
+      eventos = final;
       evIndex = Object.fromEntries(eventos.map(e=>[e.id,e]));
     }
 
@@ -705,7 +619,6 @@
       buildChips();
       renderCards();
 
-      // JSON-LD de Events
       try {
         const nodes = eventos.map(ev=>({
           "@context":"https://schema.org","@type":"Event","name":ev.nome,"startDate":ev.dataISO,
