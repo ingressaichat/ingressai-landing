@@ -153,7 +153,7 @@
     .calc-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     .calc input{width:100%;border:1px solid #e5ecff;border-radius:12px;padding:.7rem .8rem;font:inherit}
     .calc input:disabled{background:#f3f6ff;color:#8796b0}
-    .calc small{color:var(--muted)}
+    .calc small{color:#var(--muted)}
     .calc-result{background:#fff;border:1px dashed #dbe5ff;border-radius:12px;padding:.75rem .9rem;font-weight:800;display:flex;justify-content:space-between;align-items:center}
     .panel-cta{display:grid;grid-template-columns:1fr;gap:var(--s1);margin-top:var(--s2)}
     @media(min-width:560px){.panel-cta{grid-template-columns:max-content max-content}}
@@ -263,7 +263,7 @@
       <div class="cards" id="lista-eventos" aria-live="polite"></div>
     </section>
 
-    <!-- === ORGANIZADORES — COMPLETO === -->
+    <!-- === ORGANIZADORES === -->
     <section id="organizadores" class="section" aria-labelledby="orgs-title" tabindex="-1" hidden>
       <h2 id="orgs-title">Soluções para organizadores</h2>
       <div id="std-card" class="std-card"></div>
@@ -372,17 +372,11 @@
     let evIndex = {};
 
     /* ========= HELPERS ========= */
-    function formatDate(iso){try{const d=new Date(iso);return d.toLocaleString('pt-BR',{dateStyle:'medium',timeStyle:'short'})}catch{return iso}}
     function waHref(text){return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`}
     function animatePress(el){try{el.classList.add('btn-press');el.addEventListener('animationend',()=>el.classList.remove('btn-press'),{once:true})}catch{}}
     function smoothGoTo(id){const target=document.getElementById(id);if(!target)return;const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;target.scrollIntoView({behavior:reduced?'auto':'smooth',block:'start'});try{target.focus({preventScroll:true})}catch{}}
-
-    async function fetchJson(url, opts){
-      const r = await fetch(url, { headers: { 'Accept':'application/json', ...(opts&&opts.headers||{}) }, ...opts });
-      let j = null; try { j = await r.json(); } catch {}
-      if (!r.ok) throw new Error(j?.error || r.statusText || 'Request failed');
-      return j;
-    }
+    async function fetchJson(url, opts){const r=await fetch(url,{headers:{'Accept':'application/json',...(opts&&opts.headers||{})},...opts});let j=null;try{j=await r.json()}catch{};if(!r.ok)throw new Error(j?.error||r.statusText||'Request failed');return j}
+    const normalizeStatusLabel=(s)=>s?String(s).replace('Últimos ingressos','Último lote'):'';
 
     /* ========= DOM ========= */
     const lista=document.getElementById('lista-eventos');
@@ -404,10 +398,11 @@
     const sheetBody=document.getElementById('sheet-body');
     const sheetBackdrop=document.getElementById('sheet-backdrop');
 
-    /* ========= HEADER + CTA ========= */
+    /* ========= HEADER FX ========= */
     document.addEventListener('click',e=>{const el=e.target.closest('.btn,.view');if(el)animatePress(el)});
     (function(){const hero=document.querySelector('.hero');const header=document.querySelector('header');const HIDE_START=16,HIDE_END=240;let ticking=false;function onScroll(){if(ticking)return;ticking=true;requestAnimationFrame(()=>{const y=window.scrollY||document.documentElement.scrollTop||0;header&&header.classList.toggle('is-scrolled',y>8);const p=Math.min(1,Math.max(0,(y-HIDE_START)/(HIDE_END-HIDE_START)));if(hero){hero.style.setProperty('--hero-p',p.toFixed(3));hero.classList.toggle('is-hidden',p>=1)}ticking=false})}onScroll();window.addEventListener('scroll',onScroll,{passive:true})})();
 
+    /* ========= CTA ORGANIZADORES ========= */
     document.addEventListener('DOMContentLoaded',()=> {
       const sec=document.getElementById('organizadores');
       const cta=document.getElementById('cta-organizadores');
@@ -421,19 +416,18 @@
     let selectedCity='Todas';
     let query='';
 
-    function normalizeStatusLabel(s){if(!s)return'';return s.replace('Últimos ingressos','Último lote')}
     function filterEventos(data,q,city){
       const qn=(q||'').trim().toLowerCase();
-      const citySel=city||'Todas';
+      const citySel=(city||'Todas').toLowerCase();
       return data.filter(ev=>{
-        const evCidade=(ev.cidade||'').toLowerCase();
-        const matchCity=citySel==='Todas'?true:evCidade===citySel.toLowerCase();
-        const nome=(ev.nome||'').toLowerCase();
-        const desc=(ev.descricao||'').toLowerCase();
-        const matchQuery=!qn?true:(nome.includes(qn)||desc.includes(qn));
-        return matchCity&&matchQuery
-      })
+        const matchCity=citySel==='todas'?true:(String(ev.cidade||'').toLowerCase()===citySel);
+        const nome=String(ev.nome||'').toLowerCase();
+        const desc=String(ev.descricao||'').toLowerCase();
+        const matchQuery=!qn || nome.includes(qn) || desc.includes(qn);
+        return matchCity&&matchQuery;
+      });
     }
+
     function buildChips(){
       chipsRow.innerHTML='';
       const cities=Array.from(new Set(MAIN_CITIES.concat(eventos.map(e=>e.cidade).filter(Boolean))));
@@ -441,9 +435,16 @@
         const btn=document.createElement('button');
         btn.className='chip';btn.type='button';btn.textContent=c;btn.setAttribute('role','tab');
         btn.setAttribute('aria-selected',c===selectedCity?'true':'false');
-        btn.dataset.city=c;chipsRow.appendChild(btn)
-      })
+        btn.dataset.city=c;chipsRow.appendChild(btn);
+      });
     }
+
+    function buildStatusChip(statusLabel){
+      const key=statusLabel==='Esgotado'?'sold':(statusLabel==='Último lote'?'low':'soon');
+      const lbl=statusLabel||'Em breve';
+      return `<span class="status-chip ${key}"><span class="dot" aria-hidden="true"></span>${lbl}</span>`;
+    }
+
     function renderCards(){
       const data=filterEventos(eventos,query,selectedCity);
       lista.innerHTML='';
@@ -479,28 +480,28 @@
               </div>
             </div>
           </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px">
+          <div style="display:grid;grid-template-columns:1fr;gap:8px;margin-top:4px">
             <button type="button" class="view" data-open="${ev.id}" aria-label="Ver detalhes de ${ev.nome}">Ver detalhes</button>
-            <a class="view" href="${waHref(`ingressai:start ev=${ev.id} name=`)}" target="_blank" rel="noopener">Comprar no WhatsApp</a>
           </div>`;
-        lista.appendChild(card)
-      })
+        lista.appendChild(card);
+      });
     }
 
-    chipsRow.addEventListener('click',e=>{const b=e.target.closest('button.chip');if(!b)return;selectedCity=b.dataset.city;chipsRow.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-selected','false'));b.setAttribute('aria-selected','true');renderCards()});
-    let debounce;inputBusca.addEventListener('input',()=>{clearTimeout(debounce);debounce=setTimeout(()=>{query=inputBusca.value;renderCards()},180)});
+    // filtros
+    chipsRow.addEventListener('click',e=>{
+      const b=e.target.closest('button.chip');if(!b)return;
+      selectedCity=b.dataset.city;
+      chipsRow.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-selected','false'));
+      b.setAttribute('aria-selected','true');
+      renderCards();
+    });
+    let debounce;
+    inputBusca.addEventListener('input',()=>{
+      clearTimeout(debounce);
+      debounce=setTimeout(()=>{query=inputBusca.value;renderCards()},180)
+    });
 
-    function buildStatusChip(statusLabel){const key=statusLabel==='Esgotado'?'sold':(statusLabel==='Último lote'?'low':'soon');const lbl=statusLabel||'Em breve';return `<span class="status-chip ${key}"><span class="dot" aria-hidden="true"></span>${lbl}</span>`}
-
-    // fluxo teste direto (sem deep-link), chamando endpoints já existentes
-    async function backendIssueAndSend(to, ev){
-      const url = `${BASE}/test/send-ticket?to=${encodeURIComponent(to)}&name=${encodeURIComponent('Visitante')}&ev=${encodeURIComponent(ev.id||'')}`;
-      const r = await fetch(url);
-      const j = await r.json().catch(()=>null);
-      if (!r.ok || !j?.ok) throw new Error(j?.error || 'Falha ao emitir/enviar ticket');
-      return true;
-    }
-
+    // bottom sheet
     function openSheet(ev){
       ev = ev || {};
       const nome = ev.nome || 'Evento';
@@ -514,7 +515,6 @@
 
       sheetBody.innerHTML='';
 
-      // mídia
       const media=document.createElement('div');
       media.className='sheet-media';
       if(ev.img){
@@ -526,12 +526,10 @@
         media.textContent='Mídia do evento';
       }
 
-      // cabeçalho: título sem cidade
       const head=document.createElement('div');
       head.className='sheet-head';
       head.innerHTML=`<h3 id="sheet-title">${nome}</h3>${buildStatusChip(statusLabel)}`;
 
-      // meta (cidade + data) em cinza
       const meta1=document.createElement('div');
       meta1.className='meta-line subtle';
       const d = dataISO ? new Date(dataISO) : null;
@@ -539,7 +537,6 @@
       const tm = d ? (d.getMinutes()===0 ? `${d.getHours()} horas` : `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')} horas`) : '';
       meta1.textContent = `${cidade}${cidade && (dt||tm) ? ', ' : ''}${dt}${tm ? ' às ' + tm : ''}`;
 
-      // local
       const meta2=document.createElement('div');
       meta2.className='meta-line';
       meta2.innerHTML= localUrl
@@ -550,16 +547,15 @@
       desc.className='subtle';
       desc.textContent=descricao;
 
-      // ações
       const actions=document.createElement('div');
       actions.className='actions';
       if(sold){
         actions.innerHTML=`<span class="status-line status--sold"><span class="status-dot" aria-hidden="true"></span><span class="status-label">Esgotado</span></span><a class="btn btn--secondary btn--sm" href="#vitrine">Ver outros eventos</a>`;
       } else {
+        // ✔️ único CTA: comprar no WhatsApp
         actions.innerHTML = `
           <div style="display:grid;grid-template-columns:1fr;gap:8px">
             <a class="btn btn--secondary btn--sm" href="${waHref(`ingressai:start ev=${ev.id} name=`)}" target="_blank" rel="noopener">Comprar pelo WhatsApp</a>
-            <button type="button" class="btn btn--ghost btn--sm" data-buy="${ev.id || 'TST'}">Receber PDF agora (teste)</button>
           </div>`;
       }
 
@@ -571,20 +567,6 @@
         nodes.forEach(n=>sheetBody.appendChild(n));
       }
 
-      // ação “PDF agora (teste)”
-      actions.querySelector('[data-buy]')?.addEventListener('click', async () => {
-        const to = prompt('Seu WhatsApp (DDI+DDD+NÚMERO, ex: 5534991551802):')?.trim();
-        if (!/^\d{10,15}$/.test(to || '')) { alert('Número inválido.'); return; }
-        try {
-          await backendIssueAndSend(to, ev);
-          alert('🎟️ Ingresso enviado no seu WhatsApp!');
-        } catch (e) {
-          console.error(e);
-          alert('Não consegui enviar agora. Tente pelo WhatsApp: '+ waHref(`ingressai:start ev=${ev.id} name=`));
-        }
-      });
-
-      // abre sheet
       sheet.setAttribute('aria-hidden','false');
       sheet.setAttribute('aria-labelledby','sheet-title');
       sheetBackdrop.setAttribute('aria-hidden','false');
@@ -608,8 +590,20 @@
     sheetBackdrop?.addEventListener('click', closeSheetSafe);
     document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && sheet?.classList?.contains('is-open')) closeSheetSafe(e); });
 
-    const listaEl=document.getElementById('lista-eventos');
-    listaEl.addEventListener('click',e=>{const btn=e.target.closest('[data-open]');if(!btn)return;const ev=evIndex[btn.dataset.open];if(!ev)return;openSheet(ev)});
+    // abrir detalhes
+    lista.addEventListener('click',e=>{
+      const btn=e.target.closest('[data-open]');
+      if(!btn) return;
+      const ev=evIndex[btn.dataset.open];
+      if(!ev) return;
+      openSheet(ev);
+    });
+    // acessibilidade: Enter/Space abre detalhes quando focado no botão
+    lista.addEventListener('keydown',e=>{
+      const btn=e.target.closest('[data-open]');
+      if(!btn) return;
+      if(e.key==='Enter' || e.key===' '){ e.preventDefault(); btn.click(); }
+    });
 
     /* ========= ORGANIZADORES ========= */
     const commonFeatures=['Criação de evento 100% pelo WhatsApp','Geração automática de ingresso com QR Code','Link público de vendas e acompanhamento em tempo real','Repasse na hora ao organizador','Página de validador liberada ao criar o evento','Lista de compradores atualizada'];
@@ -654,7 +648,7 @@
     modelsBox.addEventListener('click',e=>{const b=e.target.closest('button.model');if(!b)return;modelsBox.querySelectorAll('button.model').forEach(x=>x.setAttribute('aria-selected','false'));b.setAttribute('aria-selected','true');applyPlan(b.dataset.key)});
     applyPlan(null);
 
-    /* ========= FETCH /events (suporta array) ========= */
+    /* ========= FETCH /events ========= */
     async function fetchEventosDoBackend() {
       const EVENTO_DE_TESTE = {
         id: 'hello-world-uberaba',
@@ -669,14 +663,9 @@
       let items = [];
       try {
         const j = await fetchJson(`${BASE}/events`);
-        if (Array.isArray(j)) {
-          items = j;
-        } else if (Array.isArray(j?.items)) {
-          items = j.items;
-        } else if (j?.events) {
-          if (Array.isArray(j.events)) items = j.events;
-          else if (typeof j.events === 'object') items = Object.values(j.events).flat();
-        }
+        if (Array.isArray(j)) items = j;
+        else if (Array.isArray(j?.items)) items = j.items;
+        else if (j?.events) items = Array.isArray(j.events) ? j.events : Object.values(j.events).flat();
       } catch (e) {
         console.warn('events load failed', e);
       }
@@ -691,7 +680,7 @@
         categoria: e.category || 'IngressAI',
         status: e.statusLabel || 'Em breve',
         descricao: e.description || e.title || e.nome || '',
-        img: e.imageUrl || e.image || e.bannerUrl || '' // ✅ usa a imagem enviada pelo bot
+        img: e.imageUrl || e.image || e.bannerUrl || ''
       }));
 
       eventos = mapped.length ? mapped : [{
@@ -716,6 +705,7 @@
       buildChips();
       renderCards();
 
+      // JSON-LD de Events
       try {
         const nodes = eventos.map(ev=>({
           "@context":"https://schema.org","@type":"Event","name":ev.nome,"startDate":ev.dataISO,
