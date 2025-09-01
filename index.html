@@ -22,7 +22,6 @@
   <link rel="icon" href="/favicon.png" type="image/png" sizes="32x32" />
   <link rel="preload" as="image" href="/logo_ingressai.png" />
   <style>
-    /* (estilos iguais à versão que você já colou; mantive tudo) */
     :root{--phi:1.618;--s0:8px;--s1:calc(var(--s0)*var(--phi));--s2:calc(var(--s1)*var(--phi));--s3:calc(var(--s2)*var(--phi));--s4:calc(var(--s3)*var(--phi));--fs-0:1rem;--fs--1:calc(var(--fs-0)/var(--phi));--fs-1:calc(var(--fs-0)*var(--phi));--fs-2:calc(var(--fs-1)*var(--phi));--lh-compact:1.22;--lh:1.45;--ink:#0b1220;--muted:#5b6b86;--bg:#f6f8fc;--card:#ffffff;--blue-1:#4A93F0;--blue-2:#2F7DD9;--blue-3:#1B5FB3;--blue-soft:#eaf3ff;--red-soft:#c94747;--shadow:0 10px 28px rgba(47,125,217,.14),0 2px 6px rgba(11,18,32,.08);--shadow-soft:0 6px 18px rgba(47,125,217,.12);--ring:0 0 0 2px rgba(74,147,240,.18);--container-max:calc(680px*var(--phi));--ico:clamp(40px,7vw,64px);--btn-h:52px;--radius-pill:999px;--t-fast:.18s;--t-med:.28s}
     *{box-sizing:border-box}
     html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font:16px/var(--lh) -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Ubuntu,Inter,system-ui,sans-serif}
@@ -104,7 +103,7 @@
     /* ===== BOTTOM SHEET ===== */
     .sheet-backdrop{position:fixed;inset:0;background:rgba(11,18,32,.36);opacity:0;pointer-events:none;transition:opacity var(--t-fast)}
     .sheet-backdrop.is-open{opacity:1;pointer-events:auto}
-    .sheet{position:fixed;left:0;right:0;bottom:0;height:72vh;max-height:760px;background:#fff;border-top-left-radius:24px;border-top-right-radius:24px;box-shadow:0 -24px 48px rgba(11,18,32,.16);transform:translateY(100%);transition:transform var(--t-med) cubic-bezier(.2,.7,.2,1);display:flex;flex-direction:column;padding:var(--s2);z-index:40}
+    .sheet{position:fixed;left:0;right:0;bottom:0;height:72vh;max-height:760px;background:#fff;border-top-left-radius:24px;border-top-right-radius:24px;box-shadow:0 -24px 48px rgba(11,18,32,.16);transform:translateY(100%);transition:transform var(--t-med) cubic-bezier(.2,.7,.2,1);display:flex;flex-direction:column;padding:var(--s2);z-index:40;--close-hit:64px}
     .sheet.is-open{transform:translateY(0)}
     .sheet h3{margin:0;font-weight:900;line-height:1.2}
     .sheet .sheet-body{overflow:auto;display:flex;flex-direction:column;gap:10px;padding-right:4px;padding-bottom:calc(20px + env(safe-area-inset-bottom))}
@@ -123,6 +122,7 @@
     .std-card{background:#fff;border:1px solid #e5ecff;border-radius:calc(var(--s2));padding:var(--s2);box-shadow:var(--shadow-soft)}
     .std-list{margin:0;padding-left:1.25rem;display:grid;gap:6px}
 
+    /* ===== ORGANIZADORES ===== */
     .model-grid{display:grid;grid-template-columns:1fr;gap:var(--s1);margin-top:var(--s1)}
     @media(min-width:720px){.model-grid{grid-template-columns:repeat(3,1fr)}}
     .model{appearance:none;background:#fff;border:1px solid #e5ecff;border-radius:calc(var(--s1));padding:var(--s1);display:flex;align-items:center;justify-content:center;gap:.6rem;cursor:pointer;text-align:center;box-shadow:var(--shadow-soft);font-weight:800;transition:transform var(--t-fast),box-shadow var(--t-fast),border-color var(--t-fast)}
@@ -138,6 +138,12 @@
     @media(min-width:820px){ .panel-grid{grid-template-columns:1.1fr .9fr} }
     .panel-card{background:#f9fbff;border:1px solid #e5ecff;border-radius:calc(var(--s1));padding:var(--s2)}
     #org-detail.is-disabled{opacity:.55;pointer-events:none}
+
+    .cmd-list{display:grid;gap:8px}
+    .cmd{display:grid;grid-template-columns:1fr max-content;gap:6px;align-items:center;background:#fff;border:1px solid #e5ecff;border-radius:12px;padding:10px 12px}
+    .cmd code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.95rem;color:#0b1220}
+    .cmd small{grid-column:1 / -1;color:var(--muted)}
+    .cmd .copy{appearance:none;border:1px solid #e5ecff;background:#fff;border-radius:10px;padding:.4rem .6rem;cursor:pointer;font-weight:700;color:#2F7DD9}
 
     details.disclosure{border:0;padding:0;margin:0}
     .disclosure__summary{list-style:none;cursor:pointer;user-select:none;display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:.75rem 1rem;border:1px solid #e5ecff;border-radius:12px;background:#fff;box-shadow:var(--shadow-soft);font-weight:800;outline:none}
@@ -282,6 +288,29 @@
       </div>
     </section>
 
+    <section id="como-funciona" class="section" aria-labelledby="como-title">
+      <h2 id="como-title">Como funciona</h2>
+      <div class="cards" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:var(--s2)">
+        <div class="card">
+          <h3 class="card-title" style="font-size:clamp(1rem,2.4vw,1.2rem)">Para quem compra</h3>
+          <ol style="margin:0;padding-left:var(--s2);display:grid;gap:calc(var(--s0)*1.1)">
+            <li>Escolha o evento</li>
+            <li>Pague com rapidez via WhatsApp</li>
+            <li>Receba o ingresso com QR Code</li>
+          </ol>
+        </div>
+        <div class="card">
+          <h3 class="card-title" style="font-size:clamp(1rem,2.4vw,1.2rem)">Para quem organiza</h3>
+          <ol style="margin:0;padding-left:var(--s2);display:grid;gap:calc(var(--s0)*1.1)">
+            <li>Crie seu evento pelo WhatsApp</li>
+            <li>Compartilhe o link</li>
+            <li>Acompanhe vendas</li>
+            <li>Valide na entrada</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
     <div class="sheet-backdrop" id="sheet-backdrop" aria-hidden="true"></div>
     <aside class="sheet" id="sheet" aria-hidden="true" role="dialog" aria-modal="true">
       <button type="button" class="sheet-close" id="sheet-close" data-close="sheet" aria-label="Fechar detalhes">
@@ -334,22 +363,48 @@
     let evIndex = {};
 
     /* ========= HELPERS ========= */
+    function formatDate(iso){try{const d=new Date(iso);return d.toLocaleString('pt-BR',{dateStyle:'medium',timeStyle:'short'})}catch{return iso}}
     function waHref(text){return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`}
     function animatePress(el){try{el.classList.add('btn-press');el.addEventListener('animationend',()=>el.classList.remove('btn-press'),{once:true})}catch{}}
     function smoothGoTo(id){const target=document.getElementById(id);if(!target)return;const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;target.scrollIntoView({behavior:reduced?'auto':'smooth',block:'start'});try{target.focus({preventScroll:true})}catch{}}
-    async function fetchJson(url, opts){const r=await fetch(url,{headers:{'Accept':'application/json',...(opts&&opts.headers||{})},...opts});let j=null;try{j=await r.json()}catch{}if(!r.ok)throw new Error(j?.error||r.statusText||'Request failed');return j}
+    async function fetchJson(url, opts){
+      const r = await fetch(url, { headers: { 'Accept':'application/json', ...(opts&&opts.headers||{}) }, ...opts });
+      let j = null; try { j = await r.json(); } catch {}
+      if (!r.ok) throw new Error(j?.error || r.statusText || 'Request failed');
+      return j;
+    }
 
     /* ========= DOM ========= */
     const lista=document.getElementById('lista-eventos');
     const inputBusca=document.getElementById('busca-eventos');
     const chipsRow=document.getElementById('filtro-cidades');
+    const std=document.getElementById('std-card');
+    const modelsBox=document.getElementById('org-models');
+    const feeRow=document.getElementById('fee-row');
+    const feeChip=document.getElementById('fee-chip');
+    const detail=document.getElementById('org-detail');
+    const orgNotice=document.getElementById('org-notice');
+    const cmdList=document.getElementById('cmd-list');
+    const calcBox=document.getElementById('calc-box');
+    const calcNote=document.getElementById('calc-note');
+    const calcNet=document.getElementById('calc-net');
+    const calcGross=document.getElementById('calc-gross');
+    const orgQuick=document.getElementById('org-quick');
     const sheet=document.getElementById('sheet');
     const sheetBody=document.getElementById('sheet-body');
     const sheetBackdrop=document.getElementById('sheet-backdrop');
 
-    /* ========= HEADER ========= */
+    /* ========= HEADER + CTA ORGANIZADORES ========= */
     document.addEventListener('click',e=>{const el=e.target.closest('.btn,.view');if(el)animatePress(el)});
     (function(){const hero=document.querySelector('.hero');const header=document.querySelector('header');const HIDE_START=16,HIDE_END=240;let ticking=false;function onScroll(){if(ticking)return;ticking=true;requestAnimationFrame(()=>{const y=window.scrollY||document.documentElement.scrollTop||0;header&&header.classList.toggle('is-scrolled',y>8);const p=Math.min(1,Math.max(0,(y-HIDE_START)/(HIDE_END-HIDE_START)));if(hero){hero.style.setProperty('--hero-p',p.toFixed(3));hero.classList.toggle('is-hidden',p>=1)}ticking=false})}onScroll();window.addEventListener('scroll',onScroll,{passive:true})})();
+
+    document.addEventListener('DOMContentLoaded',()=> {
+      const sec=document.getElementById('organizadores');
+      const cta=document.getElementById('cta-organizadores');
+      function openOrganizadores(){ if(sec){ sec.removeAttribute('hidden'); smoothGoTo('organizadores'); } }
+      cta?.addEventListener('click', (e)=>{ if (cta.getAttribute('href')?.startsWith('#organizadores')) { e.preventDefault(); openOrganizadores(); } });
+      if (location.hash === '#organizadores') openOrganizadores();
+    });
 
     /* ========= VITRINE ========= */
     const MAIN_CITIES=['Uberaba','Uberlândia','Belo Horizonte','Ribeirão Preto','Franca'];
@@ -397,7 +452,7 @@
         card.dataset.key=ev.id;
         card.setAttribute('tabindex','0');
         card.setAttribute('aria-labelledby',`card-title-${ev.id}`);
-        card.innerHTML = `
+        card.innerHTML=`
           <div class="card-media">${
             ev.img
               ? `<img src="${ev.img}" alt="Imagem do evento ${ev.nome}" loading="lazy" decoding="async"
@@ -414,15 +469,13 @@
               </div>
             </div>
           </div>
-          <div style="display:grid;grid-template-columns:1fr;gap:8px;margin-top:4px">
-            <button type="button" class="view" data-open="${ev.id}" aria-label="Ver detalhes de ${ev.nome}">Ver detalhes</button>
-          </div>`;
+          <button type="button" class="view" data-open="${ev.id}" aria-label="Ver detalhes de ${ev.nome}">Ver detalhes</button>`;
         lista.appendChild(card)
       })
     }
 
     chipsRow.addEventListener('click',e=>{const b=e.target.closest('button.chip');if(!b)return;selectedCity=b.dataset.city;chipsRow.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-selected','false'));b.setAttribute('aria-selected','true');renderCards()});
-    let debounce;document.getElementById('busca-eventos').addEventListener('input',()=>{clearTimeout(debounce);debounce=setTimeout(()=>{query=inputBusca.value;renderCards()},180)});
+    let debounce;inputBusca.addEventListener('input',()=>{clearTimeout(debounce);debounce=setTimeout(()=>{query=inputBusca.value;renderCards()},180)});
 
     function buildStatusChip(statusLabel){const key=statusLabel==='Esgotado'?'sold':(statusLabel==='Último lote'?'low':'soon');const lbl=statusLabel||'Em breve';return `<span class="status-chip ${key}"><span class="dot" aria-hidden="true"></span>${lbl}</span>`}
 
@@ -452,20 +505,21 @@
 
       const head=document.createElement('div');
       head.className='sheet-head';
-      head.innerHTML=`<h3 id="sheet-title">${nome}</h3>${buildStatusChip(statusLabel)}`;
+      head.innerHTML=`<h3 id="sheet-title">${nome} — ${cidade}</h3>${buildStatusChip(statusLabel)}`;
 
       const meta1=document.createElement('div');
-      meta1.className='meta-line subtle';
-      const d = dataISO ? new Date(dataISO) : null;
-      const dt = d ? d.toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' }) : 'A confirmar';
-      const tm = d ? (d.getMinutes()===0 ? `${d.getHours()} horas` : `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')} horas`) : '';
-      meta1.textContent = `${cidade}${cidade && (dt||tm) ? ', ' : ''}${dt}${tm ? ' às ' + tm : ''}`;
+      meta1.className='meta-line';
+      meta1.innerHTML=`<strong>Data:</strong> <span>${dataISO ? formatDate(dataISO) : 'A confirmar'}</span>`;
 
       const meta2=document.createElement('div');
       meta2.className='meta-line';
       meta2.innerHTML= localUrl
         ? `<strong>Local:</strong> <a href="${localUrl}" target="_blank" rel="noopener noreferrer">${localNome}</a>`
         : `<strong>Local:</strong> <span>${localNome}</span>`;
+
+      const meta3=document.createElement('div');
+      meta3.className='meta-line';
+      meta3.innerHTML=`<strong>Categoria:</strong> <span>${ev.categoria || 'IngressAI'}</span>`;
 
       const desc=document.createElement('p');
       desc.className='subtle';
@@ -475,20 +529,22 @@
       actions.className='actions';
       if(sold){
         actions.innerHTML=`<span class="status-line status--sold"><span class="status-dot" aria-hidden="true"></span><span class="status-label">Esgotado</span></span><a class="btn btn--secondary btn--sm" href="#vitrine">Ver outros eventos</a>`;
-      } else {
-        actions.innerHTML = `
-          <div style="display:grid;grid-template-columns:1fr;gap:8px">
-            <a class="btn btn--secondary btn--sm"
-               href="${waHref(`ingressai:start ev=${ev.id}`)}"
-               target="_blank" rel="noopener">
-              Comprar pelo WhatsApp
-            </a>
-          </div>`;
+      }else{
+        actions.innerHTML=`
+          <a class="btn btn--secondary btn--sm"
+             href="${waHref(`ingressai:start ev=${ev.id}`)}"
+             target="_blank" rel="noopener">
+            Comprar pelo WhatsApp
+          </a>`;
       }
 
-      const nodes=[media, head, meta1, meta2, desc, actions];
-      if (typeof sheetBody.replaceChildren === 'function') sheetBody.replaceChildren(...nodes);
-      else { sheetBody.innerHTML=''; nodes.forEach(n=>sheetBody.appendChild(n)); }
+      const nodes=[media, head, meta1, meta2, meta3, desc, actions];
+      if (typeof sheetBody.replaceChildren === 'function') {
+        sheetBody.replaceChildren(...nodes);
+      } else {
+        sheetBody.innerHTML='';
+        nodes.forEach(n=>sheetBody.appendChild(n));
+      }
 
       // abre sheet
       sheet.setAttribute('aria-hidden','false');
@@ -519,24 +575,14 @@
 
     /* ========= ORGANIZADORES ========= */
     const commonFeatures=['Criação de evento 100% pelo WhatsApp','Geração automática de ingresso com QR Code','Link público de vendas e acompanhamento em tempo real','Repasse na hora ao organizador','Página de validador liberada ao criar o evento','Lista de compradores atualizada'];
-    document.getElementById('std-card').innerHTML='<ul class="std-list">'+commonFeatures.map(f=>'\n<li>'+f+'</li>').join('')+'</ul>';
+    std.innerHTML='<ul class="std-list">'+commonFeatures.map(f=>'\n<li>'+f+'</li>').join('')+'</ul>';
 
     const categorias=[
       {key:'aret',title:'Atléticas & Repúblicas',taxa:'8%',feePct:8,ctaMsg:'Olá! Quero criar um evento como Atléticas & Repúblicas. Nome do evento: . Cidade: . Data: . Lotes: .'},
       {key:'prod',title:'Produtoras Independentes',taxa:'10%',feePct:10,ctaMsg:'Olá! Quero criar um evento como Produtora Independente. Nome do evento: . Cidade: . Data: . Lotes: .'},
-      {key:'locais',title:'Locais Independentes',taxa:'10%',feePct:10,ctaMsg:'Olá! Quero criar um evento como Local Independente. Nome do evento: . Cidade: . Data: . Capacidade: .'}
+      {key:'locais',title:'Locais Independentes',taxa:'10%',feePct:10,ctaMsg:'Olá! Quero criar um evento como Local Independente. Nome do evento: . Cidade: . Capacidade: .'}
     ];
-    const modelsBox=document.getElementById('org-models');
     modelsBox.innerHTML=categorias.map(m=>'<button type="button" class="model" role="tab" aria-selected="false" data-key="'+m.key+'">'+m.title+'</button>').join('');
-    const feeRow=document.getElementById('fee-row');
-    const feeChip=document.getElementById('fee-chip');
-    const detail=document.getElementById('org-detail');
-    const orgNotice=document.getElementById('org-notice');
-    const cmdList=document.getElementById('cmd-list');
-    const calcBox=document.getElementById('calc-box');
-    const calcNote=document.getElementById('calc-note');
-    const calcNet=document.getElementById('calc-net');
-    const calcGross=document.getElementById('calc-gross');
 
     const BRL=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
     const parseBR=v=>Number(String(v).replace(/[^\d,.-]/g,'').replace(/\./g,'').replace(',', '.'))||0;
@@ -561,8 +607,12 @@
       calcNote.innerHTML=plan?'Taxa aplicada: <strong>'+plan.taxa+'</strong>. O restante é repassado ao organizador na hora.':'Selecione um plano acima para aplicar a taxa.';
       const preco=document.getElementById('preco');const qtd=document.getElementById('qtd');
       preco.disabled=!plan;qtd.disabled=!plan;calcGross.textContent=BRL.format(0);calcNet.textContent=BRL.format(0);
-      if(plan){document.getElementById('org-quick').classList.remove('is-disabled')}
-      else{document.getElementById('org-quick').classList.add('is-disabled')}
+      if(plan){
+        orgQuick.classList.remove('is-disabled');orgQuick.removeAttribute('aria-disabled');
+        orgQuick.onclick=e=>{e.currentTarget.href=waHref(plan.ctaMsg);e.currentTarget.target='_blank';e.currentTarget.rel='noopener noreferrer'}
+      } else {
+        orgQuick.classList.add('is-disabled');orgQuick.setAttribute('aria-disabled','true');orgQuick.removeAttribute('href');orgQuick.onclick=null
+      }
       detail.querySelectorAll('button.copy').forEach(b=>{b.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(b.dataset.cmd)}catch{}})});
       const recompute=()=>{const fee=Number(calcBox.dataset.fee)||0;const p=parseBR(preco.value||'0');const q=Math.max(1,parseInt(qtd.value||'1',10));const bruto=computeGross(p,q);calcGross.textContent=money(bruto);calcNet.textContent=money(computeNet(p,q,fee))};
       preco.addEventListener('input',recompute);qtd.addEventListener('input',recompute)
@@ -570,14 +620,15 @@
     modelsBox.addEventListener('click',e=>{const b=e.target.closest('button.model');if(!b)return;modelsBox.querySelectorAll('button.model').forEach(x=>x.setAttribute('aria-selected','false'));b.setAttribute('aria-selected','true');applyPlan(b.dataset.key)});
     applyPlan(null);
 
-    /* ========= FETCH /events ========= */
+    /* ========= FETCH /events + FALLBACK ========= */
     async function fetchEventosDoBackend() {
       let items = [];
       try {
         const j = await fetchJson(`${BASE}/events`);
         if (Array.isArray(j)) items = j;
         else if (Array.isArray(j?.items)) items = j.items;
-        else if (j?.events) items = Array.isArray(j.events) ? j.events : Object.values(j.events).flat();
+        else if (Array.isArray(j?.events)) items = j.events;
+        else if (j?.events) items = Object.values(j.events).flat();
       } catch (e) {
         console.warn('events load failed', e);
       }
@@ -599,7 +650,7 @@
         id: 'hello-world-uberaba',
         nome: 'Hello World — Uberaba',
         cidade: 'Uberaba',
-        dataISO: '2025-09-15T23:00:00-03:00',
+        dataISO: new Date(Date.now()+2*24*60*60*1000).toISOString(),
         localNome: 'Espaço Central',
         localUrl: 'https://maps.google.com/?q=' + encodeURIComponent('Espaço Central Uberaba'),
         categoria: 'IngressAI',
@@ -608,8 +659,7 @@
         img: ''
       }];
 
-      const final = mapped.length ? mapped : fallback;
-      eventos = final;
+      eventos = mapped.length ? mapped : fallback;
       evIndex = Object.fromEntries(eventos.map(e=>[e.id,e]));
     }
 
