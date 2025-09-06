@@ -219,7 +219,7 @@
           <div class="meta"><strong>Repasse imediato</strong><small>via Pix</small></div>
         </div>
         <div class="feature">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.1" /><rect class="qr-fill" x="5.6" y="5.6" width="2.8" height="2.8" rx=".35" /><rect x="14" y="3" width="7" height="7" rx="1.1" /><rect class="qr-fill" x="16.6" y="5.6" width="2.8" height="2.8" rx=".35" /><rect x="3" y="14" width="7" height="7" rx="1.1" /><rect class="qr-fill" x="5.6" y="16.6" width="2.8" height="2.8" rx=".35" /></svg>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.1" /><rect class="qr-fill" x="5.6" y="5.6" width="2.8" height="2.8" rx=".35" /><rect x="14" y="3" width="7" height="7" rx="1.1" /><rect class="qr-fill" x="16.6" y="5.6" width="2.8" height="2.8" rx=".35" /></svg>
           <div class="meta"><strong>QR Code Antifraude</strong><small>+ validador web</small></div>
         </div>
         <div class="feature">
@@ -633,18 +633,21 @@
         console.warn('events load failed', e);
       }
 
-      const mapped = (items || []).map(e => ({
-        id: String(e.id),
-        nome: e.title || e.nome || 'Evento',
-        cidade: e.city || e.cidade || '',
-        dataISO: e.date || e.startsAt || e.dataISO || new Date().toISOString(),
-        localNome: e.venue || e.local || '',
-        localUrl: 'https://maps.google.com/?q=' + encodeURIComponent(`${e.venue||e.local||''} ${e.city||e.cidade||''}`),
-        categoria: e.category || 'IngressAI',
-        status: e.statusLabel || 'Em breve',
-        descricao: e.description || e.title || e.nome || '',
-        img: e.imageUrl || e.image || e.bannerUrl || ''
-      }));
+      const mapped = (items || []).map(e => {
+        const IMG = e.imageUrl || (e.media && e.media.url) || e.image || e.bannerUrl || '';
+        return {
+          id: String(e.id),
+          nome: e.title || e.nome || 'Evento',
+          cidade: e.city || e.cidade || '',
+          dataISO: e.date || e.startsAt || e.dataISO || new Date().toISOString(),
+          localNome: e.venue || e.local || '',
+          localUrl: 'https://maps.google.com/?q=' + encodeURIComponent(`${e.venue||e.local||''} ${e.city||e.cidade||''}`),
+          categoria: e.category || 'IngressAI',
+          status: e.statusLabel || 'Em breve',
+          descricao: e.description || e.title || e.nome || '',
+          img: IMG
+        };
+      });
 
       const fallback = [{
         id: 'hello-world-uberaba',
