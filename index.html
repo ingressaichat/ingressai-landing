@@ -355,7 +355,7 @@
   <script>
     /* ========= CONFIG ========= */
     const API_PARAM = new URLSearchParams(location.search).get('api');
-    const BASE = API_PARAM || "https://ingressai-backend-production.up.railway.app";
+    const BASE = (API_PARAM || "https://ingressai-backend-production.up.railway.app").replace(/\/$/, "");
     const WHATSAPP_NUMBER='5534999992747';
 
     /* ========= ESTADO ========= */
@@ -367,8 +367,21 @@
     function waHref(text){return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`}
     function animatePress(el){try{el.classList.add('btn-press');el.addEventListener('animationend',()=>el.classList.remove('btn-press'),{once:true})}catch{}}
     function smoothGoTo(id){const target=document.getElementById(id);if(!target)return;const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;target.scrollIntoView({behavior:reduced?'auto':'smooth',block:'start'});try{target.focus({preventScroll:true})}catch{}}
+    function abs(u){
+      try{
+        if(!u) return '';
+        if(/^https?:\/\//i.test(u)) return u;
+        if(u.startsWith('//')) return location.protocol + u;
+        if(u.startsWith('/')) return BASE + u;
+        return BASE + '/' + u.replace(/^\/+/,'');
+      }catch{ return u || ''; }
+    }
     async function fetchJson(url, opts){
-      const r = await fetch(url, { headers: { 'Accept':'application/json', ...(opts&&opts.headers||{}) }, ...opts });
+      const r = await fetch(url, {
+        headers: { 'Accept':'application/json', ...(opts&&opts.headers||{}) },
+        cache: 'no-store',
+        ...opts
+      });
       let j = null; try { j = await r.json(); } catch {}
       if (!r.ok) throw new Error(j?.error || r.statusText || 'Request failed');
       return j;
@@ -455,7 +468,7 @@
         card.innerHTML=`
           <div class="card-media">${
             ev.img
-              ? `<img src="${ev.img}" alt="Imagem do evento ${ev.nome}" loading="lazy" decoding="async"
+              ? `<img src="${ev.img}" alt="Imagem do evento ${ev.nome}" loading="lazy" decoding="async" referrerpolicy="no-referrer"
                    onerror="this.closest('.card-media').textContent='Mídia do evento'; this.remove();">`
               : 'Mídia do evento'
           }</div>
@@ -496,7 +509,7 @@
       media.className='sheet-media';
       if(ev.img){
         const img=document.createElement('img');
-        img.src=ev.img; img.alt='Imagem do evento '+nome; img.loading='lazy'; img.decoding='async';
+        img.src=ev.img; img.alt='Imagem do evento '+nome; img.loading='lazy'; img.decoding='async'; img.referrerPolicy='no-referrer';
         img.onerror=()=>{ media.textContent='Mídia do evento'; img.remove(); };
         media.appendChild(img);
       } else {
@@ -634,7 +647,8 @@
       }
 
       const mapped = (items || []).map(e => {
-        const IMG = e.imageUrl || (e.media && e.media.url) || e.image || e.bannerUrl || '';
+        const IMG_RAW = e.imageUrl || (e.media && e.media.url) || e.image || e.bannerUrl || '';
+        const IMG = abs(IMG_RAW);
         return {
           id: String(e.id),
           nome: e.title || e.nome || 'Evento',
