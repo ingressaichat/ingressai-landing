@@ -84,6 +84,7 @@
     #lista-eventos.cards{grid-template-columns:repeat(2,minmax(0,1fr))}
     .card{background:var(--card);border-radius:calc(var(--s2));box-shadow:var(--shadow);padding:var(--s2);border:1px solid #eaf1ff;display:flex;flex-direction:column;gap:var(--s1);transition:transform .12s,box-shadow var(--t-fast);position:relative;content-visibility:auto;contain-intrinsic-size:300px;overflow:hidden}
     .card:hover{transform:translateY(-2px);box-shadow:0 14px 36px rgba(47,125,217,.16),0 3px 8px rgba(11,18,32,.12)}
+    .card[role="button"]{cursor:pointer}
     .card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--s1);padding-right:0}
     .card-title{font-weight:900;font-size:clamp(1rem,2.2vw,1.14rem);line-height:1.18;margin-bottom:4px}
     .card-city{color:#2F7DD9;font-weight:800;font-size:.94rem}
@@ -205,7 +206,6 @@
 
     <div class="cta-inline">
       <a href="#organizadores" class="btn btn--secondary btn--sm" id="cta-organizadores" aria-label="Abrir soluções para organizadores">Soluções para organizadores</a>
-      <!-- NOVO: CTA de login/dashboard -->
       <a href="/app/login" class="btn btn--ghost btn--sm" aria-label="Acessar dashboard">Acessar dashboard</a>
     </div>
 
@@ -283,7 +283,6 @@
               <div class="panel-cta" style="margin-top:var(--s2)">
                 <a class="btn btn--secondary is-disabled" id="org-quick" aria-disabled="true">Criar evento no WhatsApp</a>
                 <a class="btn btn--secondary" href="https://wa.me/5534999992747" target="_blank" rel="noopener noreferrer">Falar com suporte</a>
-                <!-- NOVO: atalho de login -->
                 <a class="btn btn--ghost" href="/app/login">Acessar dashboard</a>
               </div>
             </details>
@@ -466,7 +465,8 @@
         const statusKey=statusLabel==='Esgotado'?'sold':(statusLabel==='Último lote'?'low':'soon');
         const card=document.createElement('article');
         card.className='card';
-        card.dataset.key=ev.id;
+        card.dataset.open=ev.id;                 /* permite clicar no card inteiro */
+        card.setAttribute('role','button');      /* acessibilidade */
         card.setAttribute('tabindex','0');
         card.setAttribute('aria-labelledby',`card-title-${ev.id}`);
         card.innerHTML=`
@@ -485,8 +485,8 @@
                 <span class="status-label">${statusLabel || 'Em breve'}</span>
               </div>
             </div>
-          </div>
-          <button type="button" class="view" data-open="${ev.id}" aria-label="Ver detalhes de ${ev.nome}">Ver detalhes</button>`;
+            <button type="button" class="view" data-open="${ev.id}" aria-label="Ver detalhes de ${ev.nome}">Ver detalhes</button>
+          </div>`;
         lista.appendChild(card)
       })
     }
@@ -549,7 +549,7 @@
       }else{
         actions.innerHTML=`
           <a class="btn btn--secondary btn--sm"
-             href="${waHref(`ingressai:start ev=${ev.id}`)}"
+             href="${waHref(\`ingressai:start ev=\${ev.id}\`)}"
              target="_blank" rel="noopener">
             Comprar pelo WhatsApp
           </a>`;
@@ -563,13 +563,16 @@
         nodes.forEach(n=>sheetBody.appendChild(n));
       }
 
-      // abre sheet
+      // abre sheet + atualiza hash para deeplink
       sheet.setAttribute('aria-hidden','false');
       sheet.setAttribute('aria-labelledby','sheet-title');
       sheetBackdrop.setAttribute('aria-hidden','false');
       sheet.classList.add('is-open');
       sheetBackdrop.classList.add('is-open');
       document.body.style.overflow='hidden';
+      try { history.pushState({ ev: ev.id }, '', '#ev=' + encodeURIComponent(ev.id)); } catch {}
+      // foco acessível
+      try { sheet.querySelector('#sheet-title')?.focus({ preventScroll:true }); } catch {}
     }
 
     function closeSheetSafe(e){
@@ -581,6 +584,10 @@
         sheet?.setAttribute?.('aria-hidden','true');
         sheetBackdrop?.setAttribute?.('aria-hidden','true');
         document.body.style.overflow = '';
+        // limpar hash se veio de #ev=
+        if (location.hash.startsWith('#ev=')) {
+          try { history.replaceState({}, '', location.pathname + location.search); } catch {}
+        }
       }catch(err){ console.error('closeSheet fail:', err); }
     }
     document.addEventListener('click', (e)=>{ const btn = e.target.closest('[data-close="sheet"]'); if(btn) closeSheetSafe(e); });
@@ -588,7 +595,19 @@
     document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && sheet?.classList?.contains('is-open')) closeSheetSafe(e); });
 
     const listaEl=document.getElementById('lista-eventos');
+    // abrir por botão "Ver detalhes"
     listaEl.addEventListener('click',e=>{const btn=e.target.closest('[data-open]');if(!btn)return;const ev=evIndex[btn.dataset.open];if(!ev)return;openSheet(ev)});
+    // abrir clicando no card inteiro
+    listaEl.addEventListener('click',e=>{const card=e.target.closest('article.card[data-open]');if(!card)return; if (e.target.closest('.view')) return; const ev=evIndex[card.dataset.open]; if(!ev)return; openSheet(ev)});
+    // teclado: Enter/Espaço abre card focado
+    listaEl.addEventListener('keydown',e=>{
+      const card=e.target.closest('article.card[data-open]');
+      if(!card) return;
+      if(e.key==='Enter' || e.key===' '){
+        e.preventDefault();
+        const ev=evIndex[card.dataset.open]; if(!ev)return; openSheet(ev);
+      }
+    });
 
     /* ========= ORGANIZADORES ========= */
     const commonFeatures=['Criação de evento 100% pelo WhatsApp','Geração automática de ingresso com QR Code','Link público de vendas e acompanhamento em tempo real','Repasse na hora ao organizador','Página de validador liberada ao criar o evento','Lista de compradores atualizada'];
@@ -689,6 +708,13 @@
       await fetchEventosDoBackend();
       buildChips();
       renderCards();
+
+      // abre automaticamente se vier com #ev=ID
+      if (location.hash.startsWith('#ev=')) {
+        const id = decodeURIComponent(location.hash.slice(4));
+        const ev = evIndex[id];
+        if (ev) openSheet(ev);
+      }
 
       try {
         const nodes = eventos.map(ev=>({
