@@ -465,8 +465,8 @@
         const statusKey=statusLabel==='Esgotado'?'sold':(statusLabel==='Último lote'?'low':'soon');
         const card=document.createElement('article');
         card.className='card';
-        card.dataset.open=ev.id;                 /* permite clicar no card inteiro */
-        card.setAttribute('role','button');      /* acessibilidade */
+        card.dataset.open=ev.id;
+        card.setAttribute('role','button');
         card.setAttribute('tabindex','0');
         card.setAttribute('aria-labelledby',`card-title-${ev.id}`);
         card.innerHTML=`
@@ -491,7 +491,7 @@
       })
     }
 
-    chipsRow.addEventListener('click',e=>{const b=e.target.closest('button.chip');if(!b)return;selectedCity=b.dataset.city;chipsRow.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-selected','false'));b.setAttribute('aria-selected','true');renderCards()});
+    chipsRow.addEventListener('click',e=>{const b=e.target.closest('button.chip');if(!b)return;selectedCity=b.dataset.city;chipsRow.querySelectorAll('button.model,button.chip').forEach(x=>x.setAttribute('aria-selected','false'));b.setAttribute('aria-selected','true');renderCards()});
     let debounce;inputBusca.addEventListener('input',()=>{clearTimeout(debounce);debounce=setTimeout(()=>{query=inputBusca.value;renderCards()},180)});
 
     function buildStatusChip(statusLabel){const key=statusLabel==='Esgotado'?'sold':(statusLabel==='Último lote'?'low':'soon');const lbl=statusLabel||'Em breve';return `<span class="status-chip ${key}"><span class="dot" aria-hidden="true"></span>${lbl}</span>`}
@@ -547,9 +547,10 @@
       if(sold){
         actions.innerHTML=`<span class="status-line status--sold"><span class="status-dot" aria-hidden="true"></span><span class="status-label">Esgotado</span></span><a class="btn btn--secondary btn--sm" href="#vitrine">Ver outros eventos</a>`;
       }else{
+        /* >>> FIX principal: sem barras invertidas no template literal interno <<< */
         actions.innerHTML=`
           <a class="btn btn--secondary btn--sm"
-             href="${waHref(\`ingressai:start ev=\${ev.id}\`)}"
+             href="${waHref(`ingressai:start ev=${ev.id}`)}"
              target="_blank" rel="noopener">
             Comprar pelo WhatsApp
           </a>`;
@@ -571,7 +572,6 @@
       sheetBackdrop.classList.add('is-open');
       document.body.style.overflow='hidden';
       try { history.pushState({ ev: ev.id }, '', '#ev=' + encodeURIComponent(ev.id)); } catch {}
-      // foco acessível
       try { sheet.querySelector('#sheet-title')?.focus({ preventScroll:true }); } catch {}
     }
 
@@ -584,7 +584,6 @@
         sheet?.setAttribute?.('aria-hidden','true');
         sheetBackdrop?.setAttribute?.('aria-hidden','true');
         document.body.style.overflow = '';
-        // limpar hash se veio de #ev=
         if (location.hash.startsWith('#ev=')) {
           try { history.replaceState({}, '', location.pathname + location.search); } catch {}
         }
@@ -595,11 +594,8 @@
     document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && sheet?.classList?.contains('is-open')) closeSheetSafe(e); });
 
     const listaEl=document.getElementById('lista-eventos');
-    // abrir por botão "Ver detalhes"
     listaEl.addEventListener('click',e=>{const btn=e.target.closest('[data-open]');if(!btn)return;const ev=evIndex[btn.dataset.open];if(!ev)return;openSheet(ev)});
-    // abrir clicando no card inteiro
     listaEl.addEventListener('click',e=>{const card=e.target.closest('article.card[data-open]');if(!card)return; if (e.target.closest('.view')) return; const ev=evIndex[card.dataset.open]; if(!ev)return; openSheet(ev)});
-    // teclado: Enter/Espaço abre card focado
     listaEl.addEventListener('keydown',e=>{
       const card=e.target.closest('article.card[data-open]');
       if(!card) return;
@@ -709,7 +705,6 @@
       buildChips();
       renderCards();
 
-      // abre automaticamente se vier com #ev=ID
       if (location.hash.startsWith('#ev=')) {
         const id = decodeURIComponent(location.hash.slice(4));
         const ev = evIndex[id];
