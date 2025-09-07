@@ -54,7 +54,7 @@
     .btn,.view{will-change:transform}
     @keyframes btn-press{0%{transform:translateY(0) scale(1)}50%{transform:translateY(1px) scale(.98)}100%{transform:translateY(0) scale(1)}}
     .btn-press{animation:btn-press var(--t-fast) ease}
-    .cta-inline{display:flex;justify-content:flex-start;margin-top:calc(var(--s1)*-1);margin-bottom:var(--s1)}
+    .cta-inline{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-start;margin-top:calc(var(--s1)*-1);margin-bottom:var(--s1)}
 
     .proofs{padding:var(--s2) 0 var(--s3)}
     .features{display:grid;gap:var(--s0);grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -205,6 +205,8 @@
 
     <div class="cta-inline">
       <a href="#organizadores" class="btn btn--secondary btn--sm" id="cta-organizadores" aria-label="Abrir soluções para organizadores">Soluções para organizadores</a>
+      <!-- NOVO: CTA de login/dashboard -->
+      <a href="/app/login" class="btn btn--ghost btn--sm" aria-label="Acessar dashboard">Acessar dashboard</a>
     </div>
 
     <section class="proofs" aria-labelledby="proofs-title">
@@ -241,7 +243,7 @@
       <div class="cards" id="lista-eventos" aria-live="polite"></div>
     </section>
 
-    <!-- === ORGANIZADORES — COMPLETO === -->
+    <!-- === ORGANIZADORES === -->
     <section id="organizadores" class="section" aria-labelledby="orgs-title" tabindex="-1" hidden>
       <h2 id="orgs-title">Soluções para organizadores</h2>
       <div id="std-card" class="std-card"></div>
@@ -281,6 +283,8 @@
               <div class="panel-cta" style="margin-top:var(--s2)">
                 <a class="btn btn--secondary is-disabled" id="org-quick" aria-disabled="true">Criar evento no WhatsApp</a>
                 <a class="btn btn--secondary" href="https://wa.me/5534999992747" target="_blank" rel="noopener noreferrer">Falar com suporte</a>
+                <!-- NOVO: atalho de login -->
+                <a class="btn btn--ghost" href="/app/login">Acessar dashboard</a>
               </div>
             </details>
           </div>
