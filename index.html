@@ -125,7 +125,7 @@
 
     /* ===== ORGANIZADORES ===== */
     .model-grid{display:grid;grid-template-columns:1fr;gap:var(--s1);margin-top:var(--s1)}
-    @media(min-width:720px){.model-grid{grid-template-columns:repeat(3,1fr)}}
+    @media(min-width:720px){.model-grid{grid-template-columns:repeat(2,1fr)}}
     .model{appearance:none;background:#fff;border:1px solid #e5ecff;border-radius:calc(var(--s1));padding:var(--s1);display:flex;align-items:center;justify-content:center;gap:.6rem;cursor:pointer;text-align:center;box-shadow:var(--shadow-soft);font-weight:800;transition:transform var(--t-fast),box-shadow var(--t-fast),border-color var(--t-fast)}
     .model[aria-selected="true"]{border-color:#e5ecff;box-shadow:var(--shadow-soft);transform:translateY(-1px) scale(1.02)}
 
@@ -136,15 +136,15 @@
     .org-panel{background:#fff;border:1px solid #e5ecff;border-radius:calc(var(--s2));padding:var(--s3);box-shadow:var(--shadow);margin-top:var(--s2)}
     .org-notice{margin-bottom:var(--s1);font-weight:700}
     .panel-grid{display:grid;grid-template-columns:1fr;gap:var(--s2)}
-    @media(min-width:820px){ .panel-grid{grid-template-columns:1.1fr .9fr} }
+    @media(min-width:1020px){ .panel-grid{grid-template-columns:1.1fr .9fr} }
     .panel-card{background:#f9fbff;border:1px solid #e5ecff;border-radius:calc(var(--s1));padding:var(--s2)}
     #org-detail.is-disabled{opacity:.55;pointer-events:none}
 
     .cmd-list{display:grid;gap:8px}
-    .cmd{display:grid;grid-template-columns:1fr max-content;gap:6px;align-items:center;background:#fff;border:1px solid #e5ecff;border-radius:12px;padding:10px 12px}
-    .cmd code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.95rem;color:#0b1220}
-    .cmd small{grid-column:1 / -1;color:var(--muted)}
-    .cmd .copy{appearance:none;border:1px solid #e5ecff;background:#fff;border-radius:10px;padding:.4rem .6rem;cursor:pointer;font-weight:700;color:#2F7DD9}
+    .line{display:flex;gap:10px;align-items:center}
+    .grid{display:grid;gap:10px}
+    .grid-2{grid-template-columns:1fr 1fr}
+    .grid-3{grid-template-columns:repeat(3,1fr)}
 
     details.disclosure{border:0;padding:0;margin:0}
     .disclosure__summary{list-style:none;cursor:pointer;user-select:none;display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:.75rem 1rem;border:1px solid #e5ecff;border-radius:12px;background:#fff;box-shadow:var(--shadow-soft);font-weight:800;outline:none}
@@ -152,10 +152,11 @@
 
     .calc{display:grid;gap:10px}
     .calc-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .calc input{width:100%;border:1px solid #e5ecff;border-radius:12px;padding:.7rem .8rem;font:inherit}
-    .calc input:disabled{background:#f3f6ff;color:#8796b0}
+    .calc input, .calc select, .calc textarea{width:100%;border:1px solid #e5ecff;border-radius:12px;padding:.7rem .8rem;font:inherit}
+    .calc input:disabled, .calc select:disabled, .calc textarea:disabled{background:#f3f6ff;color:#8796b0}
     .calc small{color:var(--muted)}
     .calc-result{background:#fff;border:1px dashed #dbe5ff;border-radius:12px;padding:.75rem .9rem;font-weight:800;display:flex;justify-content:space-between;align-items:center}
+
     .panel-cta{display:grid;grid-template-columns:1fr;gap:var(--s1);margin-top:var(--s2)}
     @media(min-width:560px){.panel-cta{grid-template-columns:max-content max-content}}
 
@@ -247,24 +248,39 @@
     <section id="organizadores" class="section" aria-labelledby="orgs-title" tabindex="-1" hidden>
       <h2 id="orgs-title">Soluções para organizadores</h2>
       <div id="std-card" class="std-card"></div>
-      <div id="org-models" class="model-grid" role="tablist" aria-label="Modelos de organizador"></div>
+
+      <!-- Modelos (duas categorias) -->
+      <div id="org-models" class="model-grid" role="tablist" aria-label="Categorias de organizador"></div>
       <div class="fee-row" id="fee-row"><span class="fee-chip" id="fee-chip">Taxa</span></div>
 
       <div id="org-detail" class="org-panel is-disabled" role="tabpanel" tabindex="0" aria-live="polite">
-        <div class="org-notice subtle" id="org-notice">Selecione um dos planos acima para liberar os botões.</div>
+        <div class="org-notice subtle" id="org-notice">Selecione uma categoria acima para liberar o Setup.</div>
 
         <div class="panel-grid">
+          <!-- CARD: DASHBOARD -->
           <div class="panel-card">
-            <details class="disclosure">
-              <summary class="disclosure__summary">Comandos do bot</summary>
-              <div class="cmd-list" id="cmd-list"></div>
+            <details class="disclosure" open>
+              <summary class="disclosure__summary">Dashboard</summary>
+              <div class="grid" style="gap:12px">
+                <p style="margin:0" class="subtle">
+                  Controle tudo do seu evento no Dashboard: lotes, vendas, validação de ingressos e relatórios. 
+                  O acesso é por <strong>número de telefone + código</strong> (enviado no Setup abaixo).
+                </p>
+                <div class="panel-cta">
+                  <a class="btn btn--secondary" href="/app/login">Acessar dashboard</a>
+                  <a class="btn btn--ghost" href="https://wa.me/5534999992747" target="_blank" rel="noopener noreferrer">Falar com suporte</a>
+                </div>
+              </div>
             </details>
           </div>
 
+          <!-- CARD: CALCULADORA & SETUP -->
           <div class="panel-card">
-            <details class="disclosure">
-              <summary class="disclosure__summary">Calculadora de taxa</summary>
-              <div class="calc" id="calc-box" data-fee="">
+            <details class="disclosure" open>
+              <summary class="disclosure__summary">Calculadora &amp; Setup</summary>
+
+              <div class="calc" id="calc-box" data-fee-fixed="">
+                <!-- CALCULADORA -->
                 <div class="calc-row">
                   <div>
                     <label for="preco">Preço</label>
@@ -275,15 +291,74 @@
                     <input id="qtd" type="number" placeholder="1" min="1" step="1" aria-label="Quantidade de ingressos" disabled />
                   </div>
                 </div>
-                <small id="calc-note">Selecione um plano acima para aplicar a taxa.</small>
+                <small id="calc-note">Selecione uma categoria acima para aplicar a taxa.</small>
                 <div class="calc-result" id="calc-gross-row"><span>Total bruto</span><strong id="calc-gross">R$ 0,00</strong></div>
+                <div class="calc-result" id="calc-fee-row"><span>Taxa da plataforma</span><strong id="calc-fee">R$ 0,00</strong></div>
                 <div class="calc-result"><span>Você recebe</span><strong id="calc-net">R$ 0,00</strong></div>
-              </div>
 
-              <div class="panel-cta" style="margin-top:var(--s2)">
-                <a class="btn btn--secondary is-disabled" id="org-quick" aria-disabled="true">Criar evento no WhatsApp</a>
-                <a class="btn btn--secondary" href="https://wa.me/5534999992747" target="_blank" rel="noopener noreferrer">Falar com suporte</a>
-                <a class="btn btn--ghost" href="/app/login">Acessar dashboard</a>
+                <hr style="border:none;border-top:1px dashed #dbe5ff;margin:.4rem 0" />
+
+                <!-- SETUP DO EVENTO -->
+                <div class="grid grid-2">
+                  <div>
+                    <label for="ev-nome">Nome do evento</label>
+                    <input id="ev-nome" type="text" placeholder="Ex: Sunset da Atlética" disabled />
+                  </div>
+                  <div>
+                    <label for="ev-cidade">Cidade</label>
+                    <input id="ev-cidade" type="text" placeholder="Ex: Uberaba" disabled />
+                  </div>
+                </div>
+
+                <div class="grid grid-3">
+                  <div>
+                    <label for="ev-data">Data</label>
+                    <input id="ev-data" type="date" disabled />
+                  </div>
+                  <div>
+                    <label for="ev-hora">Hora</label>
+                    <input id="ev-hora" type="time" disabled />
+                  </div>
+                  <div>
+                    <label for="ev-cap">Capacidade</label>
+                    <input id="ev-cap" type="number" min="1" step="1" placeholder="Ex: 500" disabled />
+                  </div>
+                </div>
+
+                <div class="grid">
+                  <div>
+                    <label for="ev-local">Local</label>
+                    <input id="ev-local" type="text" placeholder="Ex: Espaço Central" disabled />
+                  </div>
+                  <div>
+                    <label for="ev-desc">Descrição (opcional)</label>
+                    <textarea id="ev-desc" rows="2" placeholder="Breve descrição…" disabled></textarea>
+                  </div>
+                </div>
+
+                <small class="subtle" id="setup-note">Preencha os dados e solicite a criação. Você receberá um código para liberar o acesso no Dashboard.</small>
+
+                <div class="grid grid-3" style="margin-top:6px">
+                  <div>
+                    <label for="ev-phone">Seu WhatsApp</label>
+                    <input id="ev-phone" type="tel" inputmode="tel" placeholder="55DDDNNNNNNNN" disabled />
+                  </div>
+                  <div>
+                    <label for="ev-code">Código</label>
+                    <input id="ev-code" type="text" inputmode="numeric" placeholder="••••••" disabled />
+                  </div>
+                  <div class="line" style="margin-top:1.6rem">
+                    <button type="button" class="btn btn--ghost btn--sm" id="setup-send-code" aria-disabled="true">Enviar código</button>
+                    <button type="button" class="btn btn--ghost btn--sm" id="setup-verify-code" aria-disabled="true">Verificar</button>
+                  </div>
+                </div>
+
+                <div class="panel-cta" style="margin-top:var(--s2)">
+                  <button class="btn btn--secondary is-disabled" id="setup-submit" aria-disabled="true">Solicitar criação</button>
+                  <a class="btn btn--ghost" href="/app/login">Acessar dashboard</a>
+                </div>
+
+                <small id="setup-status" class="subtle" aria-live="polite"></small>
               </div>
             </details>
           </div>
@@ -305,10 +380,10 @@
         <div class="card">
           <h3 class="card-title" style="font-size:clamp(1rem,2.4vw,1.2rem)">Para quem organiza</h3>
           <ol style="margin:0;padding-left:var(--s2);display:grid;gap:calc(var(--s0)*1.1)">
-            <li>Crie seu evento pelo WhatsApp</li>
-            <li>Compartilhe o link</li>
-            <li>Acompanhe vendas</li>
-            <li>Valide na entrada</li>
+            <li>Faça o Setup do evento</li>
+            <li>Verifique o código</li>
+            <li>Acesse o Dashboard</li>
+            <li>Publique e valide na entrada</li>
           </ol>
         </div>
       </div>
@@ -389,6 +464,7 @@
       if (!r.ok) throw new Error(j?.error || r.statusText || 'Request failed');
       return j;
     }
+    function moneyBR(v){try{return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v||0)}catch{return 'R$ '+(v||0).toFixed(2).replace('.',',')}}
 
     /* ========= DOM ========= */
     const lista=document.getElementById('lista-eventos');
@@ -400,12 +476,12 @@
     const feeChip=document.getElementById('fee-chip');
     const detail=document.getElementById('org-detail');
     const orgNotice=document.getElementById('org-notice');
-    const cmdList=document.getElementById('cmd-list');
     const calcBox=document.getElementById('calc-box');
     const calcNote=document.getElementById('calc-note');
     const calcNet=document.getElementById('calc-net');
     const calcGross=document.getElementById('calc-gross');
-    const orgQuick=document.getElementById('org-quick');
+    const calcFee=document.getElementById('calc-fee');
+    const setupStatus=document.getElementById('setup-status');
     const sheet=document.getElementById('sheet');
     const sheetBody=document.getElementById('sheet-body');
     const sheetBackdrop=document.getElementById('sheet-backdrop');
@@ -547,7 +623,6 @@
       if(sold){
         actions.innerHTML=`<span class="status-line status--sold"><span class="status-dot" aria-hidden="true"></span><span class="status-label">Esgotado</span></span><a class="btn btn--secondary btn--sm" href="#vitrine">Ver outros eventos</a>`;
       }else{
-        /* >>> FIX principal: sem barras invertidas no template literal interno <<< */
         actions.innerHTML=`
           <a class="btn btn--secondary btn--sm"
              href="${waHref(`ingressai:start ev=${ev.id}`)}"
@@ -564,7 +639,6 @@
         nodes.forEach(n=>sheetBody.appendChild(n));
       }
 
-      // abre sheet + atualiza hash para deeplink
       sheet.setAttribute('aria-hidden','false');
       sheet.setAttribute('aria-labelledby','sheet-title');
       sheetBackdrop.setAttribute('aria-hidden','false');
@@ -606,13 +680,21 @@
     });
 
     /* ========= ORGANIZADORES ========= */
-    const commonFeatures=['Criação de evento 100% pelo WhatsApp','Geração automática de ingresso com QR Code','Link público de vendas e acompanhamento em tempo real','Repasse na hora ao organizador','Página de validador liberada ao criar o evento','Lista de compradores atualizada'];
+    const commonFeatures=[
+      'Setup do evento direto no site',
+      'Verificação por código e acesso ao Dashboard',
+      'Geração automática de ingresso com QR Code',
+      'Link público de vendas e acompanhamento em tempo real',
+      'Repasse na hora ao organizador',
+      'Validador web liberado ao criar',
+      'Lista de compradores atualizada'
+    ];
     std.innerHTML='<ul class="std-list">'+commonFeatures.map(f=>'\n<li>'+f+'</li>').join('')+'</ul>';
 
+    // DUAS categorias (taxa fixa por ingresso)
     const categorias=[
-      {key:'aret',title:'Atléticas & Repúblicas',taxa:'8%',feePct:8,ctaMsg:'Olá! Quero criar um evento como Atléticas & Repúblicas. Nome do evento: . Cidade: . Data: . Lotes: .'},
-      {key:'prod',title:'Produtoras Independentes',taxa:'10%',feePct:10,ctaMsg:'Olá! Quero criar um evento como Produtora Independente. Nome do evento: . Cidade: . Data: . Lotes: .'},
-      {key:'locais',title:'Locais Independentes',taxa:'10%',feePct:10,ctaMsg:'Olá! Quero criar um evento como Local Independente. Nome do evento: . Cidade: . Capacidade: .'}
+      {key:'aret', title:'Atléticas & Repúblicas', feeLabel:'R$ 2,00 por ingresso', feeFixed:2.00},
+      {key:'proloc', title:'Produtoras & Locais independentes', feeLabel:'R$ 2,50 por ingresso', feeFixed:2.50}
     ];
     modelsBox.innerHTML=categorias.map(m=>'<button type="button" class="model" role="tab" aria-selected="false" data-key="'+m.key+'">'+m.title+'</button>').join('');
 
@@ -620,36 +702,181 @@
     const parseBR=v=>Number(String(v).replace(/[^\d,.-]/g,'').replace(/\./g,'').replace(',', '.'))||0;
     const money=v=>BRL.format(isFinite(v)?v:0);
     function computeGross(preco,qtd){return Math.max(0,Number(preco)||0)*Math.max(1,parseInt(qtd||1,10))}
-    function computeNet(preco,qtd,feePct){const bruto=computeGross(preco,qtd);return Number((bruto*(1-(Number(feePct)||0)/100)).toFixed(2))}
-    function applyPlan(key){
-      const plan=categorias.find(x=>x.key===key)||null;
-      if(plan){feeChip.textContent='Taxa '+plan.taxa;feeRow.classList.add('is-visible');orgNotice.classList.add('is-hidden');detail.classList.remove('is-disabled')}
-      else{feeRow.classList.remove('is-visible');orgNotice.classList.remove('is-hidden');detail.classList.add('is-disabled')}
-      const cmdData=[
-        {cmd:'criar evento',desc:'Inicia o fluxo para cadastro de um novo evento.'},
-        {cmd:'adicionar lote',desc:'Inclui um novo lote com preço/quantidade.'},
-        {cmd:'fechar vendas',desc:'Pausa as vendas imediatamente.'},
-        {cmd:'link do evento',desc:'Retorna o link público de vendas.'},
-        {cmd:'lista de vendas',desc:'Mostra compradores e status de pagamento.'},
-        {cmd:'validador',desc:'Abre a página de validação de QR Code.'},
-        {cmd:'enviar ingresso <telefone>',desc:'Reenvia o ingresso ao comprador indicado.'}
-      ];
-      cmdList.innerHTML=cmdData.map(({cmd,desc})=>'<div class="cmd"><code>'+cmd+'</code><button type="button" class="copy" data-cmd="'+cmd+'">Copiar</button><small>'+desc+'</small></div>').join('');
-      calcBox.dataset.fee=plan?plan.feePct:'';
-      calcNote.innerHTML=plan?'Taxa aplicada: <strong>'+plan.taxa+'</strong>. O restante é repassado ao organizador na hora.':'Selecione um plano acima para aplicar a taxa.';
-      const preco=document.getElementById('preco');const qtd=document.getElementById('qtd');
-      preco.disabled=!plan;qtd.disabled=!plan;calcGross.textContent=BRL.format(0);calcNet.textContent=BRL.format(0);
-      if(plan){
-        orgQuick.classList.remove('is-disabled');orgQuick.removeAttribute('aria-disabled');
-        orgQuick.onclick=e=>{e.currentTarget.href=waHref(plan.ctaMsg);e.currentTarget.target='_blank';e.currentTarget.rel='noopener noreferrer'}
-      } else {
-        orgQuick.classList.add('is-disabled');orgQuick.setAttribute('aria-disabled','true');orgQuick.removeAttribute('href');orgQuick.onclick=null
-      }
-      detail.querySelectorAll('button.copy').forEach(b=>{b.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(b.dataset.cmd)}catch{}})});
-      const recompute=()=>{const fee=Number(calcBox.dataset.fee)||0;const p=parseBR(preco.value||'0');const q=Math.max(1,parseInt(qtd.value||'1',10));const bruto=computeGross(p,q);calcGross.textContent=money(bruto);calcNet.textContent=money(computeNet(p,q,fee))};
-      preco.addEventListener('input',recompute);qtd.addEventListener('input',recompute)
+    function computeFeeFixed(qtd,feeFixed){return Math.max(1,parseInt(qtd||1,10)) * Math.max(0,Number(feeFixed)||0)}
+    function computeNet(preco,qtd,feeFixed){const bruto=computeGross(preco,qtd);const taxa=computeFeeFixed(qtd,feeFixed);return {bruto, taxa, liquido: Math.max(0, Number((bruto - taxa).toFixed(2)))}}
+
+    function enableSetupFields(enable){
+      ['preco','qtd','ev-nome','ev-cidade','ev-data','ev-hora','ev-cap','ev-local','ev-desc','ev-phone','ev-code']
+        .forEach(id=>{const el=document.getElementById(id); if (!el) return; el.disabled = !enable;});
+      ['setup-send-code','setup-verify-code','setup-submit'].forEach(id=>{
+        const el=document.getElementById(id);
+        if (!el) return;
+        if (enable) { el.removeAttribute('aria-disabled'); el.classList.remove('is-disabled'); }
+        else { el.setAttribute('aria-disabled','true'); el.classList.add('is-disabled'); }
+      });
     }
-    modelsBox.addEventListener('click',e=>{const b=e.target.closest('button.model');if(!b)return;modelsBox.querySelectorAll('button.model').forEach(x=>x.setAttribute('aria-selected','false'));b.setAttribute('aria-selected','true');applyPlan(b.dataset.key)});
+
+    function setStatus(msg,type){
+      setupStatus.textContent = msg || '';
+      setupStatus.style.color = type==='error' ? '#b64848' : type==='ok' ? '#1B5FB3' : '';
+    }
+
+    function getSetupPayload(){
+      const nome = document.getElementById('ev-nome').value.trim();
+      const cidade = document.getElementById('ev-cidade').value.trim();
+      const data = document.getElementById('ev-data').value;
+      const hora = document.getElementById('ev-hora').value;
+      const cap = parseInt(document.getElementById('ev-cap').value||'0',10);
+      const local = document.getElementById('ev-local').value.trim();
+      const desc = document.getElementById('ev-desc').value.trim();
+      const preco = parseBR(document.getElementById('preco').value||'0');
+      const qtd = Math.max(1, parseInt(document.getElementById('qtd').value||'1',10));
+      const feeFixed = Number(calcBox.dataset.feeFixed)||0;
+      const categoriaKey = calcBox.dataset.planKey || '';
+      const startISO = (data && hora) ? new Date(`${data}T${hora}:00`).toISOString() : '';
+      return { nome, cidade, startISO, capacidade:cap, local, descricao:desc, preco, qtd, feeFixed, categoriaKey };
+    }
+
+    async function applyPlan(key){
+      const plan=categorias.find(x=>x.key===key)||null;
+      calcBox.dataset.planKey = plan ? plan.key : '';
+      if(plan){
+        feeChip.textContent='Taxa fixa ' + plan.feeLabel;
+        feeRow.classList.add('is-visible');
+        orgNotice.classList.add('is-hidden');
+        detail.classList.remove('is-disabled');
+        calcBox.dataset.feeFixed = String(plan.feeFixed);
+        calcNote.innerHTML='Taxa aplicada: <strong>'+plan.feeLabel+'</strong>. O restante é repassado ao organizador na hora.';
+        enableSetupFields(true);
+      } else {
+        feeRow.classList.remove('is-visible');
+        orgNotice.classList.remove('is-hidden');
+        detail.classList.add('is-disabled');
+        calcBox.dataset.feeFixed = '';
+        calcNote.textContent='Selecione uma categoria acima para aplicar a taxa.';
+        enableSetupFields(false);
+      }
+
+      // listeners da calculadora
+      const precoEl=document.getElementById('preco');
+      const qtdEl=document.getElementById('qtd');
+      const recompute=()=>{
+        const feeFixed=Number(calcBox.dataset.feeFixed)||0;
+        const p=parseBR(precoEl.value||'0');
+        const q=Math.max(1,parseInt(qtdEl.value||'1',10));
+        const {bruto,taxa,liquido}=computeNet(p,q,feeFixed);
+        calcGross.textContent=money(bruto);
+        calcFee.textContent=money(taxa);
+        calcNet.textContent=money(liquido);
+      };
+      precoEl.removeEventListener?.('_input',recompute);
+      qtdEl.removeEventListener?.('_input',recompute);
+      precoEl.addEventListener('input',recompute); precoEl.addEventListener('_input',recompute);
+      qtdEl.addEventListener('input',recompute);   qtdEl.addEventListener('_input',recompute);
+      recompute();
+
+      // Ações de verificação e criação
+      const btnSend = document.getElementById('setup-send-code');
+      const btnVerify = document.getElementById('setup-verify-code');
+      const btnSubmit = document.getElementById('setup-submit');
+      const phoneEl = document.getElementById('ev-phone');
+      const codeEl  = document.getElementById('ev-code');
+
+      calcBox.dataset.verified = 'false';
+      calcBox.dataset.session  = '';
+
+      btnSend.onclick = async ()=>{
+        try{
+          const phone = (phoneEl.value||'').trim();
+          if(!phone){ setStatus('Informe o WhatsApp no formato 55DDDNNNNNNNN.', 'error'); return; }
+          setStatus('Enviando código…');
+
+          // tentativa de backend
+          try{
+            const j = await fetchJson(`${BASE}/setup/start`, { method:'POST', body: JSON.stringify({ phone }), headers:{'Content-Type':'application/json'} });
+            calcBox.dataset.session = j?.sessionId || '';
+            setStatus('Código enviado. Confira seu WhatsApp.', 'ok');
+          } catch {
+            // fallback via WhatsApp
+            const msg = `ingressai:setup start phone=${phone}`;
+            window.open(waHref(msg),'_blank','noopener');
+            setStatus('Abrimos seu WhatsApp para confirmar o envio do código.', 'ok');
+          }
+        }catch(err){ setStatus('Falha ao enviar código.', 'error'); }
+      };
+
+      btnVerify.onclick = async ()=>{
+        try{
+          const phone=(phoneEl.value||'').trim();
+          const code=(codeEl.value||'').trim();
+          if(!phone||!code){ setStatus('Informe WhatsApp e o código recebido.', 'error'); return; }
+          setStatus('Verificando código…');
+
+          try{
+            const j = await fetchJson(`${BASE}/setup/verify`, { method:'POST', body: JSON.stringify({ phone, code, sessionId: calcBox.dataset.session||'' }), headers:{'Content-Type':'application/json'} });
+            if(j?.ok || j?.verified){ calcBox.dataset.verified='true'; setStatus('Código verificado! Você já pode solicitar a criação.', 'ok'); }
+            else throw new Error('Código inválido');
+          }catch{
+            // fallback via WhatsApp
+            const msg = `ingressai:setup verify phone=${phone} code=${code}`;
+            window.open(waHref(msg),'_blank','noopener');
+            calcBox.dataset.verified='true';
+            setStatus('Verificação feita pelo WhatsApp. Você já pode solicitar a criação.', 'ok');
+          }
+        }catch(err){ setStatus('Não foi possível verificar o código.', 'error'); }
+      };
+
+      btnSubmit.onclick = async ()=>{
+        const verified = calcBox.dataset.verified==='true';
+        const payload = getSetupPayload();
+
+        if(!payload.nome || !payload.cidade || !payload.startISO){
+          setStatus('Preencha nome, cidade, data e hora.', 'error'); return;
+        }
+        if(payload.preco<=0){ setStatus('Informe um preço válido.', 'error'); return; }
+        if(!document.getElementById('ev-phone').value.trim()){ setStatus('Informe seu WhatsApp para vincular ao Dashboard.', 'error'); return; }
+
+        setStatus('Enviando solicitação de criação…');
+
+        // tentativa de backend
+        try{
+          const j = await fetchJson(`${BASE}/setup/create`, {
+            method:'POST',
+            body: JSON.stringify({ ...payload, verified }),
+            headers:{'Content-Type':'application/json'}
+          });
+          if(j?.ok || j?.id){
+            setStatus('Evento pré-aprovado! Acesse o Dashboard para continuar.', 'ok');
+            try { location.href = '/app/login'; } catch {}
+            return;
+          }
+          throw new Error('create failed');
+        } catch {
+          // fallback via WhatsApp com resumo do setup
+          const msg =
+`ingressai:setup create
+categoria=${payload.categoriaKey}
+nome=${payload.nome}
+cidade=${payload.cidade}
+quando=${payload.startISO}
+local=${payload.local}
+capacidade=${payload.capacidade}
+preco=${payload.preco}
+qtd=${payload.qtd}
+taxa_fixa=${payload.feeFixed}
+descricao=${payload.descricao || '-'}
+verificado=${verified}`;
+          window.open(waHref(msg),'_blank','noopener');
+          setStatus('Abrimos seu WhatsApp com o resumo para criação rápida.', 'ok');
+        }
+      };
+    }
+
+    modelsBox.addEventListener('click',e=>{
+      const b=e.target.closest('button.model');if(!b)return;
+      modelsBox.querySelectorAll('button.model').forEach(x=>x.setAttribute('aria-selected','false'));
+      b.setAttribute('aria-selected','true');applyPlan(b.dataset.key)
+    });
     applyPlan(null);
 
     /* ========= FETCH /events + FALLBACK ========= */
