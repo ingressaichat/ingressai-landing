@@ -17,7 +17,7 @@
   <meta property="og:locale" content="pt_BR" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="theme-color" content="#2F7DD9" />
-  <meta name="color-scheme" content="light dark" />
+  <meta name="color-scheme" content="light" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="icon" href="/favicon.png" type="image/png" sizes="32x32" />
   <link rel="preload" as="image" href="/logo_ingressai.png" />
@@ -92,6 +92,8 @@
     .btn--sm{min-height:40px;padding:0 .9rem;font-size:.92rem}
     .btn:active{transform:translateY(1px) scale(.98)}
     .btn.is-disabled, button:disabled{opacity:.6;pointer-events:none;filter:grayscale(.08)}
+    @keyframes btn-press{0%{transform:translateY(0) scale(1)}50%{transform:translateY(1px) scale(.98)}100%{transform:translateY(0) scale(1)}}
+    .btn-press{animation:btn-press var(--t-fast) ease}
 
     .cta-inline{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-start;margin:calc(var(--s1)*-1) 0 var(--s1)}
 
@@ -228,12 +230,6 @@
       a[href]:after{content:" <" attr(href) ">";font-size:.9em}
     }
 
-    /* Sheet close */
-    .sheet-close{position:absolute; right:10px; top:10px;appearance:none; background:#fff; border:1px solid #ffd6d6; color:#c94747;border-radius:14px; padding:.8rem;display:grid; place-items:center;box-shadow:0 8px 20px rgba(201,71,71,.18);z-index:9999;touch-action:manipulation;cursor:pointer}
-    .sheet-close:hover{background:#fff5f5}
-    .sheet-close:active{filter:saturate(1.1)}
-    .sheet-close svg{width:22px;height:22px;stroke:currentColor;pointer-events:none}
-
     /* Small screens: lighten visual weight */
     @media (max-width: 380px){
       .card{box-shadow:var(--shadow-soft);padding:var(--s1)}
@@ -241,15 +237,11 @@
       .container{padding:0 var(--s2)}
     }
 
-    /* Dark mode (opcional, automático) */
-    @media (prefers-color-scheme: dark){
-      :root{ --bg:#0b1220; --card:#11182b; --ink:#f2f5ff; --muted:#a9b7d3; }
-      body{ background:var(--bg); color:var(--ink); }
-      header, footer, .std-card, .panel-card, .card, .org-panel{ background:var(--card); border-color:#2a3757; }
-      .search input{ background:#0f1628; color:var(--ink); border-color:#2a3757; }
-      .chip{ background:#0f1628; border-color:#2a3757; color:#bcd0ff; }
-      .chip[aria-checked="true"]{ background:#2F7DD9; color:#fff; }
-    }
+    /* Sheet close */
+    .sheet-close{position:absolute; right:10px; top:10px;appearance:none; background:#fff; border:1px solid #ffd6d6; color:#c94747;border-radius:14px; padding:.8rem;display:grid; place-items:center;box-shadow:0 8px 20px rgba(201,71,71,.18);z-index:9999;touch-action:manipulation;cursor:pointer}
+    .sheet-close:hover{background:#fff5f5}
+    .sheet-close:active{filter:saturate(1.1)}
+    .sheet-close svg{width:22px;height:22px;stroke:currentColor;pointer-events:none}
   </style>
 </head>
 <body>
@@ -557,17 +549,43 @@
     const sheetBody=document.getElementById('sheet-body');
     const sheetBackdrop=document.getElementById('sheet-backdrop');
 
-    /* ========= Header + CTA ========= */
+    /* ========= Header + micro-animação ========= */
     document.addEventListener('click',e=>{const el=e.target.closest('.btn,.view');if(el)animatePress(el)});
     (function(){const hero=document.querySelector('.hero');const header=document.querySelector('header');const HIDE_START=16,HIDE_END=240;let ticking=false;function onScroll(){if(ticking)return;ticking=true;requestAnimationFrame(()=>{const y=window.scrollY||document.documentElement.scrollTop||0;header&&header.classList.toggle('is-scrolled',y>8);const p=Math.min(1,Math.max(0,(y-HIDE_START)/(HIDE_END-HIDE_START)));if(hero){hero.style.setProperty('--hero-p',p.toFixed(3));hero.classList.toggle('is-hidden',p>=1)}ticking=false})}onScroll();window.addEventListener('scroll',onScroll,{passive:true})})();
 
-    document.addEventListener('DOMContentLoaded',()=> {
+    /* ========= CTA Organizadores (robusto) ========= */
+    function initOrganizadores(){
       const sec=document.getElementById('organizadores');
       const cta=document.getElementById('cta-organizadores');
-      function openOrganizadores(){ if(sec){ sec.removeAttribute('hidden'); smoothGoTo('organizadores'); } }
-      cta?.addEventListener('click', (e)=>{ if (cta.getAttribute('href')?.startsWith('#organizadores')) { e.preventDefault(); openOrganizadores(); } });
+      const openOrganizadores=()=>{ if(sec && sec.hasAttribute('hidden')) sec.removeAttribute('hidden'); smoothGoTo('organizadores'); };
+
+      // Listener direto do botão
+      if (cta) {
+        cta.addEventListener('click', (e)=>{
+          const href = cta.getAttribute('href') || '';
+          if (href.startsWith('#organizadores')) {
+            e.preventDefault();
+            openOrganizadores();
+            try { history.pushState({}, '', '#organizadores'); } catch {}
+          }
+        });
+      }
+
+      // Delegação: qualquer link com hash #organizadores
+      document.addEventListener('click', (e)=>{
+        const a = e.target.closest('a[href^="#organizadores"]');
+        if(!a) return;
+        e.preventDefault();
+        openOrganizadores();
+        try { history.pushState({}, '', '#organizadores'); } catch {}
+      });
+
+      // Abertura por hash direto ou navegação
       if (location.hash === '#organizadores') openOrganizadores();
-    });
+      window.addEventListener('hashchange', ()=>{ if (location.hash === '#organizadores') openOrganizadores(); });
+    }
+    if (document.readyState !== 'loading') initOrganizadores();
+    else document.addEventListener('DOMContentLoaded', initOrganizadores);
 
     /* ========= VITRINE ========= */
     const MAIN_CITIES=['Uberaba','Uberlândia','Belo Horizonte','Ribeirão Preto','Franca'];
@@ -654,7 +672,7 @@
       return `<span class="status-chip ${key}"><span class="dot" aria-hidden="true"></span>${lbl}</span>`
     }
 
-    /* ========= Focus trap para o Bottom Sheet ========= */
+    /* ========= Bottom Sheet + focus trap ========= */
     const main = document.querySelector('main');
     let lastFocus = null;
     function trapFocus(el){
@@ -730,8 +748,7 @@
           </a>`;
       }
 
-      const nodes=[media, head, meta1, meta2, meta3, desc, actions];
-      sheetBody.replaceChildren(...nodes);
+      sheetBody.replaceChildren(media, head, meta1, meta2, meta3, desc, actions);
 
       // focus + backdrop
       lastFocus = document.activeElement;
