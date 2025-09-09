@@ -16,7 +16,7 @@
   <meta property="og:site_name" content="IngressAI" />
   <meta property="og:locale" content="pt_BR" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="theme-color" content="#ffffff" />
+  <meta name="theme-color" content="#2F7DD9" />
   <meta name="color-scheme" content="light" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="icon" href="/favicon.png" type="image/png" sizes="32x32" />
@@ -180,6 +180,26 @@
     .sheet-close:hover{background:#fff5f5}
     .sheet-close:active{filter:saturate(1.1)}
     .sheet-close svg{width:22px;height:22px;stroke:currentColor;pointer-events:none}
+
+    /* ===== Stepper compacto (novo) ===== */
+    .stepper{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s0);margin:calc(var(--s1)*.5) 0 var(--s1)}
+    .stepper li{list-style:none;display:flex;align-items:center;gap:.6rem;background:#fff;border:1px solid #e5ecff;border-radius:999px;padding:.5rem .8rem;box-shadow:var(--shadow-soft)}
+    .stepper li span{width:1.6rem;height:1.6rem;border-radius:999px;display:grid;place-items:center;border:1px solid #dbe5ff;font-weight:800}
+    .stepper li b{font-weight:800}
+    .stepper li.is-done span{background:var(--blue-soft);border-color:#cfe0ff}
+    .stepper li.is-active{box-shadow:0 8px 18px rgba(47,125,217,.14)}
+    .stepper li.is-active span{background:#2F7DD9;color:#fff;border-color:#2F7DD9}
+
+    /* status do setup com feedback forte */
+    #setup-status{min-height:1.2em;font-weight:700}
+    #setup-status.ok{color:#1B5FB3}
+    #setup-status.err{color:#b64848}
+
+    /* Elevação mobile no painel dos organizadores */
+    @media(max-width:640px){
+      .org-panel{margin-top:var(--s1);padding:calc(var(--s2)*.9)}
+      .panel-card{padding:calc(var(--s1)*1.2)}
+    }
   </style>
 </head>
 <body>
@@ -206,7 +226,7 @@
     </section>
 
     <div class="cta-inline">
-      <a href="#organizadores" class="btn btn--secondary btn--sm" id="cta-organizadores" aria-label="Abrir soluções para organizadores">Soluções para organizadores</a>
+      <a href="#organizadores" class="btn btn--secondary btn--sm" aria-label="Abrir soluções para organizadores">Soluções para organizadores</a>
       <a href="/app/login" class="btn btn--ghost btn--sm" aria-label="Acessar dashboard">Acessar dashboard</a>
     </div>
 
@@ -247,13 +267,18 @@
     <!-- === ORGANIZADORES === -->
     <section id="organizadores" class="section" aria-labelledby="orgs-title" tabindex="-1" hidden>
       <h2 id="orgs-title">Soluções para organizadores</h2>
+
+      <!-- Stepper compacto (3 passos) -->
+      <ol class="stepper" aria-label="Progresso do Setup">
+        <li class="is-done"><span>1</span><b>Categoria</b></li>
+        <li><span>2</span><b>Calculadora</b></li>
+        <li><span>3</span><b>Setup & Código</b></li>
+      </ol>
+
       <div id="std-card" class="std-card"></div>
 
-      <!-- Modelos (duas categorias) - estático no HTML p/ robustez -->
-      <div id="org-models" class="model-grid" role="tablist" aria-label="Categorias de organizador">
-        <button type="button" class="model" role="tab" aria-selected="false" data-key="aret">Atléticas &amp; Repúblicas</button>
-        <button type="button" class="model" role="tab" aria-selected="false" data-key="proloc">Produtoras &amp; Locais independentes</button>
-      </div>
+      <!-- Modelos (duas categorias) -->
+      <div id="org-models" class="model-grid" role="tablist" aria-label="Categorias de organizador"></div>
       <div class="fee-row" id="fee-row"><span class="fee-chip" id="fee-chip">Taxa</span></div>
 
       <div id="org-detail" class="org-panel is-disabled" role="tabpanel" tabindex="0" aria-live="polite">
@@ -489,39 +514,97 @@
     const sheetBody=document.getElementById('sheet-body');
     const sheetBackdrop=document.getElementById('sheet-backdrop');
 
-    /* ========= HEADER + CTA ORGANIZADORES ========= */
+    /* ========= HEADER + CTA ORGANIZADORES (REVISTO) ========= */
     document.addEventListener('click',e=>{const el=e.target.closest('.btn,.view');if(el)animatePress(el)});
     (function(){const hero=document.querySelector('.hero');const header=document.querySelector('header');const HIDE_START=16,HIDE_END=240;let ticking=false;function onScroll(){if(ticking)return;ticking=true;requestAnimationFrame(()=>{const y=window.scrollY||document.documentElement.scrollTop||0;header&&header.classList.toggle('is-scrolled',y>8);const p=Math.min(1,Math.max(0,(y-HIDE_START)/(HIDE_END-HIDE_START)));if(hero){hero.style.setProperty('--hero-p',p.toFixed(3));hero.classList.toggle('is-hidden',p>=1)}ticking=false})}onScroll();window.addEventListener('scroll',onScroll,{passive:true})})();
 
-    function openOrganizadores(defaultPlan='aret'){
-      const sec=document.getElementById('organizadores');
-      if(!sec) return;
-      sec.removeAttribute('hidden');
-      smoothGoTo('organizadores');
-      // selecionar e aplicar plano padrão
-      const btn=modelsBox.querySelector(`[data-key="${defaultPlan}"]`);
-      if(btn){
-        modelsBox.querySelectorAll('button.model').forEach(x=>x.setAttribute('aria-selected','false'));
-        btn.setAttribute('aria-selected','true');
-        applyPlan(defaultPlan);
-        // foca no primeiro campo para acelerar o setup no mobile
-        setTimeout(()=>document.getElementById('preco')?.focus({preventScroll:true}), 50);
+    // stepper visual
+    function setStep(idx){
+      const steps = document.querySelectorAll('.stepper li');
+      steps.forEach((li,i)=>{
+        li.classList.toggle('is-active', i===idx);
+        li.classList.toggle('is-done',   i< idx);
+      });
+    }
+
+    // abre a seção e já prepara Calculadora & Setup
+    function openOrganizadoresAndPrime(){
+      const sec = document.getElementById('organizadores');
+      if (sec) {
+        sec.removeAttribute('hidden');
+        smoothGoTo('organizadores');
+      }
+      // seleciona a primeira categoria caso nenhuma esteja selecionada
+      const firstModel = document.querySelector('#org-models button.model');
+      const anySel = document.querySelector('#org-models button.model[aria-selected="true"]');
+      if (firstModel && !anySel) {
+        firstModel.setAttribute('aria-selected','true');
+        applyPlan(firstModel.dataset.key);
+        setStep(1); // passo 2 (0-based) => Calculadora ativa
+        try{ document.getElementById('preco')?.focus({preventScroll:true}); }catch{}
+      } else {
+        setStep(1);
       }
     }
 
     document.addEventListener('DOMContentLoaded',()=> {
-      const cta=document.getElementById('cta-organizadores');
-      cta?.addEventListener('click', (e)=>{
-        // sempre intercepta para forçar o fluxo com plano aplicado
+      // delega: qualquer link para #organizadores
+      document.body.addEventListener('click', (e)=>{
+        const a = e.target.closest('a[href^="#organizadores"]');
+        if (!a) return;
         e.preventDefault();
-        openOrganizadores('aret');
+        openOrganizadoresAndPrime();
       });
-      // acesso direto via hash
-      if (location.hash === '#organizadores') openOrganizadores('aret');
-      // também re-aplica se o hash mudar depois
-      window.addEventListener('hashchange',()=>{
-        if (location.hash === '#organizadores') openOrganizadores('aret');
+      if (location.hash === '#organizadores') openOrganizadoresAndPrime();
+
+      // ao escolher categoria, fixa passo 2
+      document.getElementById('org-models')?.addEventListener('click', (e)=>{
+        const b=e.target.closest('button.model'); if(!b) return;
+        setStep(1);
       });
+
+      // observar verificação concluída → passo 3
+      const obs = new MutationObserver(()=>{
+        if (document.getElementById('calc-box')?.dataset?.verified === 'true') setStep(2);
+      });
+      obs.observe(document.getElementById('setup-status'), { childList:true, subtree:true, characterData:true });
+
+      // cooldown simples para botão de enviar código (evita spam)
+      const btnSend = document.getElementById('setup-send-code');
+      if (btnSend){
+        btnSend.addEventListener('click', (e)=>{
+          const now = Date.now();
+          const until = Number(btnSend.dataset.cooldownUntil||'0');
+          if (now < until){
+            e.stopImmediatePropagation();
+            e.preventDefault();
+            return;
+          }
+          const origText = btnSend.textContent;
+          let left = 45;
+          btnSend.dataset.cooldownUntil = String(now + left*1000);
+          const t = setInterval(()=>{
+            left--;
+            if (left>0){ btnSend.textContent = `Reenviar em ${left}s`; }
+            else{
+              clearInterval(t);
+              btnSend.textContent = origText;
+              btnSend.dataset.cooldownUntil = '';
+            }
+          },1000);
+        }, true); // captura para bloquear cedo
+      }
+
+      // máscara leve de moeda ao sair do campo
+      const precoEl = document.getElementById('preco');
+      if (precoEl){
+        precoEl.addEventListener('blur', ()=>{
+          const v = precoEl.value.trim();
+          if (!v) return;
+          const n = Number(String(v).replace(/[^\d,.-]/g,'').replace(/\./g,'').replace(',', '.'))||0;
+          if (n>0) precoEl.value = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(n);
+        });
+      }
     });
 
     /* ========= VITRINE ========= */
@@ -593,7 +676,7 @@
       })
     }
 
-    chipsRow.addEventListener('click',e=>{const b=e.target.closest('button.chip');if(!b)return;selectedCity=b.dataset.city;chipsRow.querySelectorAll('button.chip').forEach(x=>x.setAttribute('aria-selected','false'));b.setAttribute('aria-selected','true');renderCards()});
+    chipsRow.addEventListener('click',e=>{const b=e.target.closest('button.chip');if(!b)return;selectedCity=b.dataset.city;chipsRow.querySelectorAll('button.model,button.chip').forEach(x=>x.setAttribute('aria-selected','false'));b.setAttribute('aria-selected','true');renderCards()});
     let debounce;inputBusca.addEventListener('input',()=>{clearTimeout(debounce);debounce=setTimeout(()=>{query=inputBusca.value;renderCards()},180)});
 
     function buildStatusChip(statusLabel){const key=statusLabel==='Esgotado'?'sold':(statusLabel==='Último lote'?'low':'soon');const lbl=statusLabel||'Em breve';return `<span class="status-chip ${key}"><span class="dot" aria-hidden="true"></span>${lbl}</span>`}
@@ -722,6 +805,7 @@
       {key:'aret', title:'Atléticas & Repúblicas', feeLabel:'R$ 2,00 por ingresso', feeFixed:2.00},
       {key:'proloc', title:'Produtoras & Locais independentes', feeLabel:'R$ 2,50 por ingresso', feeFixed:2.50}
     ];
+    modelsBox.innerHTML=categorias.map(m=>'<button type="button" class="model" role="tab" aria-selected="false" data-key="'+m.key+'" title="Selecionar: '+m.title+'">'+m.title+'</button>').join('');
 
     const BRL=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
     const parseBR=v=>Number(String(v).replace(/[^\d,.-]/g,'').replace(/\./g,'').replace(',', '.'))||0;
@@ -744,6 +828,9 @@
     function setStatus(msg,type){
       setupStatus.textContent = msg || '';
       setupStatus.style.color = type==='error' ? '#b64848' : type==='ok' ? '#1B5FB3' : '';
+      setupStatus.classList.remove('ok','err');
+      if (type==='ok') setupStatus.classList.add('ok');
+      if (type==='error') setupStatus.classList.add('err');
     }
 
     function getSetupPayload(){
@@ -762,7 +849,7 @@
       return { nome, cidade, startISO, capacidade:cap, local, descricao:desc, preco, qtd, feeFixed, categoriaKey };
     }
 
-    function applyPlan(key){
+    async function applyPlan(key){
       const plan=categorias.find(x=>x.key===key)||null;
       calcBox.dataset.planKey = plan ? plan.key : '';
       if(plan){
@@ -782,13 +869,9 @@
         enableSetupFields(false);
       }
 
-      // listeners da calculadora (sem duplicar)
+      // listeners da calculadora
       const precoEl=document.getElementById('preco');
       const qtdEl=document.getElementById('qtd');
-      calcBox._listeners?.abort?.();
-      const ctr = new AbortController();
-      calcBox._listeners = ctr;
-
       const recompute=()=>{
         const feeFixed=Number(calcBox.dataset.feeFixed)||0;
         const p=parseBR(precoEl.value||'0');
@@ -798,8 +881,10 @@
         calcFee.textContent=money(taxa);
         calcNet.textContent=money(liquido);
       };
-      precoEl.addEventListener('input',recompute,{signal:ctr.signal});
-      qtdEl.addEventListener('input',recompute,{signal:ctr.signal});
+      precoEl.removeEventListener?.('_input',recompute);
+      qtdEl.removeEventListener?.('_input',recompute);
+      precoEl.addEventListener('input',recompute); precoEl.addEventListener('_input',recompute);
+      qtdEl.addEventListener('input',recompute);   qtdEl.addEventListener('_input',recompute);
       recompute();
 
       // Ações de verificação e criação
@@ -904,7 +989,6 @@ verificado=${verified}`;
       modelsBox.querySelectorAll('button.model').forEach(x=>x.setAttribute('aria-selected','false'));
       b.setAttribute('aria-selected','true');applyPlan(b.dataset.key)
     });
-    // inicia sem plano aplicado — o CTA ativa o plano padrão
     applyPlan(null);
 
     /* ========= FETCH /events + FALLBACK ========= */
