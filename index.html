@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="format-detection" content="telephone=no" />
   <title>IngressAI — Ingressos em minutos, direto no WhatsApp</title>
-  <meta name="description" content="Compre ingressos em minutos pelo WhatsApp. Vitrine por cidade, checkout instantâneo, repasse instantâneo (T+0) e validação por QR Code." />
+  <meta name="description" content="Compre ingressos em minutos pelo WhatsApp. Vitrine por cidade, checkout instantâneo, repasse T+0 e validação por QR Code." />
   <meta name="robots" content="index,follow,max-image-preview:large" />
   <link rel="canonical" href="https://ingressai.chat/" />
   <meta property="og:title" content="IngressAI — Ingressos em minutos" />
-  <meta property="og:description" content="Vitrine por cidade, checkout instantâneo, QR Code antifraude e repasse instantâneo (T+0)." />
+  <meta property="og:description" content="Vitrine por cidade, checkout instantâneo, QR Code antifraude e repasse T+0." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://ingressai.chat/" />
   <meta property="og:image" content="https://ingressai.chat/logo_ingressai.png" />
@@ -21,13 +21,20 @@
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="icon" href="/favicon.png" type="image/png" sizes="32x32" />
   <link rel="preload" as="image" href="/logo_ingressai.png" />
+
   <style>
-    :root{--phi:1.618;--s0:8px;--s1:calc(var(--s0)*var(--phi));--s2:calc(var(--s1)*var(--phi));--s3:calc(var(--s2)*var(--phi));--s4:calc(var(--s3)*var(--phi));--fs-0:1rem;--fs--1:calc(var(--fs-0)/var(--phi));--fs-1:calc(var(--fs-0)*var(--phi));--fs-2:calc(var(--fs-1)*var(--phi));--lh-compact:1.22;--lh:1.45;--ink:#0b1220;--muted:#5b6b86;--bg:#f6f8fc;--card:#ffffff;--blue-1:#4A93F0;--blue-2:#2F7DD9;--blue-3:#1B5FB3;--blue-soft:#eaf3ff;--red-soft:#c94747;--shadow:0 10px 28px rgba(47,125,217,.14),0 2px 6px rgba(11,18,32,.08);--shadow-soft:0 6px 18px rgba(47,125,217,.12);--ring:0 0 0 2px rgba(74,147,240,.18);--container-max:calc(680px*var(--phi));--ico:clamp(40px,7vw,64px);--btn-h:52px;--radius-pill:999px;--t-fast:.18s;--t-med:.28s}
+    :root{--phi:1.618;--s0:8px;--s1:calc(var(--s0)*var(--phi));--s2:calc(var(--s1)*var(--phi));--s3:calc(var(--s2)*var(--phi));--s4:calc(var(--s3)*var(--phi));
+      --fs-0:1rem;--fs--1:calc(var(--fs-0)/var(--phi));--lh:1.45;--lh-compact:1.22;
+      --ink:#0b1220;--muted:#5b6b86;--bg:#f6f8fc;--card:#ffffff;
+      --blue-1:#4A93F0;--blue-2:#2F7DD9;--blue-3:#1B5FB3;--blue-soft:#eaf3ff;
+      --red-soft:#c94747;--green:#2FD94E;--yellow:#ffc83d;
+      --shadow:0 10px 28px rgba(47,125,217,.14),0 2px 6px rgba(11,18,32,.08);
+      --shadow-soft:0 6px 18px rgba(47,125,217,.12);--ring:0 0 0 2px rgba(74,147,240,.18);
+      --container-max:calc(680px*var(--phi));--ico:clamp(40px,7vw,64px);--btn-h:52px;--radius-pill:999px;--t-fast:.18s;--t-med:.28s}
     *{box-sizing:border-box}
     html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font:16px/var(--lh) -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Ubuntu,Inter,system-ui,sans-serif}
     a{color:inherit;text-decoration:none}
     :focus-visible{outline:none;box-shadow:var(--ring)}
-    @media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
     .container{max-width:var(--container-max);margin:0 auto;padding:0 var(--s3)}
     .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
     .subtle{color:var(--muted)}
@@ -43,7 +50,7 @@
     .hero-brand{display:grid;gap:var(--s1);place-items:center;margin-bottom:var(--s2)}
     .badges{display:flex;gap:calc(var(--s1)*1.4);align-items:center;justify-content:center;flex-wrap:wrap;margin-top:6px}
     .badge{display:inline-flex;align-items:center;gap:.55rem;padding:0;background:transparent;border-radius:0;box-shadow:none;font-weight:700;cursor:default;user-select:none}
-    .badge img{height:18px;width:auto;display:block;filter:none;opacity:1}
+    .badge img{height:18px;width:auto;display:block}
     .badge span{color:#445570;font-weight:700;opacity:.95}
 
     .btn{min-height:var(--btn-h);padding:0 var(--s2);border-radius:var(--radius-pill);border:1px solid #d6e4ff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;letter-spacing:.2px;gap:10px;background:#fff;color:#0b1220;transition:transform .08s,box-shadow var(--t-fast)}
@@ -51,16 +58,15 @@
     .btn--ghost{background:#fff;border-color:#e1e8f6;box-shadow:none;color:#2d3b50}
     .btn--sm{min-height:40px;padding:0 .9rem;font-size:.92rem}
     .btn.is-disabled{opacity:.6;pointer-events:none;filter:grayscale(.08)}
-    .btn,.view{will-change:transform}
-    @keyframes btn-press{0%{transform:translateY(0) scale(1)}50%{transform:translateY(1px) scale(.98)}100%{transform:translateY(0) scale(1)}}
-    .btn-press{animation:btn-press var(--t-fast) ease}
     .cta-inline{display:flex;justify-content:flex-start;margin-top:calc(var(--s1)*-1);margin-bottom:var(--s1)}
+    .view{background:#fff;border:1px solid #e5ecff;color:#2d3b50;font-weight:800;cursor:pointer;padding:.3rem .7rem;border-radius:999px;align-self:center;min-height:28px;font-size:.82rem;margin-top:auto;box-shadow:0 6px 16px rgba(47,125,217,.16),0 2px 6px rgba(11,18,32,.08);transition:transform .12s,box-shadow var(--t-fast),filter var(--t-fast)}
+    .view:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(47,125,217,.2),0 4px 10px rgba(11,18,32,.12)}
 
     .proofs{padding:var(--s2) 0 var(--s3)}
     .features{display:grid;gap:var(--s0);grid-template-columns:repeat(2,minmax(0,1fr))}
     @media(min-width:900px){.features{grid-template-columns:repeat(4,minmax(0,1fr))}}
-    .feature{background:#fff;border:1px solid #e5ecff;border-radius:12px;padding:calc(var(--s0)*1.25);display:flex;flex-direction:column;align-items:center;gap:var(--s0);box-shadow:none;filter:none;cursor:default}
-    .feature svg{color:#000;stroke:currentColor;stroke-width:1.1;fill:none;stroke-linecap:round;stroke-linejoin:round;width:clamp(28px,8vw,36px);height:clamp(28px,8vw,36px)}
+    .feature{background:#fff;border:1px solid #e5ecff;border-radius:12px;padding:calc(var(--s0)*1.25);display:flex;flex-direction:column;align-items:center;gap:var(--s0)}
+    .feature svg{stroke:currentColor;stroke-width:1.1;fill:none;stroke-linecap:round;stroke-linejoin:round;width:clamp(28px,8vw,36px);height:clamp(28px,8vw,36px)}
     .feature .bolt{fill:currentColor;stroke:none}
     .feature .cut{fill:var(--card);stroke:none}
     .feature .qr-fill{fill:currentColor;stroke:none}
@@ -78,13 +84,13 @@
     .chip{appearance:none;border:1px solid #e5ecff;background:#fff;border-radius:999px;padding:.5rem .85rem;font-weight:800;color:#415577;cursor:pointer;white-space:nowrap}
     .chip[aria-selected="true"]{background:var(--blue-2);color:#fff;border-color:rgba(27,95,179,.35);box-shadow:0 6px 14px rgba(47,125,217,.25)}
 
-    .cards{display:grid;grid-template-columns:repeat(1,minmax(0,1fr));gap:var(--s1);overflow-anchor:none}
+    .cards{display:grid;grid-template-columns:repeat(1,minmax(0,1fr));gap:var(--s1)}
     @media(min-width:700px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(min-width:1000px){.cards{grid-template-columns:repeat(3,minmax(0,1fr))}}
     #lista-eventos.cards{grid-template-columns:repeat(2,minmax(0,1fr))}
-    .card{background:var(--card);border-radius:calc(var(--s2));box-shadow:var(--shadow);padding:var(--s2);border:1px solid #eaf1ff;display:flex;flex-direction:column;gap:var(--s1);transition:transform .12s,box-shadow var(--t-fast);position:relative;content-visibility:auto;contain-intrinsic-size:300px;overflow:hidden}
+    .card{background:var(--card);border-radius:calc(var(--s2));box-shadow:var(--shadow);padding:var(--s2);border:1px solid #eaf1ff;display:flex;flex-direction:column;gap:var(--s1);transition:transform .12s,box-shadow var(--t-fast);position:relative;overflow:hidden}
     .card:hover{transform:translateY(-2px);box-shadow:0 14px 36px rgba(47,125,217,.16),0 3px 8px rgba(11,18,32,.12)}
-    .card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--s1);padding-right:0}
+    .card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--s1)}
     .card-title{font-weight:900;font-size:clamp(1rem,2.2vw,1.14rem);line-height:1.18;margin-bottom:4px}
     .card-city{color:#2F7DD9;font-weight:800;font-size:.94rem}
     .status-line{display:flex;align-items:center;gap:8px;margin-top:4px;font-weight:800;font-size:.86rem}
@@ -97,10 +103,8 @@
     .status--sold{color:#6b7280}
     .card-media{width:100%;aspect-ratio:1.35;border-radius:calc(var(--s1));border:1px solid #eaf1ff;background:radial-gradient(600px 280px at 20% 0%,rgba(47,125,217,.12),transparent 60%),linear-gradient(180deg,#fff,#f5f9ff);display:grid;place-items:center;color:#8fb5ff;font-weight:800}
     .card-media img{width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block}
-    .view{background:#fff;border:1px solid #e5ecff;color:#2d3b50;font-weight:800;cursor:pointer;padding:.3rem .7rem;border-radius:999px;align-self:center;min-height:28px;font-size:.82rem;margin-top:auto;box-shadow:0 6px 16px rgba(47,125,217,.16),0 2px 6px rgba(11,18,32,.08);transition:transform .12s ease,box-shadow var(--t-fast),filter var(--t-fast)}
-    .view:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(47,125,217,.2),0 4px 10px rgba(11,18,32,.12)}
 
-    /* ===== BOTTOM SHEET ===== */
+    /* ===== Sheet ===== */
     .sheet-backdrop{position:fixed;inset:0;background:rgba(11,18,32,.36);opacity:0;pointer-events:none;transition:opacity var(--t-fast)}
     .sheet-backdrop.is-open{opacity:1;pointer-events:auto}
     .sheet{position:fixed;left:0;right:0;bottom:0;height:72vh;max-height:760px;background:#fff;border-top-left-radius:24px;border-top-right-radius:24px;box-shadow:0 -24px 48px rgba(11,18,32,.16);transform:translateY(100%);transition:transform var(--t-med) cubic-bezier(.2,.7,.2,1);display:flex;flex-direction:column;padding:var(--s2);z-index:40;--close-hit:64px}
@@ -122,37 +126,26 @@
     .std-card{background:#fff;border:1px solid #e5ecff;border-radius:calc(var(--s2));padding:var(--s2);box-shadow:var(--shadow-soft)}
     .std-list{margin:0;padding-left:1.25rem;display:grid;gap:6px}
 
-    /* ===== ORGANIZADORES ===== */
+    /* Organizers */
     .model-grid{display:grid;grid-template-columns:1fr;gap:var(--s1);margin-top:var(--s1)}
-    @media(min-width:720px){.model-grid{grid-template-columns:repeat(3,1fr)}}
+    @media(min-width:720px){.model-grid{grid-template-columns:repeat(2,1fr)}}
     .model{appearance:none;background:#fff;border:1px solid #e5ecff;border-radius:calc(var(--s1));padding:var(--s1);display:flex;align-items:center;justify-content:center;gap:.6rem;cursor:pointer;text-align:center;box-shadow:var(--shadow-soft);font-weight:800;transition:transform var(--t-fast),box-shadow var(--t-fast),border-color var(--t-fast)}
     .model[aria-selected="true"]{border-color:#e5ecff;box-shadow:var(--shadow-soft);transform:translateY(-1px) scale(1.02)}
-
     .fee-row{display:none;place-content:center;margin-top:4px}
     .fee-chip{display:inline-flex;align-items:center;gap:.5rem;padding:.45rem .8rem;border:1px solid #cfe0ff;border-radius:999px;background:#eef4ff;color:#2F7DD9;font-weight:800;box-shadow:var(--shadow-soft)}
     .fee-row.is-visible{display:grid}
 
     .org-panel{background:#fff;border:1px solid #e5ecff;border-radius:calc(var(--s2));padding:var(--s3);box-shadow:var(--shadow);margin-top:var(--s2)}
-    .org-notice{margin-bottom:var(--s1);font-weight:700}
     .panel-grid{display:grid;grid-template-columns:1fr;gap:var(--s2)}
-    @media(min-width:820px){ .panel-grid{grid-template-columns:1.1fr .9fr} }
+    @media(min-width:860px){ .panel-grid{grid-template-columns:1.1fr .9fr} }
     .panel-card{background:#f9fbff;border:1px solid #e5ecff;border-radius:calc(var(--s1));padding:var(--s2)}
-    #org-detail.is-disabled{opacity:.55;pointer-events:none}
 
-    .cmd-list{display:grid;gap:8px}
     .cmd{display:grid;grid-template-columns:1fr max-content;gap:6px;align-items:center;background:#fff;border:1px solid #e5ecff;border-radius:12px;padding:10px 12px}
     .cmd code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.95rem;color:#0b1220}
-    .cmd small{grid-column:1 / -1;color:var(--muted)}
-    .cmd .copy{appearance:none;border:1px solid #e5ecff;background:#fff;border-radius:10px;padding:.4rem .6rem;cursor:pointer;font-weight:700;color:#2F7DD9}
-
-    details.disclosure{border:0;padding:0;margin:0}
-    .disclosure__summary{list-style:none;cursor:pointer;user-select:none;display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:.75rem 1rem;border:1px solid #e5ecff;border-radius:12px;background:#fff;box-shadow:var(--shadow-soft);font-weight:800;outline:none}
-    .disclosure__summary::-webkit-details-marker{display:none}
 
     .calc{display:grid;gap:10px}
     .calc-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     .calc input{width:100%;border:1px solid #e5ecff;border-radius:12px;padding:.7rem .8rem;font:inherit}
-    .calc input:disabled{background:#f3f6ff;color:#8796b0}
     .calc small{color:var(--muted)}
     .calc-result{background:#fff;border:1px dashed #dbe5ff;border-radius:12px;padding:.75rem .9rem;font-weight:800;display:flex;justify-content:space-between;align-items:center}
     .panel-cta{display:grid;grid-template-columns:1fr;gap:var(--s1);margin-top:var(--s2)}
@@ -169,19 +162,14 @@
     .foot-meta{display:flex;flex-wrap:wrap;gap:10px;align-items:center;color:#667792;justify-content:center}
 
     @media print{header,footer,.cta-row,.toast,button.view{display:none!important}.container{max-width:100%;padding:0}.card,.panel-card,.std-card{box-shadow:none!important;border:1px solid #999!important}.status-line{color:#000!important}a:link,a:visited{text-decoration:underline;color:#000!important}a[href]:after{content:" <" attr(href) ">";font-size:.9em}}
-
-    #organizadores *:focus,
-    #organizadores *:focus-visible { outline:none !important; box-shadow:none !important; }
-    #organizadores input:focus { border-color:#d7e1f5; }
-
     .sheet-close{position:absolute; right:10px; top:10px;appearance:none; background:#fff; border:1px solid #ffd6d6; color:#c94747;border-radius:14px; padding:.8rem;display:grid; place-items:center;box-shadow:0 8px 20px rgba(201,71,71,.18);z-index:9999;touch-action:manipulation;cursor:pointer}
     .sheet-close:hover{background:#fff5f5}
-    .sheet-close:active{filter:saturate(1.1)}
-    .sheet-close svg{width:22px;height:22px;stroke:currentColor;pointer-events:none}
+    .sheet-close svg{width:22px;height:22px}
   </style>
 </head>
+
 <body>
-  <header class="tech-header" role="banner">
+  <header role="banner">
     <div class="container nav"></div>
   </header>
 
@@ -189,7 +177,7 @@
     <section class="hero" aria-labelledby="hero-title">
       <div class="hero-brand">
         <img src="/logo_ingressai.png" alt="IngressAI" width="160" height="160" loading="eager" fetchpriority="high" />
-        <div class="badges" aria-label="Selos de plataforma">
+        <div class="badges" aria-label="Selos">
           <span class="badge" aria-label="Powered by Meta Business Platform">
             <img src="/meta.png" alt="Meta" width="24" height="24" loading="lazy" decoding="async" />
             <span>Powered by Meta Business Platform</span>
@@ -209,7 +197,7 @@
 
     <section class="proofs" aria-labelledby="proofs-title">
       <h2 id="proofs-title" class="sr-only">Provas de valor</h2>
-      <div class="features" aria-label="Provas de valor">
+      <div class="features" aria-label="Provas">
         <div class="feature">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <rect x="3.6" y="6.6" width="16.8" height="10.8" rx="2.4" />
@@ -246,14 +234,14 @@
             <rect x="4" y="11" width="2.2" height="2.2" rx=".35" />
             <rect x="4" y="16" width="2.2" height="2.2" rx=".35" />
           </svg>
-          <div class="meta"><strong>Comandos &amp; Dashboard</strong><small>Compradores &amp; acesso</small></div>
+          <div class="meta"><strong>Dashboard</strong><small>Ingressos & acesso</small></div>
         </div>
       </div>
     </section>
 
     <section id="vitrine" class="section" aria-labelledby="vitrine-title" tabindex="-1">
       <h2 id="vitrine-title">Eventos em destaque</h2>
-      <div class="filters" aria-label="Filtros de eventos">
+      <div class="filters" aria-label="Filtros">
         <div class="search">
           <label for="busca-eventos" class="sr-only">Buscar evento</label>
           <input type="search" id="busca-eventos" placeholder="Buscar evento" inputmode="search" autocomplete="off" aria-describedby="vitrine-title" />
@@ -263,7 +251,7 @@
       <div class="cards" id="lista-eventos" aria-live="polite"></div>
     </section>
 
-    <!-- === ORGANIZADORES — COMPLETO === -->
+    <!-- === ORGANIZADORES === -->
     <section id="organizadores" class="section" aria-labelledby="orgs-title" tabindex="-1" hidden>
       <h2 id="orgs-title">Soluções para organizadores</h2>
       <div id="std-card" class="std-card"></div>
@@ -271,19 +259,11 @@
       <div class="fee-row" id="fee-row"><span class="fee-chip" id="fee-chip">Taxa</span></div>
 
       <div id="org-detail" class="org-panel is-disabled" role="tabpanel" tabindex="0" aria-live="polite">
-        <div class="org-notice subtle" id="org-notice">Selecione um dos planos acima para liberar os botões.</div>
-
         <div class="panel-grid">
+          <!-- Calculadora & Setup -->
           <div class="panel-card">
-            <details class="disclosure">
-              <summary class="disclosure__summary">Comandos do bot</summary>
-              <div class="cmd-list" id="cmd-list"></div>
-            </details>
-          </div>
-
-          <div class="panel-card">
-            <details class="disclosure">
-              <summary class="disclosure__summary">Calculadora de taxa</summary>
+            <details class="disclosure" open>
+              <summary class="disclosure__summary">Calculadora &amp; Setup</summary>
               <div class="calc" id="calc-box" data-fee="">
                 <div class="calc-row">
                   <div>
@@ -298,11 +278,25 @@
                 <small id="calc-note">Selecione um plano acima para aplicar a taxa.</small>
                 <div class="calc-result" id="calc-gross-row"><span>Total bruto</span><strong id="calc-gross">R$ 0,00</strong></div>
                 <div class="calc-result"><span>Você recebe</span><strong id="calc-net">R$ 0,00</strong></div>
-              </div>
 
-              <div class="panel-cta" style="margin-top:var(--s2)">
-                <a class="btn btn--secondary is-disabled" id="org-quick" aria-disabled="true">Criar evento no WhatsApp</a>
-                <a class="btn btn--secondary" href="https://wa.me/5534999992747" target="_blank" rel="noopener noreferrer">Falar com suporte</a>
+                <div class="panel-cta" style="margin-top:var(--s2)">
+                  <a class="btn btn--secondary is-disabled" id="org-quick" aria-disabled="true">Criar evento (WhatsApp)</a>
+                  <a class="btn btn--ghost" href="/app/login">Entrar no Dashboard</a>
+                </div>
+              </div>
+            </details>
+          </div>
+
+          <!-- Dashboard -->
+          <div class="panel-card">
+            <details class="disclosure" open>
+              <summary class="disclosure__summary">Dashboard</summary>
+              <div class="cmd">
+                <div>
+                  <p><strong>Acompanhe vendas</strong>, baixe lista de compradores e <strong>valide QR Code</strong> no modo Validador.</p>
+                  <p>Acesso por <em>código de verificação</em> enviado ao seu WhatsApp. <a href="/app/login">Abrir login</a>.</p>
+                </div>
+                <a class="btn btn--secondary btn--sm" href="/app/login">Abrir Dashboard</a>
               </div>
             </details>
           </div>
@@ -317,7 +311,7 @@
           <h3 class="card-title" style="font-size:clamp(1rem,2.4vw,1.2rem)">Para quem compra</h3>
           <ol style="margin:0;padding-left:var(--s2);display:grid;gap:calc(var(--s0)*1.1)">
             <li>Escolha o evento</li>
-            <li>Pague com rapidez via WhatsApp</li>
+            <li>Pague via WhatsApp</li>
             <li>Receba o ingresso com QR Code</li>
           </ol>
         </div>
@@ -335,7 +329,7 @@
 
     <div class="sheet-backdrop" id="sheet-backdrop" aria-hidden="true"></div>
     <aside class="sheet" id="sheet" aria-hidden="true" role="dialog" aria-modal="true">
-      <button type="button" class="sheet-close" id="sheet-close" data-close="sheet" aria-label="Fechar detalhes">
+      <button type="button" class="sheet-close" id="sheet-close" data-close="sheet" aria-label="Fechar">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M6 6L18 18M18 6L6 18" />
         </svg>
@@ -347,7 +341,7 @@
   <footer role="contentinfo">
     <div class="foot">
       <div class="foot-block">
-        <div class="link-row" aria-label="Canais de contato">
+        <div class="link-row" aria-label="Canais">
           <a class="link-btn" href="mailto:contato@ingressai.chat" aria-label="Enviar e-mail">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
               <rect x="3" y="5" width="18" height="14" rx="2"></rect>
@@ -361,14 +355,14 @@
               <circle cx="17" cy="7" r="1.2" fill="currentColor" stroke="none"></circle>
             </svg>
           </a>
-          <a class="link-btn" href="https://wa.me/5534999992747" target="_blank" rel="noopener noreferrer" aria-label="Falar com o bot no WhatsApp">
+          <a class="link-btn" href="https://wa.me/5534999992747" target="_blank" rel="noopener noreferrer" aria-label="Falar no WhatsApp">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 90 90" aria-hidden="true" focusable="false">
               <path d="M0.576 44.596C0.573 52.456 2.626 60.129 6.53 66.892L0.201 90l23.65-6.201c6.516 3.553 13.852 5.426 21.318 5.429h0.019c24.586 0 44.601-20.009 44.612-44.597 0.004-11.917-4.633-23.122-13.055-31.552C68.321 4.65 57.121 0.005 45.188 0 20.597 0 0.585 20.005 0.575 44.595m14.083 21.132l-0.883-1.402c-3.712-5.902-5.671-12.723-5.669-19.726C8.115 24.161 24.748 7.532 45.201 7.532c9.905 0.004 19.213 3.865 26.215 10.871 7.001 7.006 10.854 16.32 10.851 26.224-0.009 20.439-16.643 37.068-37.08 37.068h-0.015c-6.655-0.004-13.181-1.79-18.872-5.168l-1.355-0.803-14.035 3.68 4.956-13.937z" fill="currentColor"/>
               <path d="M34.038 25.95c-0.835-1.856-1.714-1.894-2.508-1.926-0.65-0.028-1.394-0.026-2.136-0.026-0.744 0-1.951 0.279-2.972 1.394-1.022 1.116-3.902 3.812-3.902 9.296 0 5.485 3.995 10.784 4.551 11.529 0.558 0.743 7.712 12.357 19.041 16.825 9.416 3.713 11.333 2.975 13.376 2.789 2.044-0.186 6.595-2.696 7.524-5.299 0.929-2.603 0.929-4.834 0.651-5.299-0.279-0.465-1.022-0.744-2.137-1.301-1.115-0.558-6.595-3.254-7.617-3.626-1.022-0.372-1.765-0.557-2.509 0.559-0.743 1.115-2.878 3.625-3.528 4.368-0.65 0.745-1.301 0.838-2.415 0.28-1.115-0.559-4.705-1.735-8.964-5.532-3.314-2.955-5.551-6.603-6.201-7.719-0.65-1.115-0.069-1.718 0.489-2.274 0.501-0.499 1.115-1.301 1.673-1.952 0.556-0.651 0.742-1.116 1.113-1.859 0.372-0.744 0.186-1.395-0.093-1.953-0.805-1.58-2.971-7.092-3.962-9.296" fill="currentColor"/>
             </svg>
           </a>
         </div>
-        <div class="legal" aria-label="Links legais">
+        <div class="legal" aria-label="Links">
           <a href="/politica.html">Política de privacidade</a>
           <a href="/termos.html">Termos de uso</a>
           <a href="/excluir.html">Excluir meus dados</a>
@@ -395,6 +389,10 @@
     let evIndex = {};
 
     /* ========= HELPERS ========= */
+    const BRL=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
+    const parseBR=v=>Number(String(v).replace(/[^\d,.-]/g,'').replace(/\./g,'').replace(',', '.'))||0;
+    const money=v=>BRL.format(isFinite(v)?v:0);
+
     function formatDate(iso){try{const d=new Date(iso);return d.toLocaleString('pt-BR',{dateStyle:'medium',timeStyle:'short'})}catch{return iso}}
     function waHref(text){return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`}
     function animatePress(el){try{el.classList.add('btn-press');el.addEventListener('animationend',()=>el.classList.remove('btn-press'),{once:true})}catch{}}
@@ -416,8 +414,6 @@
     const feeRow=document.getElementById('fee-row');
     const feeChip=document.getElementById('fee-chip');
     const detail=document.getElementById('org-detail');
-    const orgNotice=document.getElementById('org-notice');
-    const cmdList=document.getElementById('cmd-list');
     const calcBox=document.getElementById('calc-box');
     const calcNote=document.getElementById('calc-note');
     const calcNet=document.getElementById('calc-net');
@@ -427,7 +423,7 @@
     const sheetBody=document.getElementById('sheet-body');
     const sheetBackdrop=document.getElementById('sheet-backdrop');
 
-    /* ========= HEADER ANIMA + CTA ORGANIZADORES ========= */
+    /* ========= HEADER/CTA ========= */
     document.addEventListener('click',e=>{const el=e.target.closest('.btn,.view');if(el)animatePress(el)});
     (function(){const hero=document.querySelector('.hero');const header=document.querySelector('header');const HIDE_START=16,HIDE_END=240;let ticking=false;function onScroll(){if(ticking)return;ticking=true;requestAnimationFrame(()=>{const y=window.scrollY||document.documentElement.scrollTop||0;header&&header.classList.toggle('is-scrolled',y>8);const p=Math.min(1,Math.max(0,(y-HIDE_START)/(HIDE_END-HIDE_START)));if(hero){hero.style.setProperty('--hero-p',p.toFixed(3));hero.classList.toggle('is-hidden',p>=1)}ticking=false})}onScroll();window.addEventListener('scroll',onScroll,{passive:true})})();
 
@@ -497,7 +493,7 @@
               </div>
             </div>
           </div>
-          <button type="button" class="view" data-open="${ev.id}" aria-label="Ver detalhes de ${ev.nome}">Ver detalhes</button>`;
+          <button type="button" class="view" data-open="${ev.id || 'TST'}" aria-label="Ver detalhes de ${ev.nome}">Ver detalhes</button>`;
         lista.appendChild(card)
       })
     }
@@ -508,7 +504,6 @@
     function buildStatusChip(statusLabel){const key=statusLabel==='Esgotado'?'sold':(statusLabel==='Último lote'?'low':'soon');const lbl=statusLabel||'Em breve';return `<span class="status-chip ${key}"><span class="dot" aria-hidden="true"></span>${lbl}</span>`}
 
     async function backendOrderAndSend(to, ev){
-      // 1) cria pedido
       const order = await fetchJson(`${BASE}/orders`, {
         method:'POST',
         headers:{'Content-Type':'application/json'},
@@ -516,11 +511,9 @@
       });
       const orderId = order.orderId;
       if (!orderId) throw new Error('orderId ausente');
-      // 2) emite ticket
       await fetchJson(`${BASE}/tickets/issue`, {
         method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ orderId })
       });
-      // 3) envia link por WhatsApp (simulado se sem credenciais)
       await fetchJson(`${BASE}/test/send-ticket`, {
         method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ phone: to, orderId })
       });
@@ -600,7 +593,6 @@
         }
       });
 
-      // abre sheet
       sheet.setAttribute('aria-hidden','false');
       sheet.setAttribute('aria-labelledby','sheet-title');
       sheetBackdrop.setAttribute('aria-hidden','false');
@@ -628,68 +620,54 @@
     listaEl.addEventListener('click',e=>{const btn=e.target.closest('[data-open]');if(!btn)return;const ev=evIndex[btn.dataset.open];if(!ev)return;openSheet(ev)});
 
     /* ========= ORGANIZADORES ========= */
-    const commonFeatures=['Criação de evento 100% pelo WhatsApp','Geração automática de ingresso com QR Code','Link público de vendas e acompanhamento em tempo real','Repasse na hora ao organizador','Página de validador liberada ao criar o evento','Lista de compradores atualizada'];
+    const commonFeatures=[
+      'Criação de evento 100% pelo WhatsApp',
+      'Geração automática de ingresso com QR Code',
+      'Link público de vendas e acompanhamento em tempo real',
+      'Repasse na hora ao organizador',
+      'Página de validador liberada ao criar o evento',
+      'Lista de compradores atualizada'
+    ];
     std.innerHTML='<ul class="std-list">'+commonFeatures.map(f=>'\n<li>'+f+'</li>').join('')+'</ul>';
 
     const categorias=[
       {key:'aret',title:'Atléticas & Repúblicas',taxa:'8%',feePct:8,ctaMsg:'Olá! Quero criar um evento como Atléticas & Repúblicas. Nome do evento: . Cidade: . Data: . Lotes: .'},
-      {key:'prod',title:'Produtoras Independentes',taxa:'10%',feePct:10,ctaMsg:'Olá! Quero criar um evento como Produtora Independente. Nome do evento: . Cidade: . Data: . Lotes: .'},
-      {key:'locais',title:'Locais Independentes',taxa:'10%',feePct:10,ctaMsg:'Olá! Quero criar um evento como Local Independente. Nome do evento: . Cidade: . Data: . Capacidade: .'}
+      {key:'prodloc',title:'Produtoras & Locais Independentes',taxa:'10%',feePct:10,ctaMsg:'Olá! Quero criar um evento como Produtoras & Locais Independentes. Nome do evento: . Cidade: . Data: . Capacidade/Lotes: .'}
     ];
     modelsBox.innerHTML=categorias.map(m=>'<button type="button" class="model" role="tab" aria-selected="false" data-key="'+m.key+'">'+m.title+'</button>').join('');
 
-    const BRL=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
-    const parseBR=v=>Number(String(v).replace(/[^\d,.-]/g,'').replace(/\./g,'').replace(',', '.'))||0;
-    const money=v=>BRL.format(isFinite(v)?v:0);
     function computeGross(preco,qtd){return Math.max(0,Number(preco)||0)*Math.max(1,parseInt(qtd||1,10))}
     function computeNet(preco,qtd,feePct){const bruto=computeGross(preco,qtd);return Number((bruto*(1-(Number(feePct)||0)/100)).toFixed(2))}
     function applyPlan(key){
       const plan=categorias.find(x=>x.key===key)||null;
-      if(plan){feeChip.textContent='Taxa '+plan.taxa;feeRow.classList.add('is-visible');orgNotice.classList.add('is-hidden');detail.classList.remove('is-disabled')}
-      else{feeRow.classList.remove('is-visible');orgNotice.classList.remove('is-hidden');detail.classList.add('is-disabled')}
-      const cmdData=[
-        {cmd:'criar evento',desc:'Inicia o fluxo para cadastro de um novo evento.'},
-        {cmd:'adicionar lote',desc:'Inclui um novo lote com preço/quantidade.'},
-        {cmd:'fechar vendas',desc:'Pausa as vendas imediatamente.'},
-        {cmd:'link do evento',desc:'Retorna o link público de vendas.'},
-        {cmd:'lista de vendas',desc:'Mostra compradores e status de pagamento.'},
-        {cmd:'validador',desc:'Abre a página de validação de QR Code.'},
-        {cmd:'enviar ingresso <telefone>',desc:'Reenvia o ingresso ao comprador indicado.'}
-      ];
-      cmdList.innerHTML=cmdData.map(({cmd,desc})=>'<div class="cmd"><code>'+cmd+'</code><button type="button" class="copy" data-cmd="'+cmd+'">Copiar</button><small>'+desc+'</small></div>').join('');
-      calcBox.dataset.fee=plan?plan.feePct:'';
+      if(plan){feeChip.textContent='Taxa '+plan.taxa;feeRow.classList.add('is-visible');detail.classList.remove('is-disabled')}
+      else{feeRow.classList.remove('is-visible');detail.classList.add('is-disabled')}
+      const fee=plan?plan.feePct:'';
+      calcBox.dataset.fee=fee;
       calcNote.innerHTML=plan?'Taxa aplicada: <strong>'+plan.taxa+'</strong>. O restante é repassado ao organizador na hora.':'Selecione um plano acima para aplicar a taxa.';
       const preco=document.getElementById('preco');const qtd=document.getElementById('qtd');
       preco.disabled=!plan;qtd.disabled=!plan;calcGross.textContent=BRL.format(0);calcNet.textContent=BRL.format(0);
-      if(plan){orgQuick.classList.remove('is-disabled');orgQuick.removeAttribute('aria-disabled');orgQuick.onclick=e=>{e.currentTarget.href=waHref(plan.ctaMsg);e.currentTarget.target='_blank';e.currentTarget.rel='noopener noreferrer'}}
-      else{orgQuick.classList.add('is-disabled');orgQuick.setAttribute('aria-disabled','true');orgQuick.removeAttribute('href');orgQuick.onclick=null}
-      detail.querySelectorAll('button.copy').forEach(b=>{b.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(b.dataset.cmd)}catch{}})});
-      const recompute=()=>{const fee=Number(calcBox.dataset.fee)||0;const p=parseBR(preco.value||'0');const q=Math.max(1,parseInt(qtd.value||'1',10));const bruto=computeGross(p,q);calcGross.textContent=money(bruto);calcNet.textContent=money(computeNet(p,q,fee))};
-      preco.addEventListener('input',recompute);qtd.addEventListener('input',recompute)
+      if(plan){
+        orgQuick.classList.remove('is-disabled');orgQuick.removeAttribute('aria-disabled');
+        orgQuick.onclick=e=>{e.currentTarget.href=waHref(plan.ctaMsg);e.currentTarget.target='_blank';e.currentTarget.rel='noopener noreferrer'}
+      }else{
+        orgQuick.classList.add('is-disabled');orgQuick.setAttribute('aria-disabled','true');orgQuick.removeAttribute('href');orgQuick.onclick=null
+      }
+      const recompute=()=>{const p=parseBR(preco.value||'0');const q=Math.max(1,parseInt(qtd.value||'1',10));const bruto=computeGross(p,q);calcGross.textContent=money(bruto);calcNet.textContent=money(computeNet(p,q,fee))};
+      preco.addEventListener('input',recompute,{once:true});qtd.addEventListener('input',recompute,{once:true});
+      preco.oninput=qtd.oninput=recompute;
     }
     modelsBox.addEventListener('click',e=>{const b=e.target.closest('button.model');if(!b)return;modelsBox.querySelectorAll('button.model').forEach(x=>x.setAttribute('aria-selected','false'));b.setAttribute('aria-selected','true');applyPlan(b.dataset.key)});
     applyPlan(null);
 
-    /* ========= FETCH /events + FALLBACK ========= */
+    /* ========= LOAD EVENTS ========= */
     async function fetchEventosDoBackend() {
-      const EVENTO_DE_TESTE = {
-        id: 'TST-INGRESSAI',
-        title: 'Evento Teste IngressAI',
-        city: 'Uberaba-MG',
-        date: new Date(Date.now() + 2*24*60*60*1000).toISOString(),
-        venue: 'Espaço Demo',
-        image: '',
-        statusLabel: 'Último lote'
-      };
-
       let arr = [];
       try {
         const j = await fetchJson(`${BASE}/events`);
         if (Array.isArray(j?.items)) arr = j.items;
-        else if (Array.isArray(j?.events)) arr = j.events; // compat
-      } catch (e) {
-        console.warn('events load failed', e);
-      }
+        else if (Array.isArray(j?.events)) arr = j.events;
+      } catch (e) { console.warn('events load failed', e); }
 
       const mapped = arr.map(e => ({
         id: String(e.id),
@@ -704,24 +682,15 @@
         img: e.image || e.bannerUrl || ''
       }));
 
-      const testMapped = {
-        id: String(EVENTO_DE_TESTE.id),
-        nome: EVENTO_DE_TESTE.title,
-        cidade: EVENTO_DE_TESTE.city,
-        dataISO: EVENTO_DE_TESTE.date,
-        localNome: EVENTO_DE_TESTE.venue,
-        localUrl: 'https://maps.google.com/?q=' + encodeURIComponent(`${EVENTO_DE_TESTE.venue} ${EVENTO_DE_TESTE.city}`),
-        categoria: 'IngressAI',
-        status: EVENTO_DE_TESTE.statusLabel,
-        descricao: EVENTO_DE_TESTE.title,
-        img: EVENTO_DE_TESTE.image
-      };
+      if (!mapped.length) {
+        const dt = new Date(Date.now()+2*24*60*60*1000).toISOString();
+        mapped.push({ id:'TST-INGRESSAI', nome:'Evento Teste IngressAI', cidade:'Uberaba-MG', dataISO:dt, localNome:'Espaço Demo', localUrl:'https://maps.google.com/?q=Espaço%20Demo%20Uberaba', categoria:'IngressAI', status:'Último lote', descricao:'Evento Teste IngressAI', img:'' });
+      }
 
-      eventos = mapped.length ? mapped : [testMapped];
+      eventos = mapped;
       evIndex = Object.fromEntries(eventos.map(e=>[e.id,e]));
     }
 
-    /* ========= INIT ========= */
     (async () => {
       await fetchEventosDoBackend();
       buildChips();
@@ -745,5 +714,3 @@
   </script>
 </body>
 </html>
-
-
