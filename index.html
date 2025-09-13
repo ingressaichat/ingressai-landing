@@ -381,7 +381,8 @@
   <script>
     /* ========= CONFIG ========= */
     const API_PARAM = new URLSearchParams(location.search).get('api');
-    const BASE = API_PARAM || "https://ingressai-backend-production.up.railway.app";
+    // >>> com /api na base <<<
+    const BASE = API_PARAM || "https://ingressai-backend-production.up.railway.app/api";
     const WHATSAPP_NUMBER='5534999992747';
 
     /* ========= ESTADO ========= */
@@ -503,20 +504,18 @@
 
     function buildStatusChip(statusLabel){const key=statusLabel==='Esgotado'?'sold':(statusLabel==='Último lote'?'low':'soon');const lbl=statusLabel||'Em breve';return `<span class="status-chip ${key}"><span class="dot" aria-hidden="true"></span>${lbl}</span>`}
 
+    // >>> AGORA usa só /purchase/start <<<
     async function backendOrderAndSend(to, ev){
-      const order = await fetchJson(`${BASE}/orders`, {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ eventId: ev.id, qty: 1, buyer: { name: 'Visitante', phone: to } })
-      });
-      const orderId = order.orderId;
-      if (!orderId) throw new Error('orderId ausente');
-      await fetchJson(`${BASE}/tickets/issue`, {
-        method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ orderId })
-      });
-      await fetchJson(`${BASE}/test/send-ticket`, {
-        method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ phone: to, orderId })
-      });
+      const qs = new URLSearchParams({
+        ev: ev.id,
+        to,
+        name: "Visitante",
+        qty: "1",
+      }).toString();
+
+      const r = await fetch(`${BASE}/purchase/start?${qs}`);
+      const j = await r.json().catch(()=> ({}));
+      if (!r.ok || !j.ok) throw new Error(j.error || "Falha ao emitir");
       return true;
     }
 
@@ -617,7 +616,7 @@
     document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && sheet?.classList?.contains('is-open')) closeSheetSafe(e); });
 
     const listaEl=document.getElementById('lista-eventos');
-    listaEl.addEventListener('click',e=>{const btn=e.target.closest('[data-open]');if(!btn)return;const ev=evIndex[btn.dataset.open];if(!ev)return;openSheet(ev)});
+    listaEl.addEventListener('click',e=>{const btn=e.target.closest('[data-open]']);if(!btn)return;const ev=evIndex[btn.dataset.open];if(!ev)return;openSheet(ev)});
 
     /* ========= ORGANIZADORES ========= */
     const commonFeatures=[
