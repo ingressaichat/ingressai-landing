@@ -34,7 +34,10 @@
     .container{max-width:var(--container-max);margin:0 auto;padding:0 var(--s3)} .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
     .subtle{color:var(--muted)} :where(section,[id]){scroll-margin-top:96px}
     header{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid #e7eefb;transition:box-shadow var(--t-fast),border-color var(--t-fast),background-color var(--t-fast)}
-    header.is-scrolled{box-shadow:var(--shadow);border-color:#e1e9fb} .nav{display:flex;flex-direction:column;align-items:center;gap:var(--s1);padding:var(--s1) 0}
+    header.is-scrolled{box-shadow:var(--shadow);border-color:#e1e9fb}
+    .nav{display:flex;flex-direction:column;align-items:center;gap:var(--s1);padding:var(--s1) 0}
+    .nav-actions{display:flex;gap:10px}
+    .link-like{border:1px solid #e7eefb;background:#fff;border-radius:12px;padding:.5rem .75rem;box-shadow:var(--shadow-soft);font-weight:800}
     .hero{padding:var(--s4) 0;opacity:calc(1 - var(--hero-p,0));transform:translateY(calc(-6px * var(--hero-p,0)));transition:opacity var(--t-fast) linear,transform var(--t-fast) linear}
     .hero.is-hidden{opacity:0;height:0;padding:0;margin:0;overflow:hidden}
     .hero h1{font-size:clamp(calc(1.25rem*var(--phi)),6.2vw,calc(1.25rem*var(--phi)*var(--phi)));line-height:var(--lh-compact);margin:0 0 var(--s2) 0;font-weight:850;text-align:center}
@@ -130,10 +133,37 @@
     .sheet-close{position:absolute;right:10px;top:10px;appearance:none;background:#fff;border:1px solid #ffd6d6;color:#c94747;border-radius:14px;padding:.8rem;display:grid;place-items:center;box-shadow:0 8px 20px rgba(201,71,71,.18);z-index:9999;touch-action:manipulation;cursor:pointer}
     .sheet-close:hover{background:#fff5f5}
     .sheet-close svg{width:22px;height:22px}
+
+    /* ==== Login Modal ==== */
+    .modal{position:fixed;inset:0;display:none;place-items:center;background:rgba(11,18,32,.36);z-index:50}
+    .modal.is-open{display:grid}
+    .modal-card{background:#fff;border:1px solid #e5ecff;border-radius:16px;box-shadow:var(--shadow);padding:var(--s2);width:min(520px,92vw);display:grid;gap:12px}
+    .modal-card h3{margin:0;font-weight:900}
+    .modal-actions{display:flex;gap:10px;justify-content:flex-end}
+    .input{width:100%;border:1px solid #e5ecff;border-radius:12px;padding:.7rem .8rem;font:inherit}
+    .hint{color:#5b6b86;font-size:.9rem}
+    .tag{display:inline-flex;align-items:center;gap:6px;border:1px solid #e6eaf6;border-radius:999px;padding:.2rem .55rem;font-weight:800;font-size:.78rem}
+    .tag.on{background:#eef9f2;border-color:#cfead9;color:#0b7a3b}
+    .tag.off{background:#fff6f6;border-color:#ffd6d6;color:#a33a3a}
+
+    /* ==== Validador ==== */
+    .validator{background:#fff;border:1px solid #e5ecff;border-radius:16px;padding:var(--s2);box-shadow:var(--shadow-soft)}
+    .valid{color:#0b7a3b}
+    .invalid{color:#a33a3a}
   </style>
 </head>
 <body>
-  <header role="banner"><div class="container nav"></div></header>
+  <header role="banner">
+    <div class="container nav">
+      <div class="nav-actions">
+        <a href="#vitrine" class="link-like">Vitrine</a>
+        <a href="#organizadores" class="link-like" id="nav-org">Organizadores</a>
+        <a href="#validador" class="link-like" id="nav-val" hidden>Validador</a>
+        <a href="#" class="link-like" id="nav-login" data-login>Entrar</a>
+        <span class="tag off" id="auth-indicator" aria-live="polite">offline</span>
+      </div>
+    </div>
+  </header>
 
   <main class="container" role="main">
     <section class="hero" aria-labelledby="hero-title">
@@ -220,7 +250,7 @@
       <div id="org-models" class="model-grid" role="tablist" aria-label="Modelos de organizador"></div>
       <div class="fee-row" id="fee-row"><span class="fee-chip" id="fee-chip">Taxa</span></div>
 
-      <div id="org-detail" class="org-panel is-disabled" role="tabpanel" tabindex="0" aria-live="polite">
+      <div class="org-panel is-disabled" id="org-detail" role="tabpanel" tabindex="0" aria-live="polite">
         <div class="panel-grid">
           <div class="panel-card">
             <details class="disclosure" open>
@@ -229,19 +259,19 @@
                 <div class="calc-row">
                   <div>
                     <label for="preco">Preço</label>
-                    <input id="preco" type="text" inputmode="decimal" placeholder="R$ 60,00" aria-label="Preço do ingresso" disabled />
+                    <input id="preco" class="input" type="text" inputmode="decimal" placeholder="R$ 60,00" aria-label="Preço do ingresso" disabled />
                   </div>
                   <div>
                     <label for="qtd">Qtd</label>
-                    <input id="qtd" type="number" placeholder="1" min="1" step="1" aria-label="Quantidade de ingressos" disabled />
+                    <input id="qtd" class="input" type="number" placeholder="1" min="1" step="1" aria-label="Quantidade de ingressos" disabled />
                   </div>
                 </div>
-                <small id="calc-note">Selecione um plano acima para aplicar a taxa.</small>
+                <small id="calc-note" class="hint">Selecione um plano acima para aplicar a taxa.</small>
                 <div class="calc-result" id="calc-gross-row"><span>Total bruto</span><strong id="calc-gross">R$ 0,00</strong></div>
                 <div class="calc-result"><span>Você recebe</span><strong id="calc-net">R$ 0,00</strong></div>
                 <div class="panel-cta" style="margin-top:var(--s2)">
                   <a class="btn btn--secondary is-disabled" id="org-quick" aria-disabled="true">Criar evento (WhatsApp)</a>
-                  <a class="btn btn--ghost" href="/app/login">Entrar no Dashboard</a>
+                  <a class="btn btn--ghost" id="open-dashboard" href="/app/login" data-login>Entrar no Dashboard</a>
                 </div>
               </div>
             </details>
@@ -253,13 +283,26 @@
               <div class="cmd">
                 <div>
                   <p><strong>Acompanhe vendas</strong>, baixe lista de compradores e <strong>valide QR Code</strong> no modo Validador.</p>
-                  <p>Acesso por <em>código de verificação</em> enviado ao seu WhatsApp. <a href="/app/login">Abrir login</a>.</p>
+                  <p>Acesso por <em>código de verificação</em> enviado ao seu WhatsApp. <a id="open-login-inline" href="/app/login" data-login>Abrir login</a>.</p>
                 </div>
-                <a class="btn btn--secondary btn--sm" href="/app/login">Abrir Dashboard</a>
+                <a class="btn btn--secondary btn--sm" id="open-dashboard-2" href="/app/login" data-login>Abrir Dashboard</a>
               </div>
             </details>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- === VALIDADOR (somente organizador autenticado) === -->
+    <section id="validador" class="section" aria-labelledby="val-title" hidden>
+      <h2 id="val-title">Validador</h2>
+      <div class="validator">
+        <p class="hint">Cole ou digite o <strong>código</strong> do QR (formato <code>ingressai:ticket:&lt;code&gt;</code> ou apenas o <em>code</em>).</p>
+        <div style="display:grid;gap:10px;grid-template-columns:1fr max-content">
+          <input id="val-code" class="input" placeholder="ex.: ingressai:ticket:ABCD1234EF" autocomplete="off" />
+          <button id="val-check" class="btn btn--secondary btn--sm">Checar</button>
+        </div>
+        <div id="val-result" style="margin-top:10px"></div>
       </div>
     </section>
 
@@ -318,6 +361,29 @@
 
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"IngressAI","url":"https://ingressai.chat/","logo":"https://ingressai.chat/logo_ingressai.png","sameAs":["https://instagram.com/ingressai"],"contactPoint":[{"@type":"ContactPoint","contactType":"customer support","areaServed":"BR","availableLanguage":"pt-BR"}]}</script>
 
+  <!-- ===== Modal de Login/Verificação (OTP) ===== -->
+  <div class="modal" id="login-modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <h3>Entrar no Dashboard</h3>
+      <label class="sr-only" for="login-phone">Seu WhatsApp (com DDI + DDD)</label>
+      <input id="login-phone" class="input" inputmode="numeric" placeholder="ex.: 5534999999999" autocomplete="tel" />
+      <div class="modal-actions">
+        <button class="btn btn--ghost btn--sm" id="login-cancel">Cancelar</button>
+        <button class="btn btn--secondary btn--sm" id="login-send">Receber código</button>
+      </div>
+
+      <div id="code-block" style="display:none">
+        <label class="sr-only" for="login-code">Código de verificação</label>
+        <input id="login-code" class="input" inputmode="numeric" maxlength="6" placeholder="Código (4–6 dígitos)" />
+        <div class="modal-actions">
+          <button class="btn btn--ghost btn--sm" id="code-back">Voltar</button>
+          <button class="btn btn--secondary btn--sm" id="code-verify">Verificar</button>
+        </div>
+      </div>
+      <div class="hint" id="login-hint"></div>
+    </div>
+  </div>
+
   <script>
     /* ========= CONFIG ========= */
     const API_PARAM = new URLSearchParams(location.search).get('api');
@@ -342,11 +408,14 @@
     /* ========= ESTADO ========= */
     let eventos = [];
     let evIndex = {};
+    let isOrganizer = false;
+    let authPhone = '';
 
     /* ========= HELPERS ========= */
     const BRL=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
     const parseBR=v=>Number(String(v).replace(/[^\d,.-]/g,'').replace(/\./g,'').replace(',', '.'))||0;
     const money=v=>BRL.format(isFinite(v)?v:0);
+    const qsSel = (s)=>document.querySelector(s);
 
     function formatDate(iso){try{const d=new Date(iso);return d.toLocaleString('pt-BR',{dateStyle:'medium',timeStyle:'short'})}catch{return iso}}
     function waHref(text){return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`}
@@ -354,10 +423,61 @@
     function smoothGoTo(id){const t=document.getElementById(id);if(!t)return;const r=window.matchMedia('(prefers-reduced-motion: reduce)').matches;t.scrollIntoView({behavior:r?'auto':'smooth',block:'start'});try{t.focus({preventScroll:true})}catch{}}
 
     async function fetchJson(url, opts){
-      const r = await fetch(url, { headers: { 'Accept':'application/json', ...(opts&&opts.headers||{}) }, mode:"cors", ...opts });
+      const r = await fetch(url, { headers: { 'Accept':'application/json', ...(opts&&opts.headers||{}) }, mode:"cors", credentials:"include", ...opts });
       let j = null; try { j = await r.json(); } catch {}
       if (!r.ok) throw new Error(j?.error || r.statusText || 'Request failed');
       return j;
+    }
+
+    function updateDashboardLinks(){
+      document.querySelectorAll('a[href="/app/login"]').forEach(a=>{
+        a.href = `${BASE_ROOT}/app/login`;
+      });
+    }
+
+    function setAuthState(state, phone='', organizerFlag=false){
+      isOrganizer = !!state && !!organizerFlag;
+      authPhone = phone || '';
+      if (isOrganizer) {
+        localStorage.setItem('ingr_isOrg','1');
+        localStorage.setItem('ingr_phone',authPhone);
+      } else {
+        localStorage.removeItem('ingr_isOrg');
+        localStorage.removeItem('ingr_phone');
+      }
+      applyAuthState();
+    }
+
+    function applyAuthState(){
+      const tag = document.getElementById('auth-indicator');
+      const navVal = document.getElementById('nav-val');
+      const orgPanel = document.getElementById('org-detail');
+      const preco = document.getElementById('preco');
+      const qtd = document.getElementById('qtd');
+      const orgQuick = document.getElementById('org-quick');
+
+      if (isOrganizer) {
+        tag.textContent = 'organizador';
+        tag.classList.remove('off'); tag.classList.add('on');
+        navVal.hidden = false;
+        orgPanel.classList.remove('is-disabled');
+        preco.disabled = false; qtd.disabled = false;
+        orgQuick.classList.remove('is-disabled'); orgQuick.removeAttribute('aria-disabled');
+      } else {
+        tag.textContent = 'offline';
+        tag.classList.add('off'); tag.classList.remove('on');
+        navVal.hidden = true;
+        orgPanel.classList.add('is-disabled');
+        preco.disabled = true; qtd.disabled = true;
+        orgQuick.classList.add('is-disabled'); orgQuick.setAttribute('aria-disabled','true'); orgQuick.removeAttribute('href');
+      }
+    }
+
+    function initAuthFromStorage(){
+      const f = localStorage.getItem('ingr_isOrg') === '1';
+      const p = localStorage.getItem('ingr_phone') || '';
+      isOrganizer = f; authPhone = p;
+      applyAuthState();
     }
 
     /* ========= DOM ========= */
@@ -388,6 +508,9 @@
       function openOrganizadores(){ if(sec){ sec.removeAttribute('hidden'); smoothGoTo('organizadores'); } }
       cta?.addEventListener('click', (e)=>{ if (cta.getAttribute('href')?.startsWith('#organizadores')) { e.preventDefault(); openOrganizadores(); } });
       if (location.hash === '#organizadores') openOrganizadores();
+
+      updateDashboardLinks();
+      initAuthFromStorage();
     });
 
     /* ========= VITRINE ========= */
@@ -508,12 +631,17 @@
       const desc=document.createElement('p'); desc.className='subtle'; desc.textContent=descricao;
 
       const actions=document.createElement('div'); actions.className='actions';
+      const actionsBtns=[];
       if(sold){
-        actions.innerHTML=`<span class="status-line status--sold"><span class="status-dot" aria-hidden="true"></span><span class="status-label">Esgotado</span></span><a class="btn btn--secondary btn--sm" href="#vitrine">Ver outros eventos</a>`;
+        actionsBtns.push(`<span class="status-line status--sold"><span class="status-dot" aria-hidden="true"></span><span class="status-label">Esgotado</span></span>`);
+        actionsBtns.push(`<a class="btn btn--secondary btn--sm" href="#vitrine">Ver outros eventos</a>`);
       }else{
-        actions.innerHTML=`<button type="button" class="btn btn--secondary btn--sm" data-buy="${ev.id || 'TST'}">Comprar ingresso (teste)</button>`;
+        actionsBtns.push(`<button type="button" class="btn btn--secondary btn--sm" data-buy="${ev.id || 'TST'}">Comprar ingresso (teste)</button>`);
       }
-
+      if (isOrganizer) {
+        actionsBtns.push(`<a class="btn btn--ghost btn--sm" href="${BASE_ROOT}/app/login?ev=${encodeURIComponent(ev.id)}" target="_blank" rel="noopener noreferrer">Editar no Dashboard</a>`);
+      }
+      actions.innerHTML = actionsBtns.join(' ');
       sheetBody.replaceChildren(media, head, meta1, meta2, meta3, desc, actions);
 
       actions.querySelector('[data-buy]')?.addEventListener('click', async () => {
@@ -644,6 +772,112 @@
         }
       } catch {}
     })();
+
+    /* ======== LOGIN (OTP) ======== */
+    const loginModal = document.getElementById('login-modal');
+    const loginSendBtn = document.getElementById('login-send');
+    const loginCancelBtn = document.getElementById('login-cancel');
+    const loginPhone = document.getElementById('login-phone');
+    const codeBlock = document.getElementById('code-block');
+    const codeBack = document.getElementById('code-back');
+    const codeVerify = document.getElementById('code-verify');
+    const codeInput = document.getElementById('login-code');
+    const loginHint = document.getElementById('login-hint');
+
+    function openLogin(){ loginHint.textContent=''; codeBlock.style.display='none'; loginModal.classList.add('is-open'); loginModal.setAttribute('aria-hidden','false'); loginPhone.focus(); }
+    function closeLogin(){ loginModal.classList.remove('is-open'); loginModal.setAttribute('aria-hidden','true'); }
+
+    document.addEventListener('click', (e)=> {
+      const link = e.target.closest('[data-login]');
+      if (link) { e.preventDefault(); openLogin(); }
+    });
+    loginCancelBtn.addEventListener('click', ()=> closeLogin());
+    codeBack.addEventListener('click', ()=>{ codeBlock.style.display='none'; loginHint.textContent=''; });
+
+    loginSendBtn.addEventListener('click', async ()=>{
+      const phone = String(loginPhone.value||'').replace(/[^\d]/g,'');
+      if (!/^\d{10,15}$/.test(phone)) { loginHint.textContent='Número inválido. Use DDI+DDD+NÚMERO (ex.: 5534999999999)'; return; }
+      try {
+        loginHint.textContent='Enviando código…';
+        await fetchJson(`${BASE_WITH_API}/auth/request`, {
+          method:'POST',
+          headers:{ 'Content-Type':'application/json' },
+          body: JSON.stringify({ phone })
+        });
+        loginHint.textContent='Código enviado no seu WhatsApp. Digite abaixo para verificar.';
+        codeBlock.style.display='block';
+        codeInput.focus();
+        authPhone = phone;
+      } catch (e) {
+        loginHint.textContent='Falha ao enviar código. Tente novamente.';
+      }
+    });
+
+    codeVerify.addEventListener('click', async ()=>{
+      const code = String(codeInput.value||'').trim();
+      if (!/^\d{3,6}$/.test(code)) { loginHint.textContent='Código inválido.'; return; }
+      try {
+        loginHint.textContent='Verificando…';
+        const res = await fetchJson(`${BASE_WITH_API}/auth/verify`, {
+          method:'POST',
+          headers:{ 'Content-Type':'application/json' },
+          body: JSON.stringify({ phone: authPhone, code })
+        });
+        // backend retorna { ok:true, isOrganizer:boolean }
+        setAuthState(true, authPhone, !!res.isOrganizer);
+        // abrir dashboard no backend (cookie de sessão foi setado no domínio do backend)
+        window.open(`${BASE_ROOT}/app/login`, '_blank','noopener,noreferrer');
+        loginHint.textContent='Pronto! Você está autenticado.';
+        closeLogin();
+      } catch (e) {
+        loginHint.textContent='Código inválido ou expirado.';
+      }
+    });
+
+    // Exibir seção organizadores ao clicar no nav
+    document.getElementById('nav-org')?.addEventListener('click', (e)=> {
+      const sec=document.getElementById('organizadores');
+      if (sec && sec.hasAttribute('hidden')) {
+        sec.removeAttribute('hidden');
+      }
+    });
+
+    /* ======== VALIDADOR ======== */
+    const valSection = document.getElementById('validador');
+    const valCode = document.getElementById('val-code');
+    const valBtn = document.getElementById('val-check');
+    const valRes = document.getElementById('val-result');
+
+    function updateValidadorVisibility(){
+      valSection.hidden = !isOrganizer;
+    }
+    updateValidadorVisibility();
+
+    valBtn.addEventListener('click', async ()=>{
+      const raw = String(valCode.value||'').trim();
+      if (!raw) { valRes.innerHTML = '<span class="invalid">Informe um código.</span>'; return; }
+      const code = raw.replace(/^ingressai:ticket:/i,'');
+      try {
+        valRes.textContent='Checando…';
+        const j = await fetchJson(`${BASE_WITH_API}/validator/check`, {
+          method:'POST',
+          headers:{ 'Content-Type':'application/json' },
+          body: JSON.stringify({ code })
+        });
+        if (j.valid) {
+          valRes.innerHTML = `<div class="valid">✅ Válido — Ticket #${j.ticketId} • Evento: ${j.eventId} • Nome: ${j.buyerName}</div>`;
+        } else {
+          valRes.innerHTML = `<div class="invalid">❌ Inválido (${j.reason||'desconhecido'})</div>`;
+        }
+      } catch (e) {
+        valRes.innerHTML = `<div class="invalid">❌ Erro na validação</div>`;
+      }
+    });
+
+    // Reagir a mudanças de auth para validador/organizer
+    const _origApply = applyAuthState;
+    applyAuthState = function(){ _origApply(); updateValidadorVisibility(); };
+
   </script>
 </body>
 </html>
