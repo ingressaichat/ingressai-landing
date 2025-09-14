@@ -18,9 +18,10 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="theme-color" content="#2F7DD9" />
   <meta name="color-scheme" content="light" />
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-  <link rel="icon" href="/favicon.png" type="image/png" sizes="32x32" />
-  <link rel="preload" as="image" href="/logo_ingressai.png" />
+  <!-- assets relativos para funcionar no GitHub Pages /project-pages -->
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="favicon.png" type="image/png" sizes="32x32" />
+  <link rel="preload" as="image" href="logo_ingressai.png" />
   <style>
     :root{--phi:1.618;--s0:8px;--s1:calc(var(--s0)*var(--phi));--s2:calc(var(--s1)*var(--phi));--s3:calc(var(--s2)*var(--phi));--s4:calc(var(--s3)*var(--phi));
       --fs-0:1rem;--fs--1:calc(var(--fs-0)/var(--phi));--lh:1.45;--lh-compact:1.22;
@@ -168,14 +169,14 @@
   <main class="container" role="main">
     <section class="hero" aria-labelledby="hero-title">
       <div class="hero-brand">
-        <img src="/logo_ingressai.png" alt="IngressAI" width="160" height="160" loading="eager" fetchpriority="high" />
+        <img src="logo_ingressai.png" alt="IngressAI" width="160" height="160" loading="eager" fetchpriority="high" />
         <div class="badges" aria-label="Selos">
           <span class="badge" aria-label="Powered by Meta Business Platform">
-            <img src="/meta.png" alt="Meta" width="24" height="24" loading="lazy" decoding="async" />
+            <img src="meta.png" alt="Meta" width="24" height="24" loading="lazy" decoding="async" />
             <span>Powered by Meta Business Platform</span>
           </span>
           <span class="badge" aria-label="WhatsApp Business API">
-            <img src="/whatsapp_business.png" alt="WhatsApp Business" width="24" height="24" loading="lazy" decoding="async" />
+            <img src="whatsapp_business.png" alt="WhatsApp Business" width="24" height="24" loading="lazy" decoding="async" />
             <span>WhatsApp Business API</span>
           </span>
         </div>
@@ -348,9 +349,9 @@
           </a>
         </div>
         <div class="legal" aria-label="Links">
-          <a href="/politica.html">Política de privacidade</a>
-          <a href="/termos.html">Termos de uso</a>
-          <a href="/excluir.html">Excluir meus dados</a>
+          <a href="politica.html">Política de privacidade</a>
+          <a href="termos.html">Termos de uso</a>
+          <a href="excluir.html">Excluir meus dados</a>
         </div>
         <div class="foot-meta" aria-label="Informações">
           <strong>IngressAI</strong><span>•</span><span>CNPJ 42.948.399/0001-87</span>
@@ -385,10 +386,11 @@
   </div>
 
   <script>
-    /* ========= CONFIG ========= */
-    const API_PARAM = new URLSearchParams(location.search).get('api');
-    const BASE_ROOT = (API_PARAM || "https://ingressai-backend-production.up.railway.app").replace(/\/$/, "");
-    const BASE_WITH_API = BASE_ROOT.endsWith("/api") ? BASE_ROOT : BASE_ROOT + "/api";
+    /* ========= CONFIG (HOST/API separados) ========= */
+    const API_PARAM = new URLSearchParams(location.search).get('api')
+      || "https://ingressai-backend-production.up.railway.app";
+    const BASE_HOST = API_PARAM.replace(/\/api\/?$/,'').replace(/\/$/,''); // sempre sem /api
+    const BASE_API  = `${BASE_HOST}/api`;
 
     // util: tenta várias URLs até a primeira que responder 2xx
     async function tryFetch(paths, opts) {
@@ -431,7 +433,7 @@
 
     function updateDashboardLinks(){
       document.querySelectorAll('a[href="/app/login"]').forEach(a=>{
-        a.href = `${BASE_ROOT}/app/login`;
+        a.href = `${BASE_HOST}/app/login`;
       });
     }
 
@@ -511,6 +513,7 @@
 
       updateDashboardLinks();
       initAuthFromStorage();
+      console.log('[IngressAI] API:', BASE_API, 'HOST:', BASE_HOST);
     });
 
     /* ========= VITRINE ========= */
@@ -585,8 +588,8 @@
     async function backendOrderAndSend(to, ev){
       const qs = new URLSearchParams({ ev: ev.id, to, name: "Visitante", qty: "1" }).toString();
       const endpoints = [
-        `${BASE_WITH_API}/purchase/start?${qs}`,
-        `${BASE_ROOT}/purchase/start?${qs}`
+        `${BASE_API}/purchase/start?${qs}`,
+        `${BASE_HOST}/purchase/start?${qs}`
       ];
       const r = await tryFetch(endpoints, {});
       const j = await r.json().catch(()=> ({}));
@@ -639,7 +642,7 @@
         actionsBtns.push(`<button type="button" class="btn btn--secondary btn--sm" data-buy="${ev.id || 'TST'}">Comprar ingresso (teste)</button>`);
       }
       if (isOrganizer) {
-        actionsBtns.push(`<a class="btn btn--ghost btn--sm" href="${BASE_ROOT}/app/login?ev=${encodeURIComponent(ev.id)}" target="_blank" rel="noopener noreferrer">Editar no Dashboard</a>`);
+        actionsBtns.push(`<a class="btn btn--ghost btn--sm" href="${BASE_HOST}/app/login?ev=${encodeURIComponent(ev.id)}" target="_blank" rel="noopener noreferrer">Editar no Dashboard</a>`);
       }
       actions.innerHTML = actionsBtns.join(' ');
       sheetBody.replaceChildren(media, head, meta1, meta2, meta3, desc, actions);
@@ -721,8 +724,8 @@
       let arr = [];
       try {
         const endpoints = [
-          `${BASE_WITH_API}/events`,
-          `${BASE_ROOT}/events`
+          `${BASE_API}/events`,
+          `${BASE_HOST}/events`
         ];
         const r = await tryFetch(endpoints, { headers:{ Accept:'application/json' } });
         const j = await r.json().catch(()=> ({}));
@@ -776,7 +779,7 @@
     /* ======== LOGIN (OTP) ======== */
     const loginModal = document.getElementById('login-modal');
     const loginSendBtn = document.getElementById('login-send');
-    const loginCancelBtn = document.getElementById('login-cancel');
+    theLoginCancelBtn = document.getElementById('login-cancel');
     const loginPhone = document.getElementById('login-phone');
     const codeBlock = document.getElementById('code-block');
     const codeBack = document.getElementById('code-back');
@@ -787,11 +790,17 @@
     function openLogin(){ loginHint.textContent=''; codeBlock.style.display='none'; loginModal.classList.add('is-open'); loginModal.setAttribute('aria-hidden','false'); loginPhone.focus(); }
     function closeLogin(){ loginModal.classList.remove('is-open'); loginModal.setAttribute('aria-hidden','true'); }
 
+    // Intercepta SOMENTE "Entrar" do topo e o link inline de login,
+    // deixando os botões "Abrir Dashboard" navegarem normalmente.
     document.addEventListener('click', (e)=> {
       const link = e.target.closest('[data-login]');
-      if (link) { e.preventDefault(); openLogin(); }
+      if (!link) return;
+      const wantsInline = link.id === 'nav-login' || link.id === 'open-login-inline';
+      if (!wantsInline) return; // deixa navegar para o /app/login corrigido por updateDashboardLinks()
+      e.preventDefault();
+      openLogin();
     });
-    loginCancelBtn.addEventListener('click', ()=> closeLogin());
+    theLoginCancelBtn.addEventListener('click', ()=> closeLogin());
     codeBack.addEventListener('click', ()=>{ codeBlock.style.display='none'; loginHint.textContent=''; });
 
     loginSendBtn.addEventListener('click', async ()=>{
@@ -799,7 +808,7 @@
       if (!/^\d{10,15}$/.test(phone)) { loginHint.textContent='Número inválido. Use DDI+DDD+NÚMERO (ex.: 5534999999999)'; return; }
       try {
         loginHint.textContent='Enviando código…';
-        await fetchJson(`${BASE_WITH_API}/auth/request`, {
+        await fetchJson(`${BASE_API}/auth/request`, {
           method:'POST',
           headers:{ 'Content-Type':'application/json' },
           body: JSON.stringify({ phone })
@@ -809,7 +818,7 @@
         codeInput.focus();
         authPhone = phone;
       } catch (e) {
-        loginHint.textContent='Falha ao enviar código. Tente novamente.';
+        loginHint.textContent='Falha ao enviar código. Verifique o backend (CORS/cookies).';
       }
     });
 
@@ -818,15 +827,14 @@
       if (!/^\d{3,6}$/.test(code)) { loginHint.textContent='Código inválido.'; return; }
       try {
         loginHint.textContent='Verificando…';
-        const res = await fetchJson(`${BASE_WITH_API}/auth/verify`, {
+        const res = await fetchJson(`${BASE_API}/auth/verify`, {
           method:'POST',
           headers:{ 'Content-Type':'application/json' },
           body: JSON.stringify({ phone: authPhone, code })
         });
-        // backend retorna { ok:true, isOrganizer:boolean }
+        // backend deve retornar { ok:true, isOrganizer:boolean }
         setAuthState(true, authPhone, !!res.isOrganizer);
-        // abrir dashboard no backend (cookie de sessão foi setado no domínio do backend)
-        window.open(`${BASE_ROOT}/app/login`, '_blank','noopener,noreferrer');
+        window.open(`${BASE_HOST}/app/login`, '_blank','noopener,noreferrer');
         loginHint.textContent='Pronto! Você está autenticado.';
         closeLogin();
       } catch (e) {
@@ -859,7 +867,7 @@
       const code = raw.replace(/^ingressai:ticket:/i,'');
       try {
         valRes.textContent='Checando…';
-        const j = await fetchJson(`${BASE_WITH_API}/validator/check`, {
+        const j = await fetchJson(`${BASE_API}/validator/check`, {
           method:'POST',
           headers:{ 'Content-Type':'application/json' },
           body: JSON.stringify({ code })
