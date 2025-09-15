@@ -7,20 +7,22 @@
   <title>IngressAI — Ingressos em minutos, direto no WhatsApp</title>
   <meta name="description" content="Compre ingressos em minutos pelo WhatsApp. Vitrine por cidade, checkout instantâneo, repasse T+0 e validação por QR Code." />
   <meta name="robots" content="index,follow,max-image-preview:large" />
-  <link rel="canonical" href="https://ingressai.chat/" />
+
+  <!-- OG/Twitter -->
   <meta property="og:title" content="IngressAI — Ingressos em minutos" />
   <meta property="og:description" content="Vitrine por cidade, checkout instantâneo, QR Code antifraude e repasse T+0." />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://ingressai.chat/" />
   <meta property="og:image" content="https://ingressai.chat/logo_ingressai.png" />
   <meta property="og:site_name" content="IngressAI" />
   <meta property="og:locale" content="pt_BR" />
   <meta name="twitter:card" content="summary_large_image" />
+
   <meta name="theme-color" content="#2F7DD9" />
   <meta name="color-scheme" content="light" />
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-  <link rel="icon" href="/favicon.png" type="image/png" sizes="32x32" />
-  <link rel="preload" as="image" href="/logo_ingressai.png" />
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="./favicon.png" type="image/png" sizes="32x32" />
+  <link rel="preload" as="image" href="./logo_ingressai.png" />
+
   <style>
     :root{--phi:1.618;--s0:8px;--s1:calc(var(--s0)*var(--phi));--s2:calc(var(--s1)*var(--phi));--s3:calc(var(--s2)*var(--phi));--s4:calc(var(--s3)*var(--phi));
       --fs-0:1rem;--fs--1:calc(var(--fs-0)/var(--phi));--lh:1.45;--lh-compact:1.22;
@@ -151,6 +153,13 @@
     .valid{color:#0b7a3b}
     .invalid{color:#a33a3a}
   </style>
+
+  <!-- Config da API do backend (Railway) -->
+  <script>
+    window.INGRESSAI_API = "https://ingressai-backend-production.up.railway.app/api";
+  </script>
+  <!-- JS principal (com vitrine, organizadores, OTP e validador) -->
+  <script src="./app/app.js" defer></script>
 </head>
 <body>
   <header role="banner">
@@ -168,14 +177,14 @@
   <main class="container" role="main">
     <section class="hero" aria-labelledby="hero-title">
       <div class="hero-brand">
-        <img src="/logo_ingressai.png" alt="IngressAI" width="160" height="160" loading="eager" fetchpriority="high" />
+        <img src="./logo_ingressai.png" alt="IngressAI" width="160" height="160" loading="eager" fetchpriority="high" />
         <div class="badges" aria-label="Selos">
           <span class="badge" aria-label="Powered by Meta Business Platform">
-            <img src="/meta.png" alt="Meta" width="24" height="24" loading="lazy" decoding="async" />
+            <img src="./meta.png" alt="Meta" width="24" height="24" loading="lazy" decoding="async" />
             <span>Powered by Meta Business Platform</span>
           </span>
           <span class="badge" aria-label="WhatsApp Business API">
-            <img src="/whatsapp_business.png" alt="WhatsApp Business" width="24" height="24" loading="lazy" decoding="async" />
+            <img src="./whatsapp_business.png" alt="WhatsApp Business" width="24" height="24" loading="lazy" decoding="async" />
             <span>WhatsApp Business API</span>
           </span>
         </div>
@@ -271,7 +280,7 @@
                 <div class="calc-result"><span>Você recebe</span><strong id="calc-net">R$ 0,00</strong></div>
                 <div class="panel-cta" style="margin-top:var(--s2)">
                   <a class="btn btn--secondary is-disabled" id="org-quick" aria-disabled="true">Criar evento (WhatsApp)</a>
-                  <a class="btn btn--ghost" id="open-dashboard" href="/app/login" data-login>Entrar no Dashboard</a>
+                  <a class="btn btn--ghost" id="open-dashboard" href="./app/login.html">Entrar no Dashboard</a>
                 </div>
               </div>
             </details>
@@ -283,9 +292,9 @@
               <div class="cmd">
                 <div>
                   <p><strong>Acompanhe vendas</strong>, baixe lista de compradores e <strong>valide QR Code</strong> no modo Validador.</p>
-                  <p>Acesso por <em>código de verificação</em> enviado ao seu WhatsApp. <a id="open-login-inline" href="/app/login" data-login>Abrir login</a>.</p>
+                  <p>Acesso por <em>código de verificação</em> enviado ao seu WhatsApp. <a id="open-login-inline" href="./app/login.html">Abrir login</a>.</p>
                 </div>
-                <a class="btn btn--secondary btn--sm" id="open-dashboard-2" href="/app/login" data-login>Abrir Dashboard</a>
+                <a class="btn btn--secondary btn--sm" id="open-dashboard-2" href="./app/login.html">Abrir Dashboard</a>
               </div>
             </details>
           </div>
@@ -293,7 +302,7 @@
       </div>
     </section>
 
-    <!-- === VALIDADOR (somente organizador autenticado) === -->
+    <!-- === VALIDADOR (só visível se autenticado como organizador) === -->
     <section id="validador" class="section" aria-labelledby="val-title" hidden>
       <h2 id="val-title">Validador</h2>
       <div class="validator">
@@ -306,6 +315,7 @@
       </div>
     </section>
 
+    <!-- Sheet -->
     <div class="sheet-backdrop" id="sheet-backdrop" aria-hidden="true"></div>
     <aside class="sheet" id="sheet" aria-hidden="true" role="dialog" aria-modal="true">
       <button type="button" class="sheet-close" id="sheet-close" data-close="sheet" aria-label="Fechar">
@@ -330,9 +340,9 @@
           </a>
         </div>
         <div class="legal" aria-label="Links">
-          <a href="/politica.html">Política de privacidade</a>
-          <a href="/termos.html">Termos de uso</a>
-          <a href="/excluir.html">Excluir meus dados</a>
+          <a href="./politica.html">Política de privacidade</a>
+          <a href="./termos.html">Termos de uso</a>
+          <a href="./excluir.html">Excluir meus dados</a>
         </div>
         <div class="foot-meta" aria-label="Informações">
           <strong>IngressAI</strong><span>•</span><span>CNPJ 42.948.399/0001-87</span>
@@ -341,30 +351,6 @@
     </div>
   </footer>
 
-  <!-- Modal de Login/Verificação (OTP) -->
-  <div class="modal" id="login-modal" aria-hidden="true" role="dialog" aria-modal="true">
-    <div class="modal-card">
-      <h3>Entrar no Dashboard</h3>
-      <label class="sr-only" for="login-phone">Seu WhatsApp (com DDI + DDD)</label>
-      <input id="login-phone" class="input" inputmode="numeric" placeholder="ex.: 5534999999999" autocomplete="tel" />
-      <div class="modal-actions">
-        <button class="btn btn--ghost btn--sm" id="login-cancel">Cancelar</button>
-        <button class="btn btn--secondary btn--sm" id="login-send">Receber código</button>
-      </div>
-
-      <div id="code-block" style="display:none">
-        <label class="sr-only" for="login-code">Código de verificação</label>
-        <input id="login-code" class="input" inputmode="numeric" maxlength="6" placeholder="Código (4–6 dígitos)" />
-        <div class="modal-actions">
-          <button class="btn btn--ghost btn--sm" id="code-back">Voltar</button>
-          <button class="btn btn--secondary btn--sm" id="code-verify">Verificar</button>
-        </div>
-      </div>
-      <div class="hint" id="login-hint"></div>
-    </div>
-  </div>
-
-  <!-- JS externo para não quebrar com CSP -->
-  <script src="/static/app.js" defer></script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"IngressAI","url":"https://ingressai.chat/","logo":"https://ingressai.chat/logo_ingressai.png","sameAs":["https://instagram.com/ingressai"],"contactPoint":[{"@type":"ContactPoint","contactType":"customer support","areaServed":"BR","availableLanguage":"pt-BR"}]}</script>
 </body>
 </html>
