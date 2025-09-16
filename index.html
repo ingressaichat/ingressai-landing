@@ -127,8 +127,6 @@
     .sheet-close{position:absolute;right:10px;top:10px;appearance:none;background:#fff;border:1px solid #ffd6d6;color:#c94747;border-radius:14px;padding:.8rem;display:grid;place-items:center;box-shadow:0 8px 20px rgba(201,71,71,.18);z-index:9999;touch-action:manipulation;cursor:pointer}
     .sheet-close:hover{background:#fff5f5}
     .sheet-close svg{width:22px;height:22px}
-
-    /* ==== Login Modal ==== */
     .modal{position:fixed;inset:0;display:none;place-items:center;background:rgba(11,18,32,.36);z-index:50}
     .modal.is-open{display:grid}
     .modal-card{background:#fff;border:1px solid #e5ecff;border-radius:16px;box-shadow:var(--shadow);padding:var(--s2);width:min(520px,92vw);display:grid;gap:12px}
@@ -139,14 +137,12 @@
     .tag{display:inline-flex;align-items:center;gap:6px;border:1px solid #e6eaf6;border-radius:999px;padding:.2rem .55rem;font-weight:800;font-size:.78rem}
     .tag.on{background:#eef9f2;border-color:#cfead9;color:#0b7a3b}
     .tag.off{background:#fff6f6;border-color:#ffd6d6;color:#a33a3a}
-
-    /* ==== Validador ==== */
     .validator{background:#fff;border:1px solid #e5ecff;border-radius:16px;padding:var(--s2);box-shadow:var(--shadow-soft)}
     .valid{color:#0b7a3b}
     .invalid{color:#a33a3a}
   </style>
 
-  <!-- Config opcional: defina isso se quiser sobrescrever o backend -->
+  <!-- Você pode sobrescrever em runtime se quiser -->
   <script>
     window.INGRESSAI_API = window.INGRESSAI_API || "https://ingressai-backend-production.up.railway.app/api";
   </script>
@@ -304,7 +300,7 @@
 
                 <div class="panel-cta" style="margin-top:var(--s2)">
                   <a class="btn btn--secondary is-disabled" id="org-quick" aria-disabled="true">Criar evento (WhatsApp)</a>
-                  <a class="btn btn--ghost" id="open-dashboard" href="./login.html" data-login>Abrir login</a>
+                  <a class="btn btn--ghost" id="open-dashboard" href="#" data-login>Abrir login</a>
                 </div>
               </div>
             </details>
@@ -316,9 +312,9 @@
               <div class="cmd">
                 <div>
                   <p><strong>Acompanhe vendas</strong>, baixe lista de compradores e <strong>valide QR Code</strong> no modo Validador.</p>
-                  <p>Acesso por <em>código de verificação</em> enviado ao seu WhatsApp. <a id="open-login-inline" href="./login.html" data-login>Abrir login</a>.</p>
+                  <p>Acesso por <em>código de verificação</em> enviado ao seu WhatsApp. <a id="open-login-inline" href="#" data-login>Abrir login</a>.</p>
                 </div>
-                <a class="btn btn--secondary btn--sm" id="open-dashboard-2" href="./login.html" data-login>Abrir Dashboard</a>
+                <a class="btn btn--secondary btn--sm" id="open-dashboard-2" href="#" data-login>Abrir Dashboard</a>
               </div>
             </details>
           </div>
@@ -401,3 +397,4 @@
   </div>
 </body>
 </html>
+
