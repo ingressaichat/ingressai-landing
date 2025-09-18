@@ -11,13 +11,18 @@ const $$ = (q, el = document) => Array.from(el.querySelectorAll(q));
 
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
+/**
+ * safeFetch(url, opts, timeoutMs)
+ * Por padrão mantém credentials:"omit".
+ * Para rotas de auth (que precisam setar cookie cross-site), passe { credentials:"include" }.
+ */
 async function safeFetch(url, opts = {}, timeoutMs = 12000) {
   const ctrl = new AbortController();
   const id = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
     const res = await fetch(url, {
       mode: "cors",
-      credentials: "omit",
+      credentials: opts.credentials || "omit",
       cache: "no-store",
       ...opts,
       signal: ctrl.signal
@@ -73,7 +78,6 @@ async function updateHealth() {
     el.textContent = label || (on ? "online" : "offline");
   };
   try {
-    // tenta /api/health (backend novo) e cai pra /healthz (antigo)
     await safeFetch(`${API}/health`).catch(() => safeFetch(`${API.replace(/\/api$/,"")}/healthz`));
     setState(true, "online");
     $("#nav-val")?.removeAttribute("hidden");
@@ -360,15 +364,17 @@ function openLoginModal() {
   $("#login-cancel").onclick = () => modal.classList.remove("is-open");
   $("#code-back").onclick = () => { codeBlock.style.display = "none"; hint.textContent = ""; };
 
+  // Envia OTP (usa backend novo /api/auth/request)
   $("#login-send").onclick = async () => {
     const phone = onlyDigits(phoneEl.value);
     if (phone.length < 12) { hint.textContent = "Informe número com DDI+DDD+número."; return; }
     hint.textContent = "Enviando código…";
     try {
-      await safeFetch(`${API}/test/ping-login`, {
+      await safeFetch(`${API}/auth/request`, {
         method: "POST",
         headers: { "content-type":"application/json" },
-        body: JSON.stringify({ phone })
+        body: JSON.stringify({ phone }),
+        credentials: "include" // não é obrigatório aqui, mas já deixa padronizado
       });
       hint.textContent = "Código enviado por WhatsApp. Digite abaixo:";
       codeBlock.style.display = "block";
@@ -378,26 +384,26 @@ function openLoginModal() {
     }
   };
 
-  $("#login-verify").onclick = null; // seguro
-
+  // Verifica OTP e garante salvar o cookie de sessão (SameSite=None; Secure)
   $("#code-verify").onclick = async () => {
     const code = onlyDigits($("#login-code").value);
     const phone = onlyDigits($("#login-phone").value);
     if (!code) { hint.textContent = "Digite o código recebido."; return; }
     hint.textContent = "Verificando…";
-    // Tenta rota real se existir; senão aprova em modo demo
     try {
       const r = await safeFetch(`${API}/auth/verify`, {
         method: "POST",
         headers: { "content-type":"application/json" },
-        body: JSON.stringify({ phone, code })
-      }).catch(() => ({ ok: true, demo: true }));
+        body: JSON.stringify({ phone, code }),
+        credentials: "include" // IMPORTANTE: permite Set-Cookie cross-site
+      });
 
-      if (r && (r.ok || r.demo)) {
-        localStorage.setItem("ingressai_auth", JSON.stringify({ phone, t: Date.now() }));
+      if (r && r.ok) {
+        // checa sessão para confirmar que o cookie pegou
+        await safeFetch(`${API}/auth/session`, { credentials: "include" })
+          .catch(() => null);
         hint.textContent = "Verificado! Abrindo Dashboard…";
         await sleep(400);
-        // Dashboard hospedado no backend
         window.location.href = `${API.replace(/\/api$/,"")}/app/dashboard.html`;
       } else {
         hint.textContent = "Código inválido.";
