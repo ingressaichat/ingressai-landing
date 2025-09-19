@@ -1,20 +1,22 @@
 /* ====== CONFIG ====== */
-const API = (typeof window !== "undefined" && window.INGRESSAI_API)
-  ? String(window.INGRESSAI_API).replace(/\/+$/, "")
-  : "https://ingressai-backend-production.up.railway.app/api";
+const DEFAULT_API = `${location.origin}/api`;
+const API = (() => {
+  const override = (typeof window !== "undefined" && window.INGRESSAI_API)
+    ? String(window.INGRESSAI_API).replace(/\/+$/, "")
+    : "";
+  return override || DEFAULT_API;
+})();
 
 const SUPPORT_WA = "5534999992747";
 
 /* ====== HELPERS ====== */
-const $ = (q, el = document) => el.querySelector(q);
+const $  = (q, el = document) => el.querySelector(q);
 const $$ = (q, el = document) => Array.from(el.querySelectorAll(q));
-
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
 /**
  * safeFetch(url, opts, timeoutMs)
- * Por padrão mantém credentials:"omit".
- * Para rotas de auth (que precisam setar cookie cross-site), passe { credentials:"include" }.
+ * Para rotas de auth (cookie cross-site), passe { credentials:"include" }.
  */
 async function safeFetch(url, opts = {}, timeoutMs = 12000) {
   const ctrl = new AbortController();
@@ -22,6 +24,7 @@ async function safeFetch(url, opts = {}, timeoutMs = 12000) {
   try {
     const res = await fetch(url, {
       mode: "cors",
+      referrerPolicy: "no-referrer",
       credentials: opts.credentials || "omit",
       cache: "no-store",
       ...opts,
@@ -32,22 +35,22 @@ async function safeFetch(url, opts = {}, timeoutMs = 12000) {
       throw new Error(`HTTP ${res.status} ${res.statusText}${text ? ` — ${text.slice(0,120)}` : ""}`);
     }
     const ct = res.headers.get("content-type") || "";
-    if (ct.includes("application/json")) return res.json();
-    return res.text();
+    return ct.includes("application/json") ? res.json() : res.text();
+  } catch (err) {
+    const msg = (err?.name === "AbortError")
+      ? "Timeout"
+      : (String(err?.message || "").includes("Failed to fetch") ? "Network/CORS" : err?.message || String(err));
+    throw new Error(msg);
   } finally {
     clearTimeout(id);
   }
 }
 
 function money(v) {
-  try {
-    return Number(v).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-  } catch { return "R$ 0,00"; }
+  try { return Number(v).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); }
+  catch { return "R$ 0,00"; }
 }
-
-function onlyDigits(v) {
-  return String(v || "").replace(/\D+/g, "");
-}
+function onlyDigits(v) { return String(v || "").replace(/\D+/g, ""); }
 
 /* ====== NAV / HEADER ====== */
 (function headerFX() {
@@ -60,7 +63,7 @@ function onlyDigits(v) {
   window.addEventListener("scroll", onScroll, { passive: true });
   onScroll();
 
-  // Links "login" viram modal (não navega)
+  // Links "login" → abre modal
   $$("[data-login]").forEach(a => {
     a.addEventListener("click", (e) => {
       e.preventDefault();
@@ -108,8 +111,10 @@ async function loadEvents() {
   if (!items.length) {
     // fallback demo
     items = [
-      { id:"demo-1", title:"Sunset no Terraço", city:"Uberaba-MG", venue:"Terraço 21", date:new Date(Date.now()+86400e3).toISOString(), price:60, image:"" },
-      { id:"demo-2", title:"Baile do Ingresso", city:"Uberlândia-MG", venue:"Arena UFU", date:new Date(Date.now()+172800e3).toISOString(), price:80, image:"" },
+      { id:"demo-1", title:"Sunset no Terraço", city:"Uberaba-MG", venue:"Terraço 21",
+        date:new Date(Date.now()+86400e3).toISOString(), price:60, image:"" },
+      { id:"demo-2", title:"Baile do Ingresso", city:"Uberlândia-MG", venue:"Arena UFU",
+        date:new Date(Date.now()+172800e3).toISOString(), price:80, image:"" },
     ];
   }
 
@@ -259,15 +264,15 @@ function setupOrganizadores() {
     modelsBox.appendChild(b);
   });
 
-  const feeRow = $("#fee-row");
+  const feeRow  = $("#fee-row");
   const feeChip = $("#fee-chip");
-  const calc = $("#calc-box");
-  const preco = $("#preco");
-  const qtd = $("#qtd");
+  const calc    = $("#calc-box");
+  const preco   = $("#preco");
+  const qtd     = $("#qtd");
   const grossEl = $("#calc-gross");
-  const netEl = $("#calc-net");
-  const note = $("#calc-note");
-  const quick = $("#org-quick");
+  const netEl   = $("#calc-net");
+  const note    = $("#calc-note");
+  const quick   = $("#org-quick");
 
   let fee = { pct: 0, fix: 0 };
   let selected = "";
@@ -364,7 +369,7 @@ function openLoginModal() {
   $("#login-cancel").onclick = () => modal.classList.remove("is-open");
   $("#code-back").onclick = () => { codeBlock.style.display = "none"; hint.textContent = ""; };
 
-  // Envia OTP (usa backend novo /api/auth/request)
+  // Envia OTP
   $("#login-send").onclick = async () => {
     const phone = onlyDigits(phoneEl.value);
     if (phone.length < 12) { hint.textContent = "Informe número com DDI+DDD+número."; return; }
@@ -372,9 +377,9 @@ function openLoginModal() {
     try {
       await safeFetch(`${API}/auth/request`, {
         method: "POST",
-        headers: { "content-type":"application/json" },
+        headers: { "content-type":"application/json", "accept":"application/json" },
         body: JSON.stringify({ phone }),
-        credentials: "include" // não é obrigatório aqui, mas já deixa padronizado
+        credentials: "include"
       });
       hint.textContent = "Código enviado por WhatsApp. Digite abaixo:";
       codeBlock.style.display = "block";
@@ -384,7 +389,7 @@ function openLoginModal() {
     }
   };
 
-  // Verifica OTP e garante salvar o cookie de sessão (SameSite=None; Secure)
+  // Verifica OTP e garante cookie
   $("#code-verify").onclick = async () => {
     const code = onlyDigits($("#login-code").value);
     const phone = onlyDigits($("#login-phone").value);
@@ -393,15 +398,13 @@ function openLoginModal() {
     try {
       const r = await safeFetch(`${API}/auth/verify`, {
         method: "POST",
-        headers: { "content-type":"application/json" },
+        headers: { "content-type":"application/json", "accept":"application/json" },
         body: JSON.stringify({ phone, code }),
-        credentials: "include" // IMPORTANTE: permite Set-Cookie cross-site
+        credentials: "include"
       });
 
       if (r && r.ok) {
-        // checa sessão para confirmar que o cookie pegou
-        await safeFetch(`${API}/auth/session`, { credentials: "include" })
-          .catch(() => null);
+        await safeFetch(`${API}/auth/session`, { credentials: "include" }).catch(() => null);
         hint.textContent = "Verificado! Abrindo Dashboard…";
         await sleep(400);
         window.location.href = `${API.replace(/\/api$/,"")}/app/dashboard.html`;
