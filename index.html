@@ -110,7 +110,7 @@
     .calc{display:grid;gap:10px}
     .calc-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     .calc input{width:100%;border:1px solid #e5ecff;border-radius:12px;padding:.7rem .8rem;font:inherit}
-    .calc small{color:#muted}
+    .calc small{color:var(--muted)}
     .calc-result{background:#fff;border:1px dashed #dbe5ff;border-radius:12px;padding:.75rem .9rem;font-weight:800;display:flex;justify-content:space-between;align-items:center}
     .panel-cta{display:grid;grid-template-columns:1fr;gap:var(--s1);margin-top:var(--s2)}
     @media(min-width:560px){.panel-cta{grid-template-columns:max-content max-content}}
@@ -142,15 +142,15 @@
     .invalid{color:#a33a3a}
   </style>
 
-  <!-- Config de API:
-       - por padrão usa o backend em produção (Railway)
-       - se passar ?api=https://... na URL, sobrescreve
-       - você pode também setar window.INGRESSAI_API em tempo de execução -->
+  <!-- Config da API:
+       - por padrão usa o backend em produção (Railway);
+       - se passar ?api=https://... na URL, sobrescreve;
+       - você também pode setar window.INGRESSAI_API via console antes de carregar o app. -->
   <script>
     (function () {
       const qsApi = new URLSearchParams(location.search).get("api");
       const PROD_API = "https://ingressai-backend-production.up.railway.app/api";
-      window.INGRESSAI_API = qsApi || PROD_API;
+      window.INGRESSAI_API = qsApi || window.INGRESSAI_API || PROD_API;
     })();
   </script>
 
