@@ -142,15 +142,11 @@
     .invalid{color:#a33a3a}
   </style>
 
-  <!-- Config da API:
-       - por padrão usa o backend em produção (Railway);
-       - se passar ?api=https://... na URL, sobrescreve;
-       - você também pode setar window.INGRESSAI_API via console antes de carregar o app. -->
   <script>
     (function () {
       const qsApi = new URLSearchParams(location.search).get("api");
       const PROD_API = "https://ingressai-backend-production.up.railway.app/api";
-      window.INGRESSAI_API = qsApi || window.INGRESSAI_API || PROD_API;
+      window.INGRESSAI_API = qsApi || PROD_API;
     })();
   </script>
 
@@ -274,7 +270,6 @@
                 <div class="calc-result" id="calc-gross-row"><span>Total bruto</span><strong id="calc-gross">R$ 0,00</strong></div>
                 <div class="calc-result"><span>Você recebe</span><strong id="calc-net">R$ 0,00</strong></div>
 
-                <!-- solicitação por whatsapp (campos) -->
                 <div class="calc-row" style="margin-top:10px">
                   <div>
                     <label for="f-title">Nome do evento</label>
@@ -377,10 +372,8 @@
     </div>
   </footer>
 
-  <!-- LD+JSON básico (org) -->
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"IngressAI","url":"https://ingressai.chat/","logo":"https://ingressai.chat/logo_ingressai.png","sameAs":["https://instagram.com/ingressai"],"contactPoint":[{"@type":"ContactPoint","contactType":"customer support","areaServed":"BR","availableLanguage":"pt-BR"}]}</script>
 
-  <!-- ===== Modal de Login/Verificação (OTP) ===== -->
   <div class="modal" id="login-modal" aria-hidden="true" role="dialog" aria-modal="true">
     <div class="modal-card">
       <h3>Entrar no Dashboard</h3>
