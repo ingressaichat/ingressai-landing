@@ -19,6 +19,8 @@
   <link rel="preload" as="image" href="./logo_ingressai.png" />
 
   <style>
+    /* === todo o CSS que você já mandou (sem alterações) === */
+    /* colei o mesmo bloco original aqui */
     :root{--phi:1.618;--s0:8px;--s1:calc(var(--s0)*var(--phi));--s2:calc(var(--s1)*var(--phi));--s3:calc(var(--s2)*var(--phi));--s4:calc(var(--s3)*var(--phi));
       --fs-0:1rem;--fs--1:calc(var(--fs-0)/var(--phi));--lh:1.45;--lh-compact:1.22;
       --ink:#0b1220;--muted:#5b6b86;--bg:#f6f8fc;--card:#ffffff;
@@ -153,6 +155,7 @@
   <script defer src="./app.js"></script>
 </head>
 <body>
+  <!-- HEADER -->
   <header role="banner">
     <div class="container nav">
       <div class="nav-actions">
@@ -165,6 +168,7 @@
     </div>
   </header>
 
+  <!-- HERO -->
   <main class="container" role="main">
     <section class="hero" aria-labelledby="hero-title">
       <div class="hero-brand">
@@ -187,6 +191,7 @@
       <a href="#organizadores" class="btn btn--secondary btn--sm" id="cta-organizadores" aria-label="Abrir soluções para organizadores">Soluções para organizadores</a>
     </div>
 
+    <!-- PROVAS -->
     <section class="proofs" aria-labelledby="proofs-title">
       <h2 id="proofs-title" class="sr-only">Provas de valor</h2>
       <div class="features" aria-label="Provas">
@@ -231,6 +236,7 @@
       </div>
     </section>
 
+    <!-- VITRINE -->
     <section id="vitrine" class="section" aria-labelledby="vitrine-title" tabindex="-1">
       <h2 id="vitrine-title">Eventos em destaque</h2>
       <div class="filters" aria-label="Filtros">
@@ -243,7 +249,7 @@
       <div class="cards" id="lista-eventos" aria-live="polite"></div>
     </section>
 
-    <!-- === ORGANIZADORES === -->
+    <!-- ORGANIZADORES -->
     <section id="organizadores" class="section" aria-labelledby="orgs-title" tabindex="-1" hidden>
       <h2 id="orgs-title">Soluções para organizadores</h2>
       <div id="std-card" class="std-card"></div>
@@ -324,7 +330,7 @@
       </div>
     </section>
 
-    <!-- === VALIDADOR === -->
+    <!-- VALIDADOR -->
     <section id="validador" class="section" aria-labelledby="val-title" hidden>
       <h2 id="val-title">Validador</h2>
       <div class="validator">
@@ -346,6 +352,7 @@
     </aside>
   </main>
 
+  <!-- FOOTER -->
   <footer role="contentinfo">
     <div class="foot">
       <div class="foot-block">
@@ -374,6 +381,7 @@
 
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"IngressAI","url":"https://ingressai.chat/","logo":"https://ingressai.chat/logo_ingressai.png","sameAs":["https://instagram.com/ingressai"],"contactPoint":[{"@type":"ContactPoint","contactType":"customer support","areaServed":"BR","availableLanguage":"pt-BR"}]}</script>
 
+  <!-- MODAL LOGIN -->
   <div class="modal" id="login-modal" aria-hidden="true" role="dialog" aria-modal="true">
     <div class="modal-card">
       <h3>Entrar no Dashboard</h3>
