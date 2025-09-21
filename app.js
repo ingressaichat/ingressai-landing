@@ -3,22 +3,13 @@
   const qsApi = new URLSearchParams(location.search).get("api") || "";
   const PROD = "https://ingressai-backend-production.up.railway.app/api";
 
-  // normaliza: tira espaços, remove trailing pontuação, garante /api no final e sem barras duplas
   function normalizeApi(raw) {
     let s = String(raw || "").trim();
-
-    // remove trailing espaços/ponto/barra
-    s = s.replace(/[.\s/]+$/g, "");
-
-    // se acabou sem /api, acrescenta
-    if (!/\/api$/i.test(s)) s = s + "/api";
-
-    // colapsa barras duplas (https:// ok)
-    s = s.replace(/([^:])\/{2,}/g, "$1/");
-
+    s = s.replace(/[.\s/]+$/g, "");           // remove pontinhos/barras finais
+    if (!/\/api$/i.test(s)) s = s + "/api";   // garante /api
+    s = s.replace(/([^:])\/{2,}/g, "$1/");    // colapsa barras duplas (sem quebrar https://)
     return s;
   }
-
   window.INGRESSAI_API = normalizeApi(qsApi || PROD);
 })();
 
@@ -96,9 +87,7 @@ async function loadEvents() {
   try {
     const r = await safeFetch(`${API}/events`);
     items = Array.isArray(r?.items) ? r.items : [];
-  } catch (e) {
-    console.warn("Falha /events:", e?.message || e);
-  }
+  } catch (e) { console.warn("Falha /events:", e?.message || e); }
   if (!items.length) {
     items = [
       { id:"demo-1", title:"Sunset no Terraço", city:"Uberaba-MG", venue:"Terraço 21", date:new Date(Date.now()+86400e3).toISOString(), price:60, image:"" },
@@ -240,7 +229,7 @@ function setupOrganizadores(){
   enableCalc(false);
 }
 
-/* ====== VALIDADOR (POST /validator/check) ====== */
+/* ====== VALIDADOR ====== */
 function setupValidator(){
   $("#val-check").onclick = async () => {
     const input=$("#val-code"); const out=$("#val-result");
