@@ -1,13 +1,12 @@
 /* ====== CONFIG ====== */
-// Pode definir window.INGRESSAI_API como "https://host/api" OU "https://host"
+// Você pode definir window.INGRESSAI_API como "https://host/api" OU "https://host"
+// Este bloco normaliza para sempre termos .../api disponível.
 const API_ROOT = (typeof window !== "undefined" && window.INGRESSAI_API)
   ? String(window.INGRESSAI_API).replace(/\/+$/, "")
   : "https://ingressai-backend-production.up.railway.app/api";
 
-// Base geral de API (events, validator, purchase…)
-const API  = /\/api$/i.test(API_ROOT) ? API_ROOT : `${API_ROOT}/api`;
-// Base específica de autenticação (sempre /api/auth)
-const AUTH = `${API}/auth`;
+const API  = /\/api$/i.test(API_ROOT) ? API_ROOT : `${API_ROOT}/api`;   // base geral
+const AUTH = `${API}/auth`;                                             // base auth
 
 const SUPPORT_WA = "5534999992747";
 
@@ -37,7 +36,10 @@ async function safeFetch(url, opts = {}, timeoutMs = 12000) {
   } finally { clearTimeout(id); }
 }
 
-function money(v) { try { return Number(v).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});} catch { return "R$ 0,00"; } }
+function money(v) {
+  try { return Number(v).toLocaleString("pt-BR",{style:"currency",currency:"BRL"}); }
+  catch { return "R$ 0,00"; }
+}
 function onlyDigits(v) { return String(v || "").replace(/\D+/g, ""); }
 
 /* ====== NAV / HEADER ====== */
@@ -50,7 +52,9 @@ function onlyDigits(v) { return String(v || "").replace(/\D+/g, ""); }
   };
   window.addEventListener("scroll", onScroll, { passive: true });
   onScroll();
-  $$("[data-login]").forEach(a => a.addEventListener("click", (e) => { e.preventDefault(); openLoginModal(); }));
+  $$("[data-login]").forEach(a => a.addEventListener("click", (e) => {
+    e.preventDefault(); openLoginModal();
+  }));
 })();
 
 /* ====== HEALTH ====== */
@@ -62,11 +66,18 @@ async function updateHealth() {
     el.textContent = label || (on ? "online" : "offline");
   };
   try {
-    await safeFetch(`${API}/health`).catch(() => safeFetch(`${API.replace(/\/api$/,"")}/healthz`));
+    // tenta /api/health; se falhar, tenta /healthz na raiz
+    await safeFetch(`${API}/health`).catch(() =>
+      safeFetch(`${API.replace(/\/api$/,"")}/healthz`)
+    );
     setState(true, "online");
     $("#nav-val")?.removeAttribute("hidden");
     return true;
-  } catch (err) { setState(false, "offline"); console.warn("Health failed:", err?.message || err); return false; }
+  } catch (err) {
+    setState(false, "offline");
+    console.warn("Health failed:", err?.message || err);
+    return false;
+  }
 }
 
 /* ====== VITRINE ====== */
@@ -76,15 +87,21 @@ async function loadEvents() {
   const search = $("#busca-eventos");
   wrap.innerHTML = `<div class="subtle">Carregando eventos…</div>`;
   let items = [];
-  try { const r = await safeFetch(`${API}/events`); items = Array.isArray(r?.items) ? r.items : []; }
-  catch (e) { console.warn("Falha /events:", e?.message || e); }
+  try {
+    const r = await safeFetch(`${API}/events`);
+    items = Array.isArray(r?.items) ? r.items : [];
+  } catch (e) {
+    console.warn("Falha /events:", e?.message || e);
+  }
   if (!items.length) {
     items = [
-      { id:"demo-1", title:"Sunset no Terraço", city:"Uberaba-MG", venue:"Terraço 21", date:new Date(Date.now()+86400e3).toISOString(), price:60, image:"" },
-      { id:"demo-2", title:"Baile do Ingresso", city:"Uberlândia-MG", venue:"Arena UFU", date:new Date(Date.now()+172800e3).toISOString(), price:80, image:"" },
+      { id:"demo-1", title:"Sunset no Terraço", city:"Uberaba-MG",     venue:"Terraço 21", date:new Date(Date.now()+86400e3).toISOString(),   price:60, image:"" },
+      { id:"demo-2", title:"Baile do Ingresso", city:"Uberlândia-MG",  venue:"Arena UFU",  date:new Date(Date.now()+172800e3).toISOString(), price:80, image:"" },
     ];
   }
+
   const cities = Array.from(new Set(items.map(i => i.city).filter(Boolean))).sort();
+
   function render(list) {
     if (!list.length) { wrap.innerHTML = `<div class="subtle">Nenhum evento encontrado.</div>`; return; }
     wrap.innerHTML = "";
@@ -105,15 +122,45 @@ async function loadEvents() {
       wrap.appendChild(card);
     });
   }
+
   chips.innerHTML = "";
   const all = document.createElement("button");
-  all.className = "chip"; all.role = "tab"; all.textContent = "Todas"; all.setAttribute("aria-selected","true"); chips.appendChild(all);
-  cities.forEach(c => { const b = document.createElement("button"); b.className="chip"; b.role="tab"; b.textContent=c; b.dataset.city=c; chips.appendChild(b); });
+  all.className = "chip"; all.role = "tab"; all.textContent = "Todas";
+  all.setAttribute("aria-selected","true");
+  chips.appendChild(all);
+
+  cities.forEach(c => {
+    const b = document.createElement("button");
+    b.className="chip"; b.role="tab"; b.textContent=c; b.dataset.city=c;
+    chips.appendChild(b);
+  });
+
   let activeCity = ""; let q = "";
-  const apply = () => { let list = items.slice(); if (activeCity) list = list.filter(i=>i.city===activeCity); if (q) list = list.filter(i=>(i.title||"").toLowerCase().includes(q)); render(list); };
-  chips.addEventListener("click",(e)=>{ const btn=e.target.closest(".chip"); if(!btn) return; $$(".chip",chips).forEach(x=>x.setAttribute("aria-selected","false")); btn.setAttribute("aria-selected","true"); activeCity=btn.dataset.city||""; apply(); });
-  search.addEventListener("input",()=>{ q=search.value.trim().toLowerCase(); apply(); });
-  wrap.addEventListener("click",(e)=>{ const b=e.target.closest("[data-view]"); if(!b) return; const id=b.getAttribute("data-view"); const ev=items.find(x=>String(x.id)===String(id)); if(ev) openSheetForEvent(ev); });
+  const apply = () => {
+    let list = items.slice();
+    if (activeCity) list = list.filter(i=>i.city===activeCity);
+    if (q) list = list.filter(i=>(i.title||"").toLowerCase().includes(q));
+    render(list);
+  };
+
+  chips.addEventListener("click",(e)=>{
+    const btn=e.target.closest(".chip"); if(!btn) return;
+    $$(".chip",chips).forEach(x=>x.setAttribute("aria-selected","false"));
+    btn.setAttribute("aria-selected","true");
+    activeCity=btn.dataset.city||"";
+    apply();
+  });
+  search.addEventListener("input",()=>{
+    q=search.value.trim().toLowerCase(); apply();
+  });
+
+  wrap.addEventListener("click",(e)=>{
+    const b=e.target.closest("[data-view]"); if(!b) return;
+    const id=b.getAttribute("data-view");
+    const ev=items.find(x=>String(x.id)===String(id));
+    if(ev) openSheetForEvent(ev);
+  });
+
   apply();
 }
 
@@ -133,12 +180,14 @@ function openSheetForEvent(ev) {
       <strong>Preço:</strong> ${money(ev.price || 0)}</p>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
         <a class="btn btn--secondary btn--sm" id="buy-demo">Comprar (demo)</a>
-        <a class="btn btn--ghost btn--sm" target="_blank" rel="noopener" href="https://wa.me/${SUPPORT_WA}?text=Tenho%20d%C3%BAvidas%20sobre%20${encodeURIComponent(ev.title)}">Falar no WhatsApp</a>
+        <a class="btn btn--ghost btn--sm" target="_blank" rel="noopener"
+           href="https://wa.me/${SUPPORT_WA}?text=Tenho%20d%C3%BAvidas%20sobre%20${encodeURIComponent(ev.title)}">Falar no WhatsApp</a>
       </div>
     </div>
   `;
   const close = () => { sheet.classList.remove("is-open"); backdrop.classList.remove("is-open"); };
   $("#sheet-close").onclick = close; backdrop.onclick = close;
+
   $("#buy-demo").onclick = async () => {
     try {
       const phone = prompt("Seu WhatsApp (DDI+DDD+NÚMERO):", ""); if (!phone) return;
@@ -147,7 +196,9 @@ function openSheetForEvent(ev) {
       alert("Ticket emitido! PDF: " + (r?.pdfUrl || "—"));
     } catch (e) { alert("Falha ao comprar: " + (e?.message || e)); }
   };
-  backdrop.classList.add("is-open"); sheet.classList.add("is-open");
+
+  backdrop.classList.add("is-open");
+  sheet.classList.add("is-open");
 }
 
 /* ====== ORGANIZADORES ====== */
@@ -162,18 +213,22 @@ function setupOrganizadores() {
       <li>Repasse imediato (Pix) e dashboard para acompanhar.</li>
     </ul>
   `;
+
   const models = [
     { id:"start", name:"Start", feePct: 12, feeFix: 0,   desc:"Sem mensalidade. Repasse T+0." },
     { id:"pro",   name:"Pro",   feePct: 8,  feeFix: 1.5, desc:"Menor taxa + ferramentas PRO." },
     { id:"zero",  name:"Zero",  feePct: 0,  feeFix: 3.9, desc:"Repasse integral; taxa fixa." }
   ];
-  const modelsBox = $("#org-models"); modelsBox.innerHTML = "";
+
+  const modelsBox = $("#org-models");
+  modelsBox.innerHTML = "";
   models.forEach(m => {
     const b = document.createElement("button");
     b.className = "model"; b.setAttribute("role","tab"); b.dataset.id = m.id;
     b.innerHTML = `<div><strong>${m.name}</strong><div class="subtle">${m.desc}</div></div>`;
     modelsBox.appendChild(b);
   });
+
   const feeRow = $("#fee-row");
   const feeChip = $("#fee-chip");
   const calc = $("#calc-box");
@@ -183,14 +238,17 @@ function setupOrganizadores() {
   const netEl = $("#calc-net");
   const note = $("#calc-note");
   const quick = $("#org-quick");
-  let fee = { pct: 0, fix: 0 }; let selected = "";
-  // ✅ correção aqui
+
+  let fee = { pct: 0, fix: 0 };
+  let selected = "";
+
   const enableCalc = (on) => {
-    [preco, qtd].forEach((i) => (i.disabled = !on));
+    [preco, qtd].forEach(i => i.disabled = !on);
     quick.classList.toggle("is-disabled", !on);
     quick.setAttribute("aria-disabled", on ? "false" : "true");
     calc.dataset.fee = on ? "on" : "";
   };
+
   function calcValues() {
     const pv = Number(preco.value.replace(/[^\d,.-]/g,"").replace(",", ".")) || 0;
     const qv = Math.max(1, Number(qtd.value || "1"));
@@ -200,6 +258,7 @@ function setupOrganizadores() {
     grossEl.textContent = money(gross);
     netEl.textContent = money(net);
   }
+
   modelsBox.addEventListener("click",(e)=>{
     const btn=e.target.closest(".model"); if(!btn) return;
     selected = btn.dataset.id;
@@ -212,27 +271,34 @@ function setupOrganizadores() {
     note.textContent = `Plano ${m.name} selecionado. Informe preço e quantidade.`;
     enableCalc(true); calcValues();
   });
+
   [preco, qtd].forEach(i => i.addEventListener("input", calcValues));
+
   $("#org-request").onclick = () => {
-    const t = $("#f-title").value.trim(); const city = $("#f-city").value.trim();
-    const venue = $("#f-venue").value.trim(); const date = $("#f-date").value.trim();
+    const t = $("#f-title").value.trim();
+    const city = $("#f-city").value.trim();
+    const venue = $("#f-venue").value.trim();
+    const date = $("#f-date").value.trim();
     const phone = onlyDigits($("#f-phone").value);
-    const msg = `Quero criar evento na IngressAI:%0A%0A`
-      + `Plano: ${selected || "-"}%0A`
-      + `Evento: ${encodeURIComponent(t || "-")}%0A`
-      + `Cidade: ${encodeURIComponent(city || "-")}%0A`
-      + `Local: ${encodeURIComponent(venue || "-")}%0A`
-      + `Data/hora: ${encodeURIComponent(date || "-")}%0A`
-      + `Meu WhatsApp: ${phone || "-"}`;
+    const msg =
+      `Quero criar evento na IngressAI:%0A%0A` +
+      `Plano: ${selected || "-"}%0A` +
+      `Evento: ${encodeURIComponent(t || "-")}%0A` +
+      `Cidade: ${encodeURIComponent(city || "-")}%0A` +
+      `Local: ${encodeURIComponent(venue || "-")}%0A` +
+      `Data/hora: ${encodeURIComponent(date || "-")}%0A` +
+      `Meu WhatsApp: ${phone || "-"}`;
     window.open(`https://wa.me/${SUPPORT_WA}?text=${msg}`, "_blank");
   };
+
   enableCalc(false);
 }
 
 /* ====== VALIDADOR (POST /validator/check) ====== */
 function setupValidator() {
   $("#val-check").onclick = async () => {
-    const input = $("#val-code"); const out = $("#val-result");
+    const input = $("#val-code");
+    const out = $("#val-result");
     out.textContent = "Checando…";
     let code = String(input.value || "").trim().replace(/^ingressai:ticket:/, "");
     if (!code) { out.textContent = "Informe um código."; return; }
@@ -258,9 +324,15 @@ function openLoginModal() {
   const hint = $("#login-hint");
   const phoneEl = $("#login-phone");
   const codeBlock = $("#code-block");
-  hint.textContent = ""; codeBlock.style.display = "none"; modal.classList.add("is-open"); phoneEl.focus();
+
+  hint.textContent = "";
+  codeBlock.style.display = "none";
+  modal.classList.add("is-open");
+  phoneEl.focus();
+
   $("#login-cancel").onclick = () => modal.classList.remove("is-open");
-  $("#code-back").onclick = () => { codeBlock.style.display = "none"; hint.textContent = ""; };
+  $("#code-back").onclick   = () => { codeBlock.style.display = "none"; hint.textContent = ""; };
+
   $("#login-send").onclick = async () => {
     const phone = onlyDigits(phoneEl.value);
     if (phone.length < 12) { hint.textContent = "Informe número com DDI+DDD+número."; return; }
@@ -275,10 +347,13 @@ function openLoginModal() {
       hint.textContent = "Código enviado por WhatsApp. Digite abaixo:";
       codeBlock.style.display = "block";
       $("#login-code").focus();
-    } catch (e) { hint.textContent = "Erro: " + (e?.message || e); }
+    } catch (e) {
+      hint.textContent = "Erro: " + (e?.message || e);
+    }
   };
+
   $("#code-verify").onclick = async () => {
-    const code = onlyDigits($("#login-code").value);
+    const code  = onlyDigits($("#login-code").value);
     const phone = onlyDigits($("#login-phone").value);
     if (!code) { hint.textContent = "Digite o código recebido."; return; }
     hint.textContent = "Verificando…";
@@ -294,8 +369,12 @@ function openLoginModal() {
         hint.textContent = "Verificado! Abrindo Dashboard…";
         await sleep(400);
         window.location.href = `${API.replace(/\/api$/,"")}/app/dashboard.html`;
-      } else { hint.textContent = "Código inválido."; }
-    } catch (e) { hint.textContent = "Erro: " + (e?.message || e); }
+      } else {
+        hint.textContent = "Código inválido.";
+      }
+    } catch (e) {
+      hint.textContent = "Erro: " + (e?.message || e);
+    }
   };
 }
 
@@ -303,7 +382,10 @@ function openLoginModal() {
 function setupSections() {
   const orgBtn = $("#cta-organizadores");
   const orgSec = $("#organizadores");
-  orgBtn.addEventListener("click", () => { orgSec.hidden = false; orgSec.scrollIntoView({ behavior:"smooth", block:"start" }); });
+  orgBtn.addEventListener("click", () => {
+    orgSec.hidden = false;
+    orgSec.scrollIntoView({ behavior:"smooth", block:"start" });
+  });
 }
 
 /* ====== BOOT ====== */
