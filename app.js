@@ -184,7 +184,13 @@ function setupOrganizadores() {
   const note = $("#calc-note");
   const quick = $("#org-quick");
   let fee = { pct: 0, fix: 0 }; let selected = "";
-  const enableCalc = (on) => { [preco, qtd].forEach	i => i.disabled = !on); quick.classList.toggle("is-disabled", !on); quick.setAttribute("aria-disabled", on ? "false" : "true"); calc.dataset.fee = on ? "on" : ""; };
+  // ✅ correção aqui
+  const enableCalc = (on) => {
+    [preco, qtd].forEach((i) => (i.disabled = !on));
+    quick.classList.toggle("is-disabled", !on);
+    quick.setAttribute("aria-disabled", on ? "false" : "true");
+    calc.dataset.fee = on ? "on" : "";
+  };
   function calcValues() {
     const pv = Number(preco.value.replace(/[^\d,.-]/g,"").replace(",", ".")) || 0;
     const qv = Math.max(1, Number(qtd.value || "1"));
@@ -308,4 +314,3 @@ function setupSections() {
   setupValidator();
   await loadEvents();
 })();
-
