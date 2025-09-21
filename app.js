@@ -1,7 +1,13 @@
 /* ====== CONFIG ====== */
-const API = (typeof window !== "undefined" && window.INGRESSAI_API)
+// Pode definir window.INGRESSAI_API como "https://host/api" OU "https://host"
+const API_ROOT = (typeof window !== "undefined" && window.INGRESSAI_API)
   ? String(window.INGRESSAI_API).replace(/\/+$/, "")
   : "https://ingressai-backend-production.up.railway.app/api";
+
+// Base geral de API (events, validator, purchase…)
+const API  = /\/api$/i.test(API_ROOT) ? API_ROOT : `${API_ROOT}/api`;
+// Base específica de autenticação (sempre /api/auth)
+const AUTH = `${API}/auth`;
 
 const SUPPORT_WA = "5534999992747";
 
@@ -178,7 +184,7 @@ function setupOrganizadores() {
   const note = $("#calc-note");
   const quick = $("#org-quick");
   let fee = { pct: 0, fix: 0 }; let selected = "";
-  const enableCalc = (on) => { [preco, qtd].forEach(i => i.disabled = !on); quick.classList.toggle("is-disabled", !on); quick.setAttribute("aria-disabled", on ? "false" : "true"); calc.dataset.fee = on ? "on" : ""; };
+  const enableCalc = (on) => { [preco, qtd].forEach	i => i.disabled = !on); quick.classList.toggle("is-disabled", !on); quick.setAttribute("aria-disabled", on ? "false" : "true"); calc.dataset.fee = on ? "on" : ""; };
   function calcValues() {
     const pv = Number(preco.value.replace(/[^\d,.-]/g,"").replace(",", ".")) || 0;
     const qv = Math.max(1, Number(qtd.value || "1"));
@@ -254,7 +260,7 @@ function openLoginModal() {
     if (phone.length < 12) { hint.textContent = "Informe número com DDI+DDD+número."; return; }
     hint.textContent = "Enviando código…";
     try {
-      await safeFetch(`${API}/auth/request`, {
+      await safeFetch(`${AUTH}/request`, {
         method: "POST",
         headers: { "content-type":"application/json" },
         body: JSON.stringify({ phone }),
@@ -271,14 +277,14 @@ function openLoginModal() {
     if (!code) { hint.textContent = "Digite o código recebido."; return; }
     hint.textContent = "Verificando…";
     try {
-      const r = await safeFetch(`${API}/auth/verify`, {
+      const r = await safeFetch(`${AUTH}/verify`, {
         method: "POST",
         headers: { "content-type":"application/json" },
         body: JSON.stringify({ phone, code }),
         credentials: "include"
       });
       if (r && r.ok) {
-        await safeFetch(`${API}/auth/session`, { credentials: "include" }).catch(() => null);
+        await safeFetch(`${AUTH}/session`, { credentials: "include" }).catch(() => null);
         hint.textContent = "Verificado! Abrindo Dashboard…";
         await sleep(400);
         window.location.href = `${API.replace(/\/api$/,"")}/app/dashboard.html`;
@@ -302,3 +308,4 @@ function setupSections() {
   setupValidator();
   await loadEvents();
 })();
+
