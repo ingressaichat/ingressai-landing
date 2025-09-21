@@ -63,7 +63,7 @@ async function updateHealth() {
   } catch (err) { setState(false, "offline"); console.warn("Health failed:", err?.message || err); return false; }
 }
 
-/* ====== VITRINE (EVENTOS) ====== */
+/* ====== VITRINE ====== */
 async function loadEvents() {
   const wrap = $("#lista-eventos");
   const chips = $("#filtro-cidades");
@@ -157,12 +157,11 @@ function setupOrganizadores() {
     </ul>
   `;
   const models = [
-    { id:"start", name:"Start", feePct: 12, feeFix: 0, desc:"Sem mensalidade. Repasse T+0." },
+    { id:"start", name:"Start", feePct: 12, feeFix: 0,   desc:"Sem mensalidade. Repasse T+0." },
     { id:"pro",   name:"Pro",   feePct: 8,  feeFix: 1.5, desc:"Menor taxa + ferramentas PRO." },
     { id:"zero",  name:"Zero",  feePct: 0,  feeFix: 3.9, desc:"Repasse integral; taxa fixa." }
   ];
   const modelsBox = $("#org-models");
-  modelsBox.innerHTML = "";
   models.forEach(m => {
     const b = document.createElement("button");
     b.className = "model"; b.setAttribute("role","tab"); b.dataset.id = m.id;
@@ -218,19 +217,26 @@ function setupOrganizadores() {
   enableCalc(false);
 }
 
-/* ====== VALIDADOR ====== */
+/* ====== VALIDADOR (ATUALIZADO) ====== */
 function setupValidator() {
   $("#val-check").onclick = async () => {
     const input = $("#val-code"); const out = $("#val-result");
     out.textContent = "Checando…";
-    let code = String(input.value || "").trim();
-    code = code.replace(/^ingressai:ticket:/, "");
+    let code = String(input.value || "").trim().replace(/^ingressai:ticket:/, "");
     if (!code) { out.textContent = "Informe um código."; return; }
     try {
-      const r = await safeFetch(`${API}/validate?code=${encodeURIComponent(code)}`);
+      const r = await fetch(`${API}/validator/check`, {
+        method: "POST",
+        headers: { "Content-Type":"application/json", "Accept":"application/json" },
+        credentials: "include",
+        body: JSON.stringify({ code })
+      }).then(res => res.json());
+
       if (r?.valid) out.innerHTML = `<div class="valid">Válido! Ticket #${r.ticketId} • ${r.buyerName || ""}</div>`;
       else out.innerHTML = `<div class="invalid">Inválido (${r?.reason || "desconhecido"})</div>`;
-    } catch (e) { out.innerHTML = `<div class="invalid">Erro: ${e?.message || e}</div>`; }
+    } catch (e) {
+      out.innerHTML = `<div class="invalid">Erro: ${e?.message || e}</div>`;
+    }
   };
 }
 
@@ -296,3 +302,4 @@ function setupSections() {
   setupValidator();
   await loadEvents();
 })();
+
