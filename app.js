@@ -144,7 +144,7 @@ function openSheetForEvent(ev) {
   backdrop.classList.add("is-open"); sheet.classList.add("is-open");
 }
 
-/* ====== ORGANIZADORES / CALCULADORA ====== */
+/* ====== ORGANIZADORES ====== */
 function setupOrganizadores() {
   const std = $("#std-card");
   std.innerHTML = `
@@ -161,7 +161,7 @@ function setupOrganizadores() {
     { id:"pro",   name:"Pro",   feePct: 8,  feeFix: 1.5, desc:"Menor taxa + ferramentas PRO." },
     { id:"zero",  name:"Zero",  feePct: 0,  feeFix: 3.9, desc:"Repasse integral; taxa fixa." }
   ];
-  const modelsBox = $("#org-models");
+  const modelsBox = $("#org-models"); modelsBox.innerHTML = "";
   models.forEach(m => {
     const b = document.createElement("button");
     b.className = "model"; b.setAttribute("role","tab"); b.dataset.id = m.id;
@@ -217,7 +217,7 @@ function setupOrganizadores() {
   enableCalc(false);
 }
 
-/* ====== VALIDADOR (ATUALIZADO) ====== */
+/* ====== VALIDADOR (POST /validator/check) ====== */
 function setupValidator() {
   $("#val-check").onclick = async () => {
     const input = $("#val-code"); const out = $("#val-result");
@@ -302,4 +302,3 @@ function setupSections() {
   setupValidator();
   await loadEvents();
 })();
-
