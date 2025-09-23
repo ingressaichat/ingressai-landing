@@ -19,8 +19,6 @@
   <link rel="preload" as="image" href="./logo_ingressai.png" />
 
   <style>
-    /* === todo o CSS que você já mandou (sem alterações) === */
-    /* colei o mesmo bloco original aqui */
     :root{--phi:1.618;--s0:8px;--s1:calc(var(--s0)*var(--phi));--s2:calc(var(--s1)*var(--phi));--s3:calc(var(--s2)*var(--phi));--s4:calc(var(--s3)*var(--phi));
       --fs-0:1rem;--fs--1:calc(var(--fs-0)/var(--phi));--lh:1.45;--lh-compact:1.22;
       --ink:#0b1220;--muted:#5b6b86;--bg:#f6f8fc;--card:#ffffff;
@@ -155,14 +153,13 @@
   <script defer src="./app.js"></script>
 </head>
 <body>
-  <!-- HEADER -->
+  <!-- HEADER (limpo: sem "Entrar" no topo) -->
   <header role="banner">
     <div class="container nav">
       <div class="nav-actions">
         <a href="#vitrine" class="link-like">Vitrine</a>
         <a href="#organizadores" class="link-like" id="nav-org">Organizadores</a>
         <a href="#validador" class="link-like" id="nav-val" hidden>Validador</a>
-        <a href="#" class="link-like" id="nav-login" data-login>Entrar</a>
         <span class="tag off" id="auth-indicator" aria-live="polite">offline</span>
       </div>
     </div>
@@ -253,10 +250,17 @@
     <section id="organizadores" class="section" aria-labelledby="orgs-title" tabindex="-1" hidden>
       <h2 id="orgs-title">Soluções para organizadores</h2>
       <div id="std-card" class="std-card"></div>
-      <div id="org-models" class="model-grid" role="tablist" aria-label="Modelos de organizador"></div>
-      <div class="fee-row" id="fee-row"><span class="fee-chip" id="fee-chip">Taxa</span></div>
 
-      <div class="org-panel is-disabled" id="org-detail" role="tabpanel" tabindex="0" aria-live="polite">
+      <!-- seletor de taxa -->
+      <div class="std-card" style="margin-top: var(--s1)">
+        <strong>Taxa</strong>
+        <div class="chips" role="tablist" aria-label="Selecionar taxa" id="tax-selector">
+          <button class="chip" role="tab" data-plan="atl" aria-selected="true">Atléticas &amp; Repúblicas (8% + R$ 1,50)</button>
+          <button class="chip" role="tab" data-plan="prod">Produtoras &amp; Locais (10% + R$ 2,00)</button>
+        </div>
+      </div>
+
+      <div class="org-panel" id="org-detail" role="tabpanel" tabindex="0" aria-live="polite">
         <div class="panel-grid">
           <div class="panel-card">
             <details class="disclosure" open>
@@ -272,7 +276,7 @@
                     <input id="qtd" class="input" type="number" placeholder="1" min="1" step="1" aria-label="Quantidade de ingressos" disabled />
                   </div>
                 </div>
-                <small id="calc-note" class="hint">Selecione um plano acima para aplicar a taxa.</small>
+                <small id="calc-note" class="hint">Selecione a taxa acima para aplicar os valores.</small>
                 <div class="calc-result" id="calc-gross-row"><span>Total bruto</span><strong id="calc-gross">R$ 0,00</strong></div>
                 <div class="calc-result"><span>Você recebe</span><strong id="calc-net">R$ 0,00</strong></div>
 
@@ -301,14 +305,15 @@
                     <label for="f-phone">Seu WhatsApp (DDI+DDD+NÚMERO)</label>
                     <input id="f-phone" class="input" placeholder="55349...">
                   </div>
+                  <div>
+                    <label for="f-pix">Chave Pix</label>
+                    <input id="f-pix" class="input" placeholder="sua-chave-pix">
+                  </div>
+                </div>
+                <div class="calc-row" style="margin-top:10px">
                   <div style="display:grid;align-items:end">
                     <a class="btn btn--ghost btn--sm" id="org-request">Solicitar criação</a>
                   </div>
-                </div>
-
-                <div class="panel-cta" style="margin-top:var(--s2)">
-                  <a class="btn btn--secondary is-disabled" id="org-quick" aria-disabled="true">Criar evento (WhatsApp)</a>
-                  <a class="btn btn--ghost" id="open-dashboard" href="#" data-login>Abrir login</a>
                 </div>
               </div>
             </details>
@@ -330,7 +335,7 @@
       </div>
     </section>
 
-    <!-- VALIDADOR -->
+    <!-- VALIDADOR (continua acessível via seção, não no topo) -->
     <section id="validador" class="section" aria-labelledby="val-title" hidden>
       <h2 id="val-title">Validador</h2>
       <div class="validator">
