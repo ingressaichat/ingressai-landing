@@ -5,21 +5,27 @@
 
   function normalizeApi(raw) {
     let s = String(raw || "").trim();
-    s = s.replace(/[.\s/]+$/g, "");           // remove pontinhos/barras finais
-    if (!/\/api$/i.test(s)) s = s + "/api";   // garante /api
-    s = s.replace(/([^:])\/{2,}/g, "$1/");    // colapsa barras duplas (sem quebrar https://)
+    s = s.replace(/[.\s/]+$/g, "");
+    if (!/\/api$/i.test(s)) s = s + "/api";
+    s = s.replace(/([^:])\/{2,}/g, "$1/");
     return s;
   }
   window.INGRESSAI_API = normalizeApi(qsApi || PROD);
 })();
-
 const API = String(window.INGRESSAI_API);
 const SUPPORT_WA = "5534999992747";
 
 /* ====== HELPERS ====== */
-const $ = (q, el = document) => el.querySelector(q);
+const $  = (q, el = document) => el.querySelector(q);
 const $$ = (q, el = document) => Array.from(el.querySelectorAll(q));
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+function onlyDigits(v){ return String(v||"").replace(/\D+/g,""); }
+function money(v){
+  try{
+    const n = (typeof v === "number") ? v : Number(String(v).replace(/[^\d,.-]/g,"").replace(",", "."));
+    return isFinite(n) ? n.toLocaleString("pt-BR",{style:"currency",currency:"BRL"}) : "R$ 0,00";
+  }catch{ return "R$ 0,00"; }
+}
 
 async function safeFetch(url, opts = {}, timeoutMs = 12000) {
   const ctrl = new AbortController();
@@ -34,15 +40,12 @@ async function safeFetch(url, opts = {}, timeoutMs = 12000) {
     });
     if (!res.ok) {
       const text = await res.text().catch(() => "");
-      throw new Error(`HTTP ${res.status} ${res.statusText}${text ? ` — ${text.slice(0,120)}` : ""}`);
+      throw new Error(`HTTP ${res.status} ${res.statusText}${text ? ` — ${text.slice(0,180)}` : ""}`);
     }
     const ct = res.headers.get("content-type") || "";
     return ct.includes("application/json") ? res.json() : res.text();
   } finally { clearTimeout(id); }
 }
-
-function money(v){ try { return Number(v).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});} catch { return "R$ 0,00"; } }
-function onlyDigits(v){ return String(v||"").replace(/\D+/g,""); }
 
 /* ====== NAV / HEADER ====== */
 (function headerFX(){
@@ -68,7 +71,7 @@ async function updateHealth() {
   try {
     await safeFetch(`${API}/health`).catch(() => safeFetch(`${API.replace(/\/api$/,"")}/healthz`));
     setState(true, "online");
-    // NÃO reexibe o link do validador no topo (fica só dentro do dashboard / seção)
+    $("#nav-val")?.removeAttribute("hidden");
     return true;
   } catch (err) {
     setState(false, "offline");
@@ -108,7 +111,7 @@ async function loadEvents() {
             <div class="card-city">${ev.city || ""}</div>
             <div class="status-line status--soon"><span class="status-dot"></span> Acontece em breve</div>
           </div>
-          <button class="view" data-view="${ev.id}">Ver</button>
+          <button class="view" data-view="${ev.id}" type="button">Ver</button>
         </div>
         <div class="card-media">${ev.image ? `<img src="${ev.image}" alt="">` : "Ingresso"}</div>
       `;
@@ -117,14 +120,35 @@ async function loadEvents() {
   }
   chips.innerHTML = "";
   const all = document.createElement("button");
-  all.className = "chip"; all.role = "tab"; all.textContent = "Todas"; all.setAttribute("aria-selected","true");
+  all.className = "chip"; all.role = "tab"; all.textContent = "Todas"; all.setAttribute("aria-selected","true"); all.type="button";
   chips.appendChild(all);
-  cities.forEach(c => { const b = document.createElement("button"); b.className="chip"; b.role="tab"; b.textContent=c; b.dataset.city=c; chips.appendChild(b); });
+  cities.forEach(c => {
+    const b = document.createElement("button");
+    b.className="chip"; b.role="tab"; b.textContent=c; b.dataset.city=c; b.type="button";
+    chips.appendChild(b);
+  });
+
   let activeCity = ""; let q = "";
-  const apply = () => { let list = items.slice(); if (activeCity) list = list.filter(i=>i.city===activeCity); if (q) list = list.filter(i=>(i.title||"").toLowerCase().includes(q)); render(list); };
-  chips.addEventListener("click",(e)=>{ const btn=e.target.closest(".chip"); if(!btn) return; $$(".chip",chips).forEach(x=>x.setAttribute("aria-selected","false")); btn.setAttribute("aria-selected","true"); activeCity=btn.dataset.city||""; apply(); });
+  const apply = () => {
+    let list = items.slice();
+    if (activeCity) list = list.filter(i=>i.city===activeCity);
+    if (q) list = list.filter(i=>(i.title||"").toLowerCase().includes(q));
+    render(list);
+  };
+  chips.addEventListener("click",(e)=>{
+    const btn=e.target.closest(".chip"); if(!btn) return;
+    $$(".chip",chips).forEach(x=>x.setAttribute("aria-selected","false"));
+    btn.setAttribute("aria-selected","true");
+    activeCity=btn.dataset.city||"";
+    apply();
+  });
   search.addEventListener("input",()=>{ q=search.value.trim().toLowerCase(); apply(); });
-  wrap.addEventListener("click",(e)=>{ const b=e.target.closest("[data-view]"); if(!b) return; const id=b.getAttribute("data-view"); const ev=items.find(x=>String(x.id)===String(id)); if(ev) openSheetForEvent(ev); });
+  wrap.addEventListener("click",(e)=>{
+    const b=e.target.closest("[data-view]"); if(!b) return;
+    const id=b.getAttribute("data-view");
+    const ev=items.find(x=>String(x.id)===String(id));
+    if(ev) openSheetForEvent(ev);
+  });
   apply();
 }
 
@@ -143,7 +167,7 @@ function openSheetForEvent(ev){
       <strong>Quando:</strong> ${new Date(ev.date || Date.now()).toLocaleString("pt-BR")}<br/>
       <strong>Preço:</strong> ${money(ev.price || 0)}</p>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <a class="btn btn--secondary btn--sm" id="buy-demo">Comprar (demo)</a>
+        <a class="btn btn--secondary btn--sm" id="buy-demo" role="button">Comprar (demo)</a>
         <a class="btn btn--ghost btn--sm" target="_blank" rel="noopener" href="https://wa.me/${SUPPORT_WA}?text=Tenho%20d%C3%BAvidas%20sobre%20${encodeURIComponent(ev.title)}">Falar no WhatsApp</a>
       </div>
     </div>
@@ -161,7 +185,7 @@ function openSheetForEvent(ev){
   backdrop.classList.add("is-open"); sheet.classList.add("is-open");
 }
 
-/* ====== ORGANIZADORES (novas taxas + Pix + POST /api/org/apply) ====== */
+/* ====== ORGANIZADORES ====== */
 function setupOrganizadores(){
   const std = $("#std-card");
   std.innerHTML = `
@@ -174,84 +198,69 @@ function setupOrganizadores(){
     </ul>
   `;
 
-  // estado de taxa
-  let plan = "atl"; // atl | prod
-  const fees = {
-    atl: { pct: 8,  fix: 1.50 },
-    prod:{ pct:10,  fix: 2.00 },
+  // Seletor de taxa (atl/prod)
+  const taxSel = $("#tax-selector");
+  const preco = $("#preco");
+  const qtd = $("#qtd");
+  const grossEl = $("#calc-gross");
+  const netEl   = $("#calc-net");
+  const note    = $("#calc-note");
+
+  let feePct = 8, feeFix = 1.5, plan = "atl";
+  const enableCalc = (on) => {
+    [preco, qtd].forEach(i => i.disabled = !on);
+    $("#calc-box").dataset.fee = on ? "on" : "";
+    note.textContent = on ? `Taxa aplicada: ${plan==="prod" ? "10% + R$ 2,00" : "8% + R$ 1,50"}` : "Selecione a taxa acima para aplicar os valores.";
   };
 
-  // seletor de taxa
-  const taxSel = $("#tax-selector");
-  taxSel.addEventListener("click", (e) => {
+  function parsePrice(inputValue) {
+    // aceita "60", "60,00", "R$ 60,00"
+    const n = Number(String(inputValue||"").replace(/[^\d,.-]/g,"").replace(",", "."));
+    return isFinite(n) ? n : 0;
+  }
+  function calcValues(){
+    const pv = parsePrice(preco.value);
+    const qv = Math.max(1, Number(qtd.value||"1"));
+    const gross = pv * qv;
+    const tax   = (gross * (feePct/100)) + (feeFix * qv);
+    const net   = Math.max(0, gross - tax);
+    grossEl.textContent = money(gross);
+    netEl.textContent   = money(net);
+  }
+
+  taxSel?.addEventListener("click", (e) => {
     const btn = e.target.closest(".chip"); if(!btn) return;
     $$(".chip", taxSel).forEach(x => x.setAttribute("aria-selected","false"));
     btn.setAttribute("aria-selected","true");
-    plan = btn.dataset.plan;
+    plan = btn.dataset.plan === "prod" ? "prod" : "atl";
+    if (plan === "prod"){ feePct = 10; feeFix = 2.0; }
+    else { feePct = 8; feeFix = 1.5; }
     enableCalc(true);
     calcValues();
   });
 
-  // calculadora
-  const calc   = $("#calc-box");
-  const preco  = $("#preco");
-  const qtd    = $("#qtd");
-  const grossEl= $("#calc-gross");
-  const netEl  = $("#calc-net");
-  const note   = $("#calc-note");
+  [preco, qtd].forEach(i => i.addEventListener("input", calcValues));
 
-  function parseMoney(x){ return Number(String(x||"").replace(/[^\d,.-]/g,"").replace(",", ".")) || 0; }
-  function enableCalc(on){
-    [preco,qtd].forEach(i => i.disabled = !on);
-    calc.dataset.fee = on ? "on" : "";
-    note.textContent = on ? (plan==="prod"
-      ? "Taxa: 10% + R$ 2,00 por ingresso."
-      : "Taxa: 8% + R$ 1,50 por ingresso.") : "Selecione a taxa acima para aplicar os valores.";
-  }
-  function calcValues(){
-    const pv = parseMoney(preco.value);
-    const qv = Math.max(1, Number(qtd.value||"1"));
-    const { pct, fix } = fees[plan] || fees.atl;
-    const bruto = pv * qv;
-    const taxa  = (pv * (pct/100) + fix) * qv;
-    const net   = Math.max(0, bruto - taxa);
-    grossEl.textContent = money(bruto);
-    netEl.textContent   = money(net);
-  }
-  [preco,qtd].forEach(i => i.addEventListener("input", calcValues));
-  enableCalc(false);
+  $("#org-request").onclick = () => {
+    const t    = $("#f-title").value.trim();
+    const city = $("#f-city").value.trim();
+    const venue= $("#f-venue").value.trim();
+    const date = $("#f-date").value.trim();
+    const phone= onlyDigits($("#f-phone").value);
+    const pix  = $("#f-pix").value.trim();
 
-  // envio -> /api/org/apply
-  $("#org-request").onclick = async () => {
-    const payload = {
-      plan,
-      price: parseMoney(preco.value),
-      qty:   Math.max(1, Number(qtd.value||"1")),
-      eventName: $("#f-title").value.trim(),
-      city:      $("#f-city").value.trim(),
-      venue:     $("#f-venue").value.trim(),
-      date:      $("#f-date").value.trim(),
-      phone:     onlyDigits($("#f-phone").value),
-      pixKey:    $("#f-pix").value.trim(),
-      name:      "" // opcional
-    };
-
-    if (!payload.phone || payload.phone.length < 12) {
-      alert("Informe seu WhatsApp com DDI + DDD + número.");
-      return;
-    }
-    try {
-      const r = await safeFetch(`${API}/org/apply`,{
-        method:"POST",
-        headers:{ "content-type":"application/json" },
-        body: JSON.stringify(payload)
-      });
-      if (!r?.ok) throw new Error(r?.error || "Falha ao enviar");
-      alert("Solicitação enviada! Você receberá uma mensagem no seu WhatsApp quando for aprovada.");
-    } catch (e) {
-      alert("Erro ao enviar solicitação: " + (e?.message || e));
-    }
+    const msg = `Quero criar evento na IngressAI:%0A%0A`
+      + `Plano: ${plan}%0A`
+      + `Evento: ${encodeURIComponent(t||"-")}%0A`
+      + `Cidade: ${encodeURIComponent(city||"-")}%0A`
+      + `Local: ${encodeURIComponent(venue||"-")}%0A`
+      + `Data/hora: ${encodeURIComponent(date||"-")}%0A`
+      + `Pix: ${encodeURIComponent(pix||"-")}%0A`
+      + `Meu WhatsApp: ${phone||"-"}`;
+    window.open(`https://wa.me/${SUPPORT_WA}?text=${msg}`, "_blank");
   };
+
+  enableCalc(false);
 }
 
 /* ====== VALIDADOR ====== */
@@ -339,4 +348,3 @@ function setupSections(){
   setupValidator();
   await loadEvents();
 })();
-
