@@ -58,12 +58,12 @@
     .btn{min-height:var(--btn-h);padding:0 var(--s2);border-radius:var(--radius-pill);border:1px solid #d6e4ff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;letter-spacing:.2px;gap:10px;background:#fff;color:#0b1220;transition:transform .08s,box-shadow var(--t-fast)}
     .btn--secondary{box-shadow:var(--shadow-soft)}
     .btn--ghost{background:#fff;border-color:#e1e8f6;box-shadow:none;color:#2d3b50}
-    .btn--sm{min-height:40px;padding:0 .9rem;font-size:16px} /* evita zoom no iOS */
+    .btn--sm{min-height:40px;padding:0 .9rem;font-size:16px} /* 16px evita zoom no iOS */
     .btn.is-disabled{opacity:.6;pointer-events:none;filter:grayscale(.08)}
     .cta-inline{display:flex;justify-content:flex-start;margin-top:calc(var(--s1)*-1);margin-bottom:var(--s1)}
 
-    /* Provas */
-    .view{background:#fff;border:1px solid #e5ecff;color:#2d3b50;font-weight:800;cursor:pointer;padding:.4rem .8rem;border-radius:999px;align-self:center;min-height:32px;font-size:.9rem;margin-top:auto;box-shadow:0 6px 16px rgba(47,125,217,.16),0 2px 6px rgba(11,18,32,.08);transition:transform .12s,box-shadow var(--t-fast),filter var(--t-fast)}
+    /* Proofs / cards */
+    .view{background:#fff;border:1px solid #e5ecff;color:#2d3b50;font-weight:800;cursor:pointer;padding:.4rem .8rem;border-radius:999px;align-self:center;min-height:32px;font-size:.95rem;margin-top:auto;box-shadow:0 6px 16px rgba(47,125,217,.16),0 2px 6px rgba(11,18,32,.08);transition:transform .12s,box-shadow var(--t-fast),filter var(--t-fast)}
     .view:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(47,125,217,.2),0 4px 10px rgba(11,18,32,.12)}
     .proofs{padding:var(--s2) 0 var(--s3)}
     .features{display:grid;gap:var(--s0);grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -79,7 +79,7 @@
     .section{padding:calc(var(--s4)*1.1) 0;content-visibility:auto}
     .section h2{font-size:clamp(calc(1rem*var(--phi)),3.8vw,calc(1.1rem*var(--phi)*var(--phi)));margin:0 0 var(--s2) 0;font-weight:800}
 
-    /* Filtros / chips */
+    /* Filters / chips */
     .filters{display:grid;grid-template-columns:1fr;gap:var(--s1);margin:0 0 var(--s1) 0}
     @media(min-width:680px){.filters{grid-template-columns:1fr max-content}}
     .search input{width:100%;border:1px solid #e5ecff;border-radius:999px;padding:.9rem 1rem;font:inherit;box-shadow:var(--shadow-soft);font-weight:600;font-size:16px}
@@ -104,7 +104,7 @@
     .card-media{width:100%;aspect-ratio:1.35;border-radius:calc(var(--s1));border:1px solid #eaf1ff;background:radial-gradient(600px 280px at 20% 0%,rgba(47,125,217,.12),transparent 60%),linear-gradient(180deg,#fff,#f5f9ff);display:grid;place-items:center;color:#8fb5ff;font-weight:800}
     .card-media img{width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block}
 
-    /* Sheet */
+    /* Sheet / modal */
     .sheet-backdrop{position:fixed;inset:0;background:rgba(11,18,32,.36);opacity:0;pointer-events:none;transition:opacity var(--t-fast)}
     .sheet-backdrop.is-open{opacity:1;pointer-events:auto}
     .sheet{position:fixed;left:0;right:0;bottom:0;height:72vh;max-height:760px;background:#fff;border-top-left-radius:24px;border-top-right-radius:24px;box-shadow:0 -24px 48px rgba(11,18,32,.16);transform:translateY(100%);transition:transform var(--t-med) cubic-bezier(.2,.7,.2,1);display:flex;flex-direction:column;padding:var(--s2);z-index:40}
@@ -118,30 +118,33 @@
     .sheet-close:hover{background:#fff5f5}
     .sheet-close svg{width:22px;height:22px}
 
-    /* Chips de status */
+    /* Status chips */
     .status-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid #e6eaf6;border-radius:999px;padding:.25rem .55rem;font-weight:800;font-size:.8rem}
     .status-chip .dot{width:.5rem;height:.5rem;border-radius:50%}
     .status-chip.low{color:#b64848;border-color:#ffdede;background:#fff7f7}
     .status-chip.soon{color:#1B5FB3;border-color:#cfe3ff;background:#f3f8ff}
     .status-chip.sold{color:#6b7280;border-color:#e3e4ea;background:#fafbfc}
 
-    /* Painéis / calculadora */
+    /* Std / org panel */
     .std-card{background:#fff;border:1px solid #e5ecff;border-radius:calc(var(--s2));padding:var(--s2);box-shadow:var(--shadow-soft)}
     .std-list{margin:0;padding-left:1.25rem;display:grid;gap:6px}
+
     .org-panel{background:#fff;border:1px solid #e5ecff;border-radius:calc(var(--s2));padding:var(--s3);box-shadow:var(--shadow);margin-top:var(--s2)}
     .panel-grid{display:grid;grid-template-columns:1fr;gap:var(--s2)}
     @media(min-width:860px){ .panel-grid{grid-template-columns:1.1fr .9fr} }
     .panel-card{background:#f9fbff;border:1px solid #e5ecff;border-radius:calc(var(--s1));padding:var(--s2)}
     .cmd{display:grid;grid-template-columns:1fr max-content;gap:6px;align-items:center;background:#fff;border:1px solid #e5ecff;border-radius:12px;padding:10px 12px}
     .cmd code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.95rem;color:#0b1220}
+
+    /* Calculadora */
     .calc{display:grid;gap:10px}
-    .calc-row{display:grid;grid-template-columns:1fr;gap:10px}
-    @media (min-width:520px){ .calc-row{grid-template-columns:1fr 1fr} }
+    .calc-row{display:grid;grid-template-columns:1fr;gap:10px} /* mobile-first: 1 coluna */
+    @media(min-width:560px){ .calc-row{grid-template-columns:1fr 1fr} } /* 2 col em telas médias+ */
     .calc input{width:100%;border:1px solid #e5ecff;border-radius:12px;padding:.7rem .8rem;font:inherit;font-size:16px}
     .calc small{color:var(--muted)}
     .calc-result{background:#fff;border:1px dashed #dbe5ff;border-radius:12px;padding:.75rem .9rem;font-weight:800;display:flex;justify-content:space-between;align-items:center}
-    .panel-cta{display:grid;grid-template-columns:1fr;gap:var(--s1);margin-top:var(--s2)}
-    @media(min-width:560px){.panel-cta{grid-template-columns:max-content max-content}}
+
+    /* Chips de taxa / scroll snap já definido em .chips */
 
     /* Footer */
     footer{background:#fff;border-top:1px solid #e7eefb;margin-top:var(--s4)}
@@ -179,7 +182,7 @@
     .valid{color:#0b7a3b}
     .invalid{color:#a33a3a}
 
-    /* Robustez: mostrar seção alvo sem JS */
+    /* Acessibilidade: se JS falhar, permite abrir seção pelo hash */
     section[hidden]:not(:target){display:none}
     section:target{display:block}
 
@@ -190,16 +193,24 @@
   </style>
 
   <script>
+    /* API base com fallback e query ?api= */
     (function () {
-      const qsApi = new URLSearchParams(location.search).get("api");
-      const PROD_API = "https://ingressai-backend-production.up.railway.app/api";
-      window.INGRESSAI_API = qsApi || PROD_API;
+      const qsApi = new URLSearchParams(location.search).get("api") || "";
+      const PROD = "https://ingressai-backend-production.up.railway.app/api";
+      function normalizeApi(raw){
+        let s = String(raw||"").trim().replace(/[.\s/]+$/g,"");
+        if (!/\/api$/i.test(s)) s += "/api";
+        s = s.replace(/([^:])\/{2,}/g,"$1/");
+        return s;
+      }
+      window.INGRESSAI_API = normalizeApi(qsApi || PROD);
     })();
   </script>
 
   <script defer src="./app.js"></script>
 </head>
 <body>
+  <!-- HEADER -->
   <header role="banner">
     <div class="container nav">
       <div class="nav-actions">
@@ -211,6 +222,7 @@
     </div>
   </header>
 
+  <!-- HERO -->
   <main class="container" role="main">
     <section class="hero" aria-labelledby="hero-title">
       <div class="hero-brand">
@@ -238,19 +250,41 @@
       <h2 id="proofs-title" class="sr-only">Provas de valor</h2>
       <div class="features" aria-label="Provas">
         <div class="feature">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.6" y="6.6" width="16.8" height="10.8" rx="2.4" /><circle class="cut" cx="3.6" cy="12" r="1" /><circle class="cut" cx="20.4" cy="12" r="1" /><path class="bolt" d="M12 9.4 L10.2 12 h1.55 l-.75 3.0 L14 11.2 h-1.6 z" /></svg>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3.6" y="6.6" width="16.8" height="10.8" rx="2.4" />
+            <circle class="cut" cx="3.6" cy="12" r="1" />
+            <circle class="cut" cx="20.4" cy="12" r="1" />
+            <path class="bolt" d="M12 9.4 L10.2 12 h1.55 l-.75 3.0 L14 11.2 h-1.6 z" />
+          </svg>
           <div class="meta"><strong>Venda automatizada</strong><small>via WhatsApp</small></div>
         </div>
         <div class="feature">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10a 8 8 0 0 1 14-2" /><path d="M4 6v4h4" /><path d="M20 14a 8 8 0 0 1-14 2" /><path d="M20 18v-4h-4" /></svg>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 10a 8 8 0 0 1 14-2" />
+            <path d="M4 6v4h4" />
+            <path d="M20 14a 8 8 0 0 1-14 2" />
+            <path d="M20 18v-4h-4" />
+          </svg>
           <div class="meta"><strong>Repasse imediato</strong><small>via Pix</small></div>
         </div>
         <div class="feature">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.1" /><rect class="qr-fill" x="5.6" y="5.6" width="2.8" height="2.8" rx=".35" /><rect x="14" y="3" width="7" height="7" rx="1.1" /><rect class="qr-fill" x="16.6" y="5.6" width="2.8" height="2.8" rx=".35" /><rect x="3" y="14" width="7" height="7" rx="1.1" /><rect class="qr-fill" x="5.6" y="16.6" width="2.8" height="2.8" rx=".35" /></svg>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3" y="3" width="7" height="7" rx="1.1" />
+            <rect class="qr-fill" x="5.6" y="5.6" width="2.8" height="2.8" rx=".35" />
+            <rect x="14" y="3" width="7" height="7" rx="1.1" />
+            <rect class="qr-fill" x="16.6" y="5.6" width="2.8" height="2.8" rx=".35" />
+            <rect x="3" y="14" width="7" height="7" rx="1.1" />
+            <rect class="qr-fill" x="5.6" y="16.6" width="2.8" height="2.8" rx=".35" />
+          </svg>
           <div class="meta"><strong>QR Code Antifraude</strong><small>+ validador web</small></div>
         </div>
         <div class="feature">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7h11M9 12h11M9 17h11" /><rect x="4" y="6" width="2.2" height="2.2" rx=".35" /><rect x="4" y="11" width="2.2" height="2.2" rx=".35" /><rect x="4" y="16" width="2.2" height="2.2" rx=".35" /></svg>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9 7h11M9 12h11M9 17h11" />
+            <rect x="4" y="6" width="2.2" height="2.2" rx=".35" />
+            <rect x="4" y="11" width="2.2" height="2.2" rx=".35" />
+            <rect x="4" y="16" width="2.2" height="2.2" rx=".35" />
+          </svg>
           <div class="meta"><strong>Dashboard</strong><small>Ingressos & acesso</small></div>
         </div>
       </div>
@@ -274,7 +308,7 @@
       <h2 id="orgs-title">Soluções para organizadores</h2>
       <div id="std-card" class="std-card"></div>
 
-      <!-- seletor de taxa -->
+      <!-- Seletor de taxa -->
       <div class="std-card" style="margin-top: var(--s1)">
         <strong>Taxa</strong>
         <div class="chips" role="tablist" aria-label="Selecionar taxa" id="tax-selector">
@@ -380,6 +414,7 @@
     </aside>
   </main>
 
+  <!-- FOOTER -->
   <footer role="contentinfo">
     <div class="foot">
       <div class="foot-block">
