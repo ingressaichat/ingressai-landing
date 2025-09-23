@@ -68,7 +68,7 @@ async function updateHealth() {
   try {
     await safeFetch(`${API}/health`).catch(() => safeFetch(`${API.replace(/\/api$/,"")}/healthz`));
     setState(true, "online");
-    $("#nav-val")?.removeAttribute("hidden");
+    // NÃO reexibe o link do validador no topo (fica só dentro do dashboard / seção)
     return true;
   } catch (err) {
     setState(false, "offline");
@@ -161,7 +161,7 @@ function openSheetForEvent(ev){
   backdrop.classList.add("is-open"); sheet.classList.add("is-open");
 }
 
-/* ====== ORGANIZADORES ====== */
+/* ====== ORGANIZADORES (novas taxas + Pix + POST /api/org/apply) ====== */
 function setupOrganizadores(){
   const std = $("#std-card");
   std.innerHTML = `
@@ -173,60 +173,85 @@ function setupOrganizadores(){
       <li>Repasse imediato (Pix) e dashboard para acompanhar.</li>
     </ul>
   `;
-  const models = [
-    { id:"start", name:"Start", feePct:12, feeFix:0,   desc:"Sem mensalidade. Repasse T+0." },
-    { id:"pro",   name:"Pro",   feePct:8,  feeFix:1.5, desc:"Menor taxa + ferramentas PRO." },
-    { id:"zero",  name:"Zero",  feePct:0,  feeFix:3.9, desc:"Repasse integral; taxa fixa." }
-  ];
-  const modelsBox = $("#org-models"); modelsBox.innerHTML = "";
-  models.forEach(m => {
-    const b = document.createElement("button");
-    b.className="model"; b.setAttribute("role","tab"); b.dataset.id=m.id;
-    b.innerHTML = `<div><strong>${m.name}</strong><div class="subtle">${m.desc}</div></div>`;
-    modelsBox.appendChild(b);
-  });
-  const feeRow=$("#fee-row"); const feeChip=$("#fee-chip");
-  const calc=$("#calc-box"); const preco=$("#preco"); const qtd=$("#qtd");
-  const grossEl=$("#calc-gross"); const netEl=$("#calc-net"); const note=$("#calc-note");
-  const quick=$("#org-quick");
-  let fee={ pct:0, fix:0 }; let selected="";
-  const enableCalc=(on)=>{ [preco,qtd].forEach(i=>i.disabled=!on); quick.classList.toggle("is-disabled",!on); quick.setAttribute("aria-disabled", on?"false":"true"); calc.dataset.fee= on?"on":"";};
-  function calcValues(){
-    const pv=Number(preco.value.replace(/[^\d,.-]/g,"").replace(",", "."))||0;
-    const qv=Math.max(1, Number(qtd.value||"1"));
-    const gross=pv*qv;
-    const tax=(gross*(fee.pct/100))+(fee.fix*qv);
-    const net=Math.max(0, gross-tax);
-    grossEl.textContent=money(gross);
-    netEl.textContent=money(net);
-  }
-  modelsBox.addEventListener("click",(e)=>{
-    const btn=e.target.closest(".model"); if(!btn) return;
-    selected=btn.dataset.id;
-    $$(".model",modelsBox).forEach(x=>x.setAttribute("aria-selected","false"));
-    btn.setAttribute("aria-selected","true");
-    const m=models.find(x=>x.id===selected);
-    fee={ pct:m.feePct, fix:m.feeFix };
-    feeRow.classList.add("is-visible");
-    feeChip.textContent=`Taxa: ${fee.pct}% ${fee.fix?`+ ${money(fee.fix)} / ing.`:""}`;
-    note.textContent=`Plano ${m.name} selecionado. Informe preço e quantidade.`;
-    enableCalc(true); calcValues();
-  });
-  [preco,qtd].forEach(i=>i.addEventListener("input", calcValues));
-  $("#org-request").onclick=()=>{
-    const t=$("#f-title").value.trim(); const city=$("#f-city").value.trim();
-    const venue=$("#f-venue").value.trim(); const date=$("#f-date").value.trim();
-    const phone=onlyDigits($("#f-phone").value);
-    const msg=`Quero criar evento na IngressAI:%0A%0A`
-      +`Plano: ${selected||"-"}%0A`
-      +`Evento: ${encodeURIComponent(t||"-")}%0A`
-      +`Cidade: ${encodeURIComponent(city||"-")}%0A`
-      +`Local: ${encodeURIComponent(venue||"-")}%0A`
-      +`Data/hora: ${encodeURIComponent(date||"-")}%0A`
-      +`Meu WhatsApp: ${phone||"-"}`;
-    window.open(`https://wa.me/${SUPPORT_WA}?text=${msg}`, "_blank");
+
+  // estado de taxa
+  let plan = "atl"; // atl | prod
+  const fees = {
+    atl: { pct: 8,  fix: 1.50 },
+    prod:{ pct:10,  fix: 2.00 },
   };
+
+  // seletor de taxa
+  const taxSel = $("#tax-selector");
+  taxSel.addEventListener("click", (e) => {
+    const btn = e.target.closest(".chip"); if(!btn) return;
+    $$(".chip", taxSel).forEach(x => x.setAttribute("aria-selected","false"));
+    btn.setAttribute("aria-selected","true");
+    plan = btn.dataset.plan;
+    enableCalc(true);
+    calcValues();
+  });
+
+  // calculadora
+  const calc   = $("#calc-box");
+  const preco  = $("#preco");
+  const qtd    = $("#qtd");
+  const grossEl= $("#calc-gross");
+  const netEl  = $("#calc-net");
+  const note   = $("#calc-note");
+
+  function parseMoney(x){ return Number(String(x||"").replace(/[^\d,.-]/g,"").replace(",", ".")) || 0; }
+  function enableCalc(on){
+    [preco,qtd].forEach(i => i.disabled = !on);
+    calc.dataset.fee = on ? "on" : "";
+    note.textContent = on ? (plan==="prod"
+      ? "Taxa: 10% + R$ 2,00 por ingresso."
+      : "Taxa: 8% + R$ 1,50 por ingresso.") : "Selecione a taxa acima para aplicar os valores.";
+  }
+  function calcValues(){
+    const pv = parseMoney(preco.value);
+    const qv = Math.max(1, Number(qtd.value||"1"));
+    const { pct, fix } = fees[plan] || fees.atl;
+    const bruto = pv * qv;
+    const taxa  = (pv * (pct/100) + fix) * qv;
+    const net   = Math.max(0, bruto - taxa);
+    grossEl.textContent = money(bruto);
+    netEl.textContent   = money(net);
+  }
+  [preco,qtd].forEach(i => i.addEventListener("input", calcValues));
   enableCalc(false);
+
+  // envio -> /api/org/apply
+  $("#org-request").onclick = async () => {
+    const payload = {
+      plan,
+      price: parseMoney(preco.value),
+      qty:   Math.max(1, Number(qtd.value||"1")),
+      eventName: $("#f-title").value.trim(),
+      city:      $("#f-city").value.trim(),
+      venue:     $("#f-venue").value.trim(),
+      date:      $("#f-date").value.trim(),
+      phone:     onlyDigits($("#f-phone").value),
+      pixKey:    $("#f-pix").value.trim(),
+      name:      "" // opcional
+    };
+
+    if (!payload.phone || payload.phone.length < 12) {
+      alert("Informe seu WhatsApp com DDI + DDD + número.");
+      return;
+    }
+    try {
+      const r = await safeFetch(`${API}/org/apply`,{
+        method:"POST",
+        headers:{ "content-type":"application/json" },
+        body: JSON.stringify(payload)
+      });
+      if (!r?.ok) throw new Error(r?.error || "Falha ao enviar");
+      alert("Solicitação enviada! Você receberá uma mensagem no seu WhatsApp quando for aprovada.");
+    } catch (e) {
+      alert("Erro ao enviar solicitação: " + (e?.message || e));
+    }
+  };
 }
 
 /* ====== VALIDADOR ====== */
@@ -314,3 +339,4 @@ function setupSections(){
   setupValidator();
   await loadEvents();
 })();
+
