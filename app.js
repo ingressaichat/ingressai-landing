@@ -1,613 +1,334 @@
-/* ========= BOOT / CONFIG ========= */
+// IngressAI landing – app.js (robusto, tolerante a rotas ausentes)
 console.log("[IngressAI] app.js boot");
 
-const API_PARAM = new URLSearchParams(location.search).get("api");
-const ENV_API   = (typeof window !== "undefined" && window.INGRESSAI_API) ? window.INGRESSAI_API : "";
-const BASE_WITH_API = String(API_PARAM || ENV_API || "https://ingressai-backend-production.up.railway.app/api").replace(/\/$/, "");
-const BASE_ROOT     = BASE_WITH_API.replace(/\/api$/, "");
-const WHATSAPP_NUMBER = "5534999992747"; // suporte/comercial
+const API = String(window.INGRESSAI_API || (location.origin + "/api")).replace(/\/$/, "");
+const BASE_ROOT = API.replace(/\/api$/,"");
+const SUPPORT_WA = "5534999992747";
 
-/* ========= HELPERS ========= */
-async function tryFetch(paths, opts) {
-  let lastErr;
-  for (const p of paths) {
-    try {
-      const res = await fetch(p, { mode: "cors", ...opts });
-      if (res.ok) return res;
-      lastErr = new Error(`HTTP ${res.status} @ ${p}`);
-    } catch (e) { lastErr = e; }
-  }
-  throw lastErr || new Error("Falha na requisição");
-}
+// ===== utils =====
+const $  = (s, el=document) => el.querySelector(s);
+const $$ = (s, el=document) => Array.from(el.querySelectorAll(s));
+const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
+const money = (v)=> {
+  try { return Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"}); }
+  catch { return "R$ 0,00"; }
+};
+const onlyDigits = v => String(v||"").replace(/\D+/g,"");
+const waHref = (text)=> `https://wa.me/${SUPPORT_WA}?text=${encodeURIComponent(text)}`;
+const BRL = new Intl.NumberFormat("pt-BR",{ style:"currency", currency:"BRL" });
+
 async function fetchJson(url, opts) {
-  const res = await fetch(url, {
-    headers: { "Accept": "application/json", ...(opts?.headers || {}) },
-    mode: "cors",
-    credentials: opts?.credentials || "omit",
-    ...opts
-  });
-  let j = null; try { j = await res.json(); } catch {}
-  if (!res.ok) throw new Error(j?.error || res.statusText || "Request failed");
+  const res = await fetch(url, { headers:{ "Accept":"application/json", ...(opts?.headers||{}) }, ...opts });
+  let j=null; try{ j=await res.json(); }catch{}
+  if(!res.ok) throw new Error(j?.error || res.statusText || "Request failed");
   return j;
 }
-function waHref(text){return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`}
+async function tryFetch(urls, opts){ for(const u of urls){ try{ const r=await fetch(u,opts); if(r.ok) return r; }catch{} } throw new Error("All endpoints failed"); }
 
-const BRL = new Intl.NumberFormat("pt-BR",{ style:"currency", currency:"BRL" });
-const parseBR = v => Number(String(v).replace(/[^\d,.-]/g,"").replace(/\./g,"").replace(",", ".")) || 0;
-const money   = v => BRL.format(isFinite(v)?v:0);
-const $ = sel => document.querySelector(sel);
-const $$ = sel => Array.from(document.querySelectorAll(sel));
-const create = (tag, props = {}, ...children) => {
-  const el = document.createElement(tag);
-  for (const [k,v] of Object.entries(props)) {
-    if (k === "dataset") Object.assign(el.dataset, v);
-    else if (k in el) el[k] = v;
-    else el.setAttribute(k, v);
-  }
-  children.flat().forEach(c=>{
-    if (c == null) return;
-    if (typeof c === "string") el.appendChild(document.createTextNode(c));
-    else el.appendChild(c);
-  });
-  return el;
-};
-function formatDate(iso){
-  try { const d = new Date(iso); return d.toLocaleString("pt-BR",{ dateStyle:"medium", timeStyle:"short" }); }
-  catch { return iso }
-}
-function normalizeStatusLabel(s){ if(!s) return ""; return s.replace("Últimos ingressos","Último lote"); }
+// ===== header fx =====
+(function headerFX(){
+  const header = document.querySelector("header");
+  const onScroll = () => {
+    header?.classList.toggle("is-scrolled", (window.scrollY||0) > 8);
+    document.documentElement.style.setProperty("--hero-p", Math.min(1,(window.scrollY||0)/320));
+  };
+  window.addEventListener("scroll", onScroll, { passive:true });
+  onScroll();
+  $$("[data-login]").forEach(a => a.addEventListener("click",(e)=>{ e.preventDefault(); openLoginModal(); }));
+})();
 
-/* ========= CSRF ========= */
-let CSRF_TOKEN = "";
-async function ensureCsrf(){
-  if (CSRF_TOKEN) return CSRF_TOKEN;
-  try {
-    const r = await fetch(`${BASE_WITH_API}/auth/csrf`, { credentials:"include" });
-    const j = await r.json();
-    if (j?.token) CSRF_TOKEN = j.token;
-  } catch {}
-  return CSRF_TOKEN;
-}
-
-/* ========= ESTADO ========= */
-let eventos = [];
-let evIndex = {};
-let isOrganizer = false;
-let authPhone = "";
-
-/* ========= AUTH/UI STATE ========= */
-function setAuthState(state, phone="", organizerFlag=false){
-  isOrganizer = !!state && !!organizerFlag;
-  authPhone = phone || "";
-  if (isOrganizer) {
-    localStorage.setItem("ingr_isOrg","1");
-    localStorage.setItem("ingr_phone",authPhone);
-  } else {
-    localStorage.removeItem("ingr_isOrg");
-    localStorage.removeItem("ingr_phone");
-  }
-  applyAuthState();
-}
-function applyAuthState(){
-  const tag = $("#auth-indicator");
+// ===== health =====
+async function updateHealth(){
+  const el = $("#auth-indicator");
   const navVal = $("#nav-val");
-  const orgPanel = $("#org-detail");
-  const preco = $("#preco");
-  const qtd = $("#qtd");
-  const orgQuick = $("#org-quick");
-
-  if (isOrganizer) {
-    tag.textContent = "organizador";
-    tag.classList.remove("off"); tag.classList.add("on");
-    navVal.hidden = false;
-    orgPanel?.classList.remove("is-disabled");
-    if (preco) preco.disabled = false;
-    if (qtd)   qtd.disabled = false;
-    if (orgQuick) { orgQuick.classList.remove("is-disabled"); orgQuick.removeAttribute("aria-disabled"); }
-  } else {
-    tag.textContent = "offline";
-    tag.classList.add("off"); tag.classList.remove("on");
-    navVal.hidden = true;
-    orgPanel?.classList.add("is-disabled");
-    if (preco) preco.disabled = true;
-    if (qtd)   qtd.disabled = true;
-    if (orgQuick) { orgQuick.classList.add("is-disabled"); orgQuick.setAttribute("aria-disabled","true"); orgQuick.removeAttribute("href"); }
-  }
-  const valSection = $("#validador");
-  if (valSection) valSection.hidden = !isOrganizer;
-}
-function initAuthFromStorage(){
-  const f = localStorage.getItem("ingr_isOrg") === "1";
-  const p = localStorage.getItem("ingr_phone") || "";
-  isOrganizer = f; authPhone = p;
-  applyAuthState();
-}
-
-/* ========= HEADER/ANIMAÇÃO ========= */
-function initHeader(){
-  document.addEventListener("click",e=>{
-    const el=e.target.closest(".btn,.view");
-    if(!el) return;
-    el.style.transform="translateY(0) scale(.98)";
-    setTimeout(()=>{ el.style.transform=""; }, 120);
-  });
-  const hero=$(".hero"); const header=$("header");
-  const HIDE_START=16,HIDE_END=240; let ticking=false;
-  function onScroll(){
-    if(ticking) return;
-    ticking=true;
-    requestAnimationFrame(()=>{
-      const y=window.scrollY||document.documentElement.scrollTop||0;
-      header&&header.classList.toggle("is-scrolled", y>8);
-      const p=Math.min(1,Math.max(0,(y-HIDE_START)/(HIDE_END-HIDE_START)));
-      if(hero){ hero.style.setProperty("--hero-p", p.toFixed(3)); hero.classList.toggle("is-hidden", p>=1); }
-      ticking=false;
-    });
-  }
-  onScroll(); window.addEventListener("scroll", onScroll, { passive:true });
-}
-
-/* ========= VITRINE ========= */
-const MAIN_CITIES = ["Uberaba","Uberlândia","Belo Horizonte","Ribeirão Preto","Franca"];
-let selectedCity='Todas';
-let query='';
-
-const lista         = $("#lista-eventos");
-const inputBusca    = $("#busca-eventos");
-const chipsRow      = $("#filtro-cidades");
-const sheet         = $("#sheet");
-const sheetBody     = $("#sheet-body");
-const sheetBackdrop = $("#sheet-backdrop");
-
-function filterEventos(data,q,city){
-  const qn=(q||"").trim().toLowerCase();
-  const citySel=city||"Todas";
-  return data.filter(ev=>{
-    const evCidade=(ev.cidade||"").toLowerCase();
-    const matchCity = citySel==="Todas" ? true : evCidade===citySel.toLowerCase();
-    const nome=(ev.nome||"").toLowerCase();
-    const desc=(ev.descricao||"").toLowerCase();
-    const matchQuery = !qn ? true : (nome.includes(qn)||desc.includes(qn));
-    return matchCity && matchQuery;
-  });
-}
-function buildChips(){
-  if (!chipsRow) return;
-  chipsRow.textContent="";
-  const cities = Array.from(new Set(MAIN_CITIES.concat(eventos.map(e=>e.cidade).filter(Boolean))));
-  ["Todas", ...cities].forEach(c=>{
-    const btn=create("button",{ className:"chip", type:"button", role:"tab", dataset:{city:c}, ariaSelected: c===selectedCity ? "true":"false" }, c);
-    chipsRow.appendChild(btn);
-  });
-}
-function renderCards(){
-  if (!lista) return;
-  const data = filterEventos(eventos, query, selectedCity);
-  lista.textContent = "";
-  if (!data.length){
-    const empty = create("div", { className: "std-card" },
-      create("strong", {}, "Sem eventos publicados ainda."),
-      create("br"),
-      create("span", { className: "subtle" }, "Volte em breve — estamos preparando novidades ✨")
-    );
-    lista.appendChild(empty);
-    return;
-  }
-  data.forEach(ev => lista.appendChild(cardFromEvent(ev)));
-}
-function cardFromEvent(ev){
-  const statusLabel = normalizeStatusLabel(ev.status||"");
-  const statusKey   = statusLabel==="Esgotado" ? "sold" : (statusLabel==="Último lote" ? "low" : "soon");
-  const card = create("article", { className:"card", dataset:{ key: ev.id }, tabIndex:0, ariaLabelledby:`card-title-${ev.id}` });
-  const media = create("div", { className:"card-media" },
-    ev.img ? create("img", { src: ev.img, alt:`Imagem do evento ${ev.nome||"Evento"}`, loading:"lazy", decoding:"async" }) : "Mídia do evento"
-  );
-  const header = create("div", { className:"card-header" },
-    create("div", {},
-      create("div", { className:"card-title", id:`card-title-${ev.id}` }, ev.nome || "Evento"),
-      create("div", { className:"card-city" }, ev.cidade || ""),
-      create("div", { className:`status-line status--${statusKey}` },
-        create("span", { className:"status-dot", ariaHidden:"true" }),
-        create("span", { className:"status-label" }, statusLabel || "Em breve")
-      )
-    )
-  );
-  const btn = create("button", { type:"button", className:"view", dataset:{ open: ev.id }, ariaLabel:`Ver detalhes de ${ev.nome||"Evento"}` }, "Ver detalhes");
-  card.append(media, header, btn);
-  return card;
-}
-function openSheet(ev){
-  ev = ev || {};
-  const nome = ev.nome || "Evento";
-  const cidade = ev.cidade || "";
-  const dataISO = ev.dataISO || "";
-  const localNome = ev.localNome || "Local a confirmar";
-  const localUrl = ev.localUrl || "";
-  const descricao = ev.descricao || nome;
-  const statusLabel = normalizeStatusLabel(ev.status || "");
-  const sold = statusLabel === "Esgotado";
-
-  sheetBody.textContent = "";
-
-  const media = create("div", { className:"sheet-media" });
-  if (ev.img){
-    media.appendChild(create("img", { src: ev.img, alt:`Imagem do evento ${nome}`, loading:"lazy", decoding:"async" }));
-  } else { media.appendChild(document.createTextNode("Mídia do evento")); }
-
-  const chipClass = sold ? "sold" : (statusLabel==="Último lote" ? "low" : "soon");
-  const head = create("div", { className:"sheet-head" },
-    create("h3", { id:"sheet-title" }, `${nome} — ${cidade}`),
-    create("span", { className:`status-chip ${chipClass}` },
-      create("span", { className:"dot", ariaHidden:"true" }), statusLabel || "Em breve")
-  );
-
-  const meta1 = create("div", { className:"meta-line" },
-    create("strong", {}, "Data:"), " ",
-    create("span", {}, dataISO?formatDate(dataISO):"A confirmar")
-  );
-  const meta2 = create("div", { className:"meta-line" },
-    create("strong", {}, "Local:"), " ",
-    localUrl ? create("a", { href:localUrl, target:"_blank", rel:"noopener noreferrer" }, localNome) : create("span", {}, localNome)
-  );
-  const meta3 = create("div", { className:"meta-line" },
-    create("strong", {}, "Categoria:"), " ",
-    create("span", {}, ev.categoria||"IngressAI")
-  );
-  const desc = create("p", { className:"subtle" }, descricao);
-
-  const actions = create("div", { className:"actions" });
-  if (sold) {
-    actions.append(
-      create("span", { className:"status-line status--sold" },
-        create("span", { className:"status-dot" }),
-        create("span", { className:"status-label" }, "Esgotado")
-      ),
-      create("a", { className:"btn btn--secondary btn--sm", href:"#vitrine" }, "Ver outros eventos")
-    );
-  } else {
-    actions.append(create("button", { type:"button", className:"btn btn--secondary btn--sm", dataset:{ buy: ev.id } }, "Comprar ingresso (teste)"));
-  }
-  if (isOrganizer) {
-    actions.append(create("a", { className:"btn btn--ghost btn--sm", href:`${BASE_ROOT}/app/login?ev=${encodeURIComponent(ev.id)}`, target:"_blank", rel:"noopener noreferrer" }, "Editar no Dashboard"));
-  }
-  sheetBody.replaceChildren(media, head, meta1, meta2, meta3, desc, actions);
-
-  actions.querySelector("[data-buy]")?.addEventListener("click", async ()=>{
-    const to = prompt("Seu WhatsApp (DDI+DDD+NÚMERO, ex: 5534991551802):")?.trim();
-    if (!/^\d{10,15}$/.test(to||"")) { alert("Número inválido."); return; }
-    try {
-      const qs = new URLSearchParams({ ev: ev.id, to, name: "Visitante", qty: "1" }).toString();
-      const endpoints = [
-        `${BASE_WITH_API}/purchase/start?${qs}`,
-        `${BASE_ROOT}/purchase/start?${qs}`
-      ];
-      const token = await ensureCsrf();
-      await tryFetch(endpoints, { headers:{ "X-CSRF-Token": token }, credentials:"include" });
-      alert("🎟️ Ingresso enviado no seu WhatsApp!");
-    } catch(e) {
-      console.error(e);
-      alert("Não consegui enviar agora. Você pode tentar pelo WhatsApp: "+ waHref(`ingressai:start ev=${ev.id} qty=1 autopay=1 name=`));
-    }
-  });
-
-  sheet.setAttribute("aria-hidden","false"); sheet.setAttribute("aria-labelledby","sheet-title");
-  sheetBackdrop.setAttribute("aria-hidden","false");
-  sheet.classList.add("is-open"); sheetBackdrop.classList.add("is-open");
-  document.body.style.overflow="hidden";
-}
-function closeSheetSafe(e){
-  try{ e && e.preventDefault && e.preventDefault(); }catch{}
   try{
-    sheet?.classList?.remove("is-open"); sheetBackdrop?.classList?.remove("is-open");
-    sheet?.removeAttribute?.("aria-labelledby"); sheet?.setAttribute?.("aria-hidden","true");
-    sheetBackdrop?.setAttribute?.("aria-hidden","true"); document.body.style.overflow="";
-  }catch(err){ console.error("closeSheet fail:", err); }
+    await fetch(`${API}/health`, { cache:"no-store", credentials:"omit" });
+    el.textContent="online"; el.classList.add("on"); el.classList.remove("off");
+    navVal?.removeAttribute("hidden");
+    return true;
+  }catch{
+    el.textContent="offline"; el.classList.add("off"); el.classList.remove("on");
+    return false;
+  }
 }
 
-/* ========= ORGANIZADORES ========= */
-const std        = $("#std-card");
-const modelsBox  = $("#org-models");
-const feeRow     = $("#fee-row");
-const feeChip    = $("#fee-chip");
-const detail     = $("#org-detail");
-const calcBox    = $("#calc-box");
-const calcNote   = $("#calc-note");
-const calcNet    = $("#calc-net");
-const calcGross  = $("#calc-gross");
-const orgQuick   = $("#org-quick");
+// ===== vitrine =====
+async function loadEvents(){
+  const wrap = $("#lista-eventos");
+  const chips = $("#filtro-cidades");
+  const search = $("#busca-eventos");
+  wrap.innerHTML = `<div class="subtle">Carregando eventos…</div>`;
 
-const commonFeatures=[
-  "Criação de evento 100% pelo WhatsApp",
-  "Geração automática de ingresso com QR Code",
-  "Link público de vendas e acompanhamento em tempo real",
-  "Repasse na hora ao organizador",
-  "Página de validador liberada ao criar o evento",
-  "Lista de compradores atualizada"
-];
-if (std) std.innerHTML = "<ul class='std-list'>" + commonFeatures.map(f=>"<li>"+f+"</li>").join("") + "</ul>";
-
-const categorias=[
-  {key:"aret",   title:"Atléticas & Repúblicas",          taxa:"8%",  feePct:8,  ctaMsg:"Olá! Quero criar um evento como Atléticas & Repúblicas. Nome do evento: . Cidade: . Data: . Lotes: ."},
-  {key:"prodloc",title:"Produtoras & Locais Independentes",taxa:"10%", feePct:10, ctaMsg:"Olá! Quero criar um evento como Produtoras & Locais Independentes. Nome do evento: . Cidade: . Data: . Capacidade/Lotes: ."},
-];
-if (modelsBox) modelsBox.innerHTML = categorias.map(m=>`<button type="button" class="model" role="tab" aria-selected="false" data-key="${m.key}">${m.title}</button>`).join("");
-
-function computeGross(preco,qtd){ return Math.max(0, Number(preco)||0) * Math.max(1, parseInt(qtd||1,10)); }
-function computeNet(preco,qtd,feePct){ const bruto = computeGross(preco,qtd); return Number((bruto*(1-(Number(feePct)||0)/100)).toFixed(2)); }
-function applyPlan(key){
-  const plan=categorias.find(x=>x.key===key)||null;
-  if(plan){ feeChip.textContent="Taxa "+plan.taxa; feeRow.classList.add("is-visible"); detail.classList.remove("is-disabled"); }
-  else    { feeRow.classList.remove("is-visible"); detail.classList.add("is-disabled"); }
-  const fee=plan?plan.feePct:""; calcBox.dataset.fee = fee;
-  calcNote.innerHTML = plan ? `Taxa aplicada: <strong>${plan.taxa}</strong>. O restante é repassado na hora.` : "Selecione um plano acima para aplicar a taxa.";
-
-  const preco = $("#preco"); const qtd = $("#qtd");
-  if (preco&&qtd){
-    preco.disabled = !plan; qtd.disabled = !plan;
-    calcGross.textContent=BRL.format(0); calcNet.textContent=BRL.format(0);
-    if(plan){
-      orgQuick?.classList.remove("is-disabled"); orgQuick?.removeAttribute("aria-disabled");
-      if (orgQuick) orgQuick.onclick = (e)=>{ e.currentTarget.href = waHref(plan.ctaMsg); e.currentTarget.target="_blank"; e.currentTarget.rel="noopener noreferrer"; };
-    } else {
-      orgQuick?.classList.add("is-disabled"); orgQuick?.setAttribute("aria-disabled","true"); orgQuick?.removeAttribute("href");
-      if (orgQuick) orgQuick.onclick=null;
+  let items = [];
+  try{
+    const r = await fetch(`${API}/events`, { cache:"no-store" });
+    if (r.ok) {
+      const j = await r.json().catch(()=>null);
+      items = Array.isArray(j?.items) ? j.items : (Array.isArray(j) ? j : []);
     }
-    const recompute=()=>{
-      const p=parseBR(preco.value||"0");
-      const q=Math.max(1,parseInt(qtd.value||"1",10));
-      const bruto=computeGross(p,q);
-      calcGross.textContent=money(bruto);
-      calcNet.textContent=money(computeNet(p,q,fee));
-    };
-    preco.oninput = recompute; qtd.oninput = recompute;
-  }
-}
-modelsBox?.addEventListener("click", e=>{
-  const b = e.target.closest("button.model");
-  if (!b) return;
-  modelsBox.querySelectorAll("button.model").forEach(x=>x.setAttribute("aria-selected","false"));
-  b.setAttribute("aria-selected","true");
-  applyPlan(b.dataset.key);
-});
-applyPlan(null);
-
-// Solicitação de criação (campos → WhatsApp)
-$("#org-request")?.addEventListener("click", ()=>{
-  const title = $("#f-title")?.value?.trim() || "";
-  const city  = $("#f-city")?.value?.trim() || "";
-  const venue = $("#f-venue")?.value?.trim() || "";
-  const date  = $("#f-date")?.value?.trim() || "";
-  const phone = $("#f-phone")?.value?.replace(/[^\d]/g,"") || "";
-  const fee   = calcBox?.dataset?.fee || "";
-  const msg = [
-    "Quero solicitar criação de evento:",
-    `• Nome: ${title||"—"}`,
-    `• Cidade: ${city||"—"}`,
-    `• Local: ${venue||"—"}`,
-    `• Data/hora: ${date||"—"}`,
-    `• Meu WhatsApp: ${phone||"—"}`,
-    fee?`• Plano: ${fee}%`:""
-  ].filter(Boolean).join("\n");
-  location.href = waHref(msg);
-});
-
-/* ========= LOGIN (OTP) ========= */
-const loginModal   = $("#login-modal");
-const loginSendBtn = $("#login-send");
-const loginCancelBtn = $("#login-cancel");
-const loginPhone   = $("#login-phone");
-const codeBlock    = $("#code-block");
-const codeBack     = $("#code-back");
-const codeVerify   = $("#code-verify");
-const codeInput    = $("#login-code");
-const loginHint    = $("#login-hint");
-
-function openLogin(){
-  if (!loginModal) return;
-  loginHint.textContent=""; codeBlock.style.display="none";
-  loginModal.classList.add("is-open"); loginModal.setAttribute("aria-hidden","false");
-  loginPhone?.focus();
-}
-function closeLogin(){
-  if (!loginModal) return;
-  loginModal.classList.remove("is-open"); loginModal.setAttribute("aria-hidden","true");
-}
-// intercepta todos [data-login]
-document.addEventListener("click", (e)=>{
-  const link = e.target.closest("[data-login]");
-  if (link) { e.preventDefault(); openLogin(); }
-});
-loginCancelBtn?.addEventListener("click", ()=> closeLogin());
-codeBack?.addEventListener("click", ()=>{ codeBlock.style.display="none"; loginHint.textContent=""; });
-
-loginSendBtn?.addEventListener("click", async ()=>{
-  const phone = String(loginPhone.value||"").replace(/[^\d]/g,"");
-  if (!/^\d{10,15}$/.test(phone)) { loginHint.textContent="Número inválido. Use DDI+DDD+NÚMERO (ex.: 5534999999999)"; return; }
-  try {
-    loginHint.textContent="Enviando código…";
-    const token = await ensureCsrf();
-    await fetchJson(`${BASE_WITH_API}/auth/request`, {
-      method:"POST",
-      headers:{ "Content-Type":"application/json", "X-CSRF-Token": token },
-      body: JSON.stringify({ phone }),
-      credentials: "include"
-    });
-    loginHint.textContent="Código enviado no seu WhatsApp. Digite abaixo para verificar.";
-    codeBlock.style.display="block";
-    codeInput.focus();
-    authPhone = phone;
-  } catch (e) {
-    console.error(e);
-    loginHint.textContent="Falha ao enviar código (CORS ou indisponível).";
-  }
-});
-
-codeVerify?.addEventListener("click", async ()=>{
-  const code = String(codeInput.value||"").trim();
-  if (!/^\d{3,6}$/.test(code)) { loginHint.textContent="Código inválido."; return; }
-  try {
-    loginHint.textContent="Verificando…";
-    const token = await ensureCsrf();
-    const res = await fetchJson(`${BASE_WITH_API}/auth/verify`, {
-      method:"POST",
-      headers:{ "Content-Type":"application/json", "X-CSRF-Token": token },
-      body: JSON.stringify({ phone: authPhone, code }),
-      credentials: "include"
-    });
-    setAuthState(true, authPhone, !!res.isOrganizer);
-    window.open(`${BASE_ROOT}/app/login`, "_blank","noopener,noreferrer");
-    loginHint.textContent="Pronto! Você está autenticado.";
-    closeLogin();
-  } catch (e) {
-    console.error(e);
-    loginHint.textContent="Código inválido, expirado ou bloqueado por CORS.";
-  }
-});
-
-/* ========= VALIDADOR ========= */
-const valCode = $("#val-code");
-const valBtn  = $("#val-check");
-const valRes  = $("#val-result");
-valBtn?.addEventListener("click", async ()=>{
-  const raw = String(valCode.value||"").trim();
-  if (!raw) { valRes.innerHTML = '<span class="invalid">Informe um código.</span>'; return; }
-  const code = raw.replace(/^ingressai:ticket:/i,'');
-  try {
-    valRes.textContent="Checando…";
-    const token = await ensureCsrf();
-    const j = await fetchJson(`${BASE_WITH_API}/validator/check`, {
-      method:"POST",
-      headers:{ "Content-Type":"application/json", "X-CSRF-Token": token },
-      body: JSON.stringify({ code }),
-      credentials: "include"
-    });
-    if (j.valid) {
-      valRes.innerHTML = `<div class="valid">✅ Válido — Ticket #${j.ticketId} • Evento: ${j.eventId} • Nome: ${j.buyerName}</div>`;
-    } else {
-      valRes.innerHTML = `<div class="invalid">❌ Inválido (${j.reason||"desconhecido"})</div>`;
-    }
-  } catch (e) {
-    console.error(e);
-    valRes.innerHTML = `<div class="invalid">❌ Erro na validação (CORS/Network)</div>`;
-  }
-});
-
-/* ========= LOAD EVENTS ========= */
-async function fetchEventosDoBackend() {
-  let arr = [];
-  try {
-    const endpoints = [
-      `${BASE_WITH_API}/events`,
-      `${BASE_ROOT}/events`
+  }catch{}
+  if (!items.length){
+    // fallback demo (mantém landing funcional mesmo sem /api/events)
+    items = [
+      { id:"demo-1", title:"Sunset no Terraço", city:"Uberaba-MG", venue:"Terraço 21", date:new Date(Date.now()+86400e3).toISOString(), price:60, image:"" },
+      { id:"demo-2", title:"Baile do Ingresso", city:"Uberlândia-MG", venue:"Arena UFU", date:new Date(Date.now()+172800e3).toISOString(), price:80, image:"" },
     ];
-    const r = await tryFetch(endpoints, { headers:{ Accept:"application/json" } });
-    const j = await r.json().catch(()=> ({}));
-    if (Array.isArray(j?.items)) arr = j.items;
-    else if (Array.isArray(j?.events)) arr = j.events;
-    else if (Array.isArray(j)) arr = j;
-  } catch (e) {
-    console.warn("events load failed", e);
+  }
+  const cities = Array.from(new Set(items.map(i=>i.city).filter(Boolean))).sort();
+
+  function render(list){
+    if(!list.length){ wrap.innerHTML = `<div class="subtle">Nenhum evento encontrado.</div>`; return; }
+    wrap.innerHTML = "";
+    list.forEach(ev=>{
+      const el = document.createElement("article");
+      el.className="card";
+      el.innerHTML = `
+        <div class="card-header">
+          <div>
+            <div class="card-title">${ev.title}</div>
+            <div class="card-city">${ev.city||""}</div>
+            <div class="status-line status--soon"><span class="status-dot"></span> Acontece em breve</div>
+          </div>
+          <button class="view" data-view="${ev.id}" type="button">Ver</button>
+        </div>
+        <div class="card-media">${ev.image?`<img src="${ev.image}" alt="">`:"Ingresso"}</div>
+      `;
+      wrap.appendChild(el);
+    });
   }
 
-  const mapped = arr.map(e => ({
-    id: String(e.id ?? e._id ?? e.code ?? "EV"),
-    nome: e.title || e.nome || "Evento",
-    cidade: e.city || e.cidade || "",
-    dataISO: e.date || e.startsAt || e.dataISO || new Date().toISOString(),
-    localNome: e.venue || e.local || "",
-    localUrl: "https://maps.google.com/?q=" + encodeURIComponent(`${e.venue||e.local||""} ${e.city||e.cidade||""}`),
-    categoria: e.category || "IngressAI",
-    status: e.statusLabel || e.status || "Em breve",
-    descricao: e.description || e.title || e.nome || "",
-    img: e.image || e.bannerUrl || ""
-  }));
+  // chips de cidades
+  chips.innerHTML = "";
+  const all = document.createElement("button");
+  all.className="chip"; all.role="tab"; all.textContent="Todas"; all.setAttribute("aria-selected","true"); all.type="button";
+  chips.appendChild(all);
+  cities.forEach(c => {
+    const b=document.createElement("button"); b.className="chip"; b.role="tab"; b.textContent=c; b.dataset.city=c; b.type="button"; chips.appendChild(b);
+  });
 
-  if (!mapped.length) {
-    const dt = new Date(Date.now()+2*24*60*60*1000).toISOString();
-    mapped.push({ id:"TST-INGRESSAI", nome:"Evento Teste IngressAI", cidade:"Uberaba-MG", dataISO:dt, localNome:"Espaço Demo", localUrl:"https://maps.google.com/?q=Espaço%20Demo%20Uberaba", categoria:"IngressAI", status:"Último lote", descricao:"Evento Teste IngressAI", img:"" });
-  }
+  let activeCity=""; let q="";
+  const apply=()=>{
+    let list = items.slice();
+    if(activeCity) list = list.filter(i=>i.city===activeCity);
+    if(q) list = list.filter(i=>(i.title||"").toLowerCase().includes(q));
+    render(list);
+  };
+  chips.addEventListener("click",(e)=>{
+    const btn=e.target.closest(".chip"); if(!btn) return;
+    $$(".chip",chips).forEach(x=>x.setAttribute("aria-selected","false"));
+    btn.setAttribute("aria-selected","true");
+    activeCity = btn.dataset.city || "";
+    apply();
+  }, { passive:true });
 
-  eventos = mapped;
-  evIndex = Object.fromEntries(eventos.map(e=>[e.id,e]));
+  search.addEventListener("input",()=>{ q=search.value.trim().toLowerCase(); apply(); }, { passive:true });
+
+  wrap.addEventListener("click",(e)=>{
+    const b=e.target.closest("[data-view]"); if(!b) return;
+    const id=b.getAttribute("data-view"); const ev=items.find(x=>String(x.id)===String(id));
+    if(ev) openSheetForEvent(ev);
+  });
+
+  apply();
 }
-function injectEventsLdJson(){
-  try{
-    const nodes = eventos.map(ev=>({
-      "@context":"https://schema.org","@type":"Event","name":ev.nome,"startDate":ev.dataISO,
-      "eventAttendanceMode":"https://schema.org/OfflineEventAttendanceMode","eventStatus":"https://schema.org/EventScheduled",
-      "location":{"@type":"Place","name":ev.localNome,"address":ev.cidade,"url":ev.localUrl},
-      "organizer":{"@type":"Organization","name":"IngressAI","url":"https://ingressai.chat/"}
-    }));
-    if (nodes.length){
-      const script=document.createElement("script"); script.type="application/ld+json";
-      script.textContent=JSON.stringify(nodes); document.head.appendChild(script);
+
+function openSheetForEvent(ev){
+  const backdrop=$("#sheet-backdrop");
+  const sheet=$("#sheet");
+  const body=$("#sheet-body");
+  body.innerHTML = `
+    <div class="sheet-head">
+      <h3>${ev.title}</h3>
+      <div class="status-chip soon"><span class="dot" style="background:#1B5FB3"></span>${ev.city||""}</div>
+    </div>
+    <div class="sheet-media">${ev.image?`<img src="${ev.image}" alt="">`:""}</div>
+    <div class="std-card">
+      <p><strong>Local:</strong> ${ev.venue||"-"}<br/>
+      <strong>Quando:</strong> ${new Date(ev.date||Date.now()).toLocaleString("pt-BR")}<br/>
+      <strong>Preço:</strong> ${money(ev.price||0)}</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <a class="btn btn--secondary btn--sm" id="buy-demo">Comprar (demo)</a>
+        <a class="btn btn--ghost btn--sm" target="_blank" rel="noopener" href="${waHref(`Tenho dúvidas sobre ${ev.title}`)}">Falar no WhatsApp</a>
+      </div>
+    </div>
+  `;
+  const close = ()=>{ sheet.classList.remove("is-open"); backdrop.classList.remove("is-open"); };
+  $("#sheet-close").onclick = close; backdrop.onclick = close;
+
+  $("#buy-demo").onclick = async ()=>{
+    // fluxo demo: se /api/purchase/start não existir, apenas alerta
+    const phone = prompt("Seu WhatsApp (DDI+DDD+NÚMERO):",""); if(!phone) return;
+    try{
+      const params = new URLSearchParams({ ev: ev.id, to: onlyDigits(phone), name:"Participante", qty:"1" });
+      const res = await tryFetch([
+        `${API}/purchase/start?${params}`,
+        `${BASE_ROOT}/purchase/start?${params}`
+      ], { method:"GET" });
+      let j=null; try{ j=await res.json(); }catch{}
+      alert("Ticket emitido! PDF: " + (j?.pdfUrl || "—"));
+    }catch{
+      alert("Fluxo de compra indisponível agora. Tente pelo WhatsApp: " + waHref(`ingressai:start ev=${ev.id} qty=1 autopay=1`));
     }
-  } catch {}
+  };
+
+  backdrop.classList.add("is-open");
+  sheet.classList.add("is-open");
 }
 
-/* ========= NAV / SHEET BINDINGS ========= */
-document.addEventListener("click", (e)=>{
-  const btn = e.target.closest("[data-close='sheet']");
-  if (btn) { closeSheetSafe(e); }
-});
-sheetBackdrop?.addEventListener("click", closeSheetSafe);
-document.addEventListener("keydown", (e)=>{ if(e.key==="Escape" && sheet?.classList?.contains("is-open")) closeSheetSafe(e); });
-$("#lista-eventos")?.addEventListener("click", (e)=>{
-  const btn = e.target.closest("[data-open]");
-  if (!btn) return;
-  const ev = evIndex[btn.dataset.open];
-  if (!ev) return;
-  openSheet(ev);
-});
+// ===== organizadores (calculadora e request via WhatsApp) =====
+function setupOrganizadores(){
+  const std=$("#std-card");
+  std.innerHTML = `
+    <h3>Como funciona</h3>
+    <ul class="std-list">
+      <li>Você cria o evento e define os lotes.</li>
+      <li>Divulga o link/QR do WhatsApp.</li>
+      <li>O bot vende, emite ingressos e envia por WhatsApp.</li>
+      <li>Repasse imediato (Pix) e dashboard para acompanhar.</li>
+    </ul>
+  `;
 
-/* ========= NAV ORGANIZADORES ========= */
-$("#nav-org")?.addEventListener("click", ()=>{
-  const sec=$("#organizadores");
-  if (sec && sec.hasAttribute("hidden")) sec.removeAttribute("hidden");
-});
+  const taxBox=$("#tax-selector");
+  let plan="atl"; let fee={ pct:8, fix:1.5 };
 
-/* ========= INIT ========= */
-document.addEventListener("DOMContentLoaded", async ()=>{
-  initHeader();
-  initAuthFromStorage();
+  const calc=$("#calc-box");
+  const preco=$("#preco"); const qtd=$("#qtd");
+  const grossEl=$("#calc-gross"); const netEl=$("#calc-net"); const note=$("#calc-note");
 
-  const sec=$("#organizadores");
-  const cta=$("#cta-organizadores");
-  function openOrganizadores(){ if(sec){ sec.removeAttribute("hidden"); sec.setAttribute("tabindex","-1"); sec.focus?.(); } }
-  cta?.addEventListener("click", (e)=>{ if (cta.getAttribute("href")?.startsWith("#organizadores")) { e.preventDefault(); openOrganizadores(); } });
-  if (location.hash === "#organizadores") openOrganizadores();
+  const enableCalc=(on)=>{ [preco,qtd].forEach(i=>i.disabled=!on); calc.dataset.fee = on ? "on" : ""; };
+  enableCalc(false);
 
-  await fetchEventosDoBackend();
-  buildChips();
-  renderCards();
-  injectEventsLdJson();
+  taxBox.addEventListener("click",(e)=>{
+    const btn=e.target.closest(".chip"); if(!btn) return;
+    $$(".chip",taxBox).forEach(x=>x.setAttribute("aria-selected","false"));
+    btn.setAttribute("aria-selected","true");
+    plan = btn.dataset.plan || "atl";
+    fee  = plan==="prod" ? { pct:10, fix:2 } : { pct:8, fix:1.5 };
+    note.textContent = `Taxa aplicada: ${fee.pct}% + ${money(fee.fix)} por ingresso.`;
+    enableCalc(true); calculate();
+  }, { passive:true });
 
-  chipsRow?.addEventListener("click", e=>{
-    const b=e.target.closest("button.chip"); if(!b) return;
-    selectedCity=b.dataset.city;
-    chipsRow.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-selected","false"));
-    b.setAttribute("aria-selected","true");
-    renderCards();
-  });
-  let debounce;
-  inputBusca?.addEventListener("input", ()=>{
-    clearTimeout(debounce);
-    debounce=setTimeout(()=>{ query=inputBusca.value; renderCards(); }, 180);
-  });
+  function parsePrice(raw){ const s=String(raw||"").replace(/[^\d,.-]/g,"").replace(",","."); const n=Number(s); return Number.isFinite(n)?Math.max(0,n):0; }
+  function calculate(){
+    const pv=parsePrice(preco.value); const qv=Math.max(1, Number(qtd.value||"1"));
+    const gross=pv*qv; const tax=(gross*(fee.pct/100))+(fee.fix*qv); const net=Math.max(0, gross-tax);
+    grossEl.textContent=money(gross); netEl.textContent=money(net);
+  }
+  [preco,qtd].forEach(i=>i.addEventListener("input", calculate, { passive:true }));
 
-  console.log("[IngressAI] ready", { BASE_WITH_API, BASE_ROOT });
-});
+  $("#org-request").onclick = ()=>{
+    const payload = {
+      plan, price: parsePrice(preco.value), qty: Math.max(1, Number($("#qtd").value||"1")),
+      phone: onlyDigits($("#f-phone").value), pixKey: $("#f-pix").value.trim(),
+      eventName: $("#f-title").value.trim(), city: $("#f-city").value.trim(),
+      venue: $("#f-venue").value.trim(), date: $("#f-date").value.trim()
+    };
+    const msg = [
+      "Quero solicitar criação de evento:",
+      `• Plano: ${plan==="prod"?"10%+R$2,00":"8%+R$1,50"}`,
+      `• Preço: ${money(payload.price)} • Qtd: ${payload.qty}`,
+      `• Nome: ${payload.eventName||"—"}`,
+      `• Cidade: ${payload.city||"—"}`,
+      `• Local: ${payload.venue||"—"}`,
+      `• Data/hora: ${payload.date||"—"}`,
+      `• Meu WhatsApp: ${payload.phone||"—"}`,
+      `• Pix: ${payload.pixKey||"—"}`
+    ].join("\n");
+    location.href = waHref(msg);
+  };
+}
 
-/* ===== Focus trap (modal login) ===== */
-(function focusTrapSetup(){
-  const modal = document.getElementById("login-modal");
-  if (!modal) return;
-  modal.addEventListener("keydown", (e)=>{
-    if (e.key !== "Tab") return;
-    const nodes = modal.querySelectorAll('button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])');
-    if (!nodes.length) return;
-    const first = nodes[0], last = nodes[nodes.length-1];
-    if (e.shiftKey && document.activeElement === first) { last.focus(); e.preventDefault(); }
-    else if (!e.shiftKey && document.activeElement === last) { first.focus(); e.preventDefault(); }
-  });
+// ===== validador (tolerante a ausência do endpoint) =====
+function setupValidator(){
+  $("#val-check").onclick = async ()=>{
+    const input=$("#val-code"); const out=$("#val-result");
+    out.textContent="Checando…";
+    let code=String(input.value||"").trim().replace(/^ingressai:ticket:/,"");
+    if(!code){ out.textContent="Informe um código."; return; }
+    try{
+      const r = await fetch(`${API}/validator/check`,{
+        method:"POST",
+        headers:{ "Content-Type":"application/json","Accept":"application/json" },
+        credentials:"include",
+        body:JSON.stringify({ code })
+      });
+      if(!r.ok){ out.innerHTML=`<div class="invalid">Endpoint indisponível no momento.</div>`; return; }
+      const j = await r.json();
+      if(j?.valid) out.innerHTML=`<div class="valid">Válido! Ticket #${j.ticketId} • ${j.buyerName||""}</div>`;
+      else out.innerHTML=`<div class="invalid">Inválido (${j?.reason||"desconhecido"})</div>`;
+    }catch{ out.innerHTML=`<div class="invalid">Erro de rede/CORS</div>`; }
+  };
+}
+
+// ===== login (OTP) =====
+function openLoginModal(){
+  const modal=$("#login-modal");
+  const hint=$("#login-hint");
+  const phoneEl=$("#login-phone");
+  const codeBlock=$("#code-block");
+  hint.textContent=""; codeBlock.style.display="none";
+  modal.classList.add("is-open"); modal.setAttribute("aria-hidden","false"); phoneEl.focus();
+
+  $("#login-cancel").onclick=()=>{ modal.classList.remove("is-open"); modal.setAttribute("aria-hidden","true"); };
+  $("#code-back").onclick=()=>{ codeBlock.style.display="none"; hint.textContent=""; };
+
+  $("#login-send").onclick=async ()=>{
+    const phone=onlyDigits(phoneEl.value);
+    if(phone.length<10){ hint.textContent="Informe número com DDI+DDD+número."; return; }
+    hint.textContent="Enviando código…";
+    try{
+      const r = await fetch(`${API}/auth/request`,{
+        method:"POST", headers:{ "content-type":"application/json" },
+        body:JSON.stringify({ phone }), credentials:"include"
+      });
+      if(!r.ok){ throw new Error("request_fail"); }
+      hint.textContent="Código enviado por WhatsApp. Digite abaixo:";
+      codeBlock.style.display="block";
+      $("#login-code").focus();
+    }catch(e){ hint.textContent="Erro ao enviar código (CORS/indisponível)"; }
+  };
+
+  $("#code-verify").onclick=async ()=>{
+    const code=onlyDigits($("#login-code").value);
+    const phone=onlyDigits($("#login-phone").value);
+    if(!code){ hint.textContent="Digite o código recebido."; return; }
+    hint.textContent="Verificando…";
+    try{
+      const r = await fetch(`${API}/auth/verify`,{
+        method:"POST", headers:{ "content-type":"application/json" },
+        body:JSON.stringify({ phone, code }), credentials:"include"
+      });
+      const j = await r.json().catch(()=>null);
+      if(j && j.ok){
+        hint.textContent="Verificado! Abrindo Dashboard…";
+        await sleep(400);
+        window.location.href = `${BASE_ROOT}/app/dashboard.html`;
+      }else{
+        hint.textContent="Código inválido ou expirado.";
+      }
+    }catch{ hint.textContent="Erro de rede/CORS"; }
+  };
+}
+
+// ===== nav e boot =====
+function setupSections(){
+  const orgBtn=$("#cta-organizadores");
+  const orgSec=$("#organizadores");
+  orgBtn.addEventListener("click",(e)=>{ e.preventDefault(); orgSec.hidden=false; orgSec.scrollIntoView({behavior:"smooth", block:"start"}); });
+  if (location.hash==="#organizadores") orgSec.hidden=false;
+
+  // sheet close
+  const backdrop=$("#sheet-backdrop"); const sheet=$("#sheet");
+  const close=()=>{ sheet.classList.remove("is-open"); backdrop.classList.remove("is-open"); };
+  $("#sheet-close").onclick=close; backdrop.onclick=close;
+  document.addEventListener("keydown",(e)=>{ if(e.key==="Escape" && sheet.classList.contains("is-open")) close(); });
+}
+
+(async function boot(){
+  await updateHealth();
+  setupSections();
+  setupOrganizadores();
+  setupValidator();
+  await loadEvents();
+  console.log("[IngressAI] ready", { API, BASE_ROOT });
 })();
