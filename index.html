@@ -47,10 +47,6 @@
     .nav{display:flex;flex-direction:column;align-items:center;gap:var(--s1);padding:var(--s1) 0}
     .nav-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
     .link-like{border:1px solid #e7eefb;background:#fff;border-radius:12px;padding:.6rem .8rem;box-shadow:var(--shadow-soft);font-weight:800;min-height:40px;display:inline-grid;place-items:center}
-    .tags{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:center}
-    .tag{display:inline-flex;align-items:center;gap:6px;border:1px solid #e6eaf6;border-radius:999px;padding:.2rem .55rem;font-weight:800;font-size:.78rem}
-    .tag.on{background:#eef9f2;border-color:#cfead9;color:#0b7a3b}
-    .tag.off{background:#fff6f6;border-color:#ffd6d6;color:#a33a3a}
 
     /* Hero */
     .hero{padding:var(--s4) 0;opacity:calc(1 - var(--hero-p,0));transform:translateY(calc(-6px * var(--hero-p,0)));transition:opacity var(--t-fast) linear,transform var(--t-fast) linear}
@@ -172,23 +168,25 @@
     .modal-card h3{margin:0;font-weight:900}
     .modal-actions{display:flex;gap:10px;justify-content:flex-end}
     .hint{color:#5b6b86;font-size:.9rem}
+    .tag{display:inline-flex;align-items:center;gap:6px;border:1px solid #e6eaf6;border-radius:999px;padding:.2rem .55rem;font-weight:800;font-size:.78rem}
+    .tag.on{background:#eef9f2;border-color:#cfead9;color:#0b7a3b}
+    .tag.off{background:#fff6f6;border-color:#ffd6d6;color:#a33a3a}
     .validator{background:#fff;border:1px solid #e5ecff;border-radius:16px;padding:var(--s2);box-shadow:var(--shadow-soft)}
     .valid{color:#0b7a3b}.invalid{color:#a33a3a}
   </style>
 
-  <!-- Config da API do backend (força PROD no domínio ingressai.chat; permite override via ?api=...) -->
+  <!-- Config da API do backend (override via ?api=...) -->
   <script>
     (function () {
       const qsApi = new URLSearchParams(location.search).get("api") || "";
-      const FORCE_PROD = "https://ingressai-backend-production.up.railway.app/api";
+      const PROD = "https://ingressai-backend-production.up.railway.app/api";
       function normalizeApi(raw){
         let s = String(raw||"").trim().replace(/[.\s/]+$/g,"");
         if(!/\/api$/i.test(s)) s += "/api";
         s = s.replace(/([^:])\/{2,}/g,"$1/");
         return s;
       }
-      const isProdDomain = location.hostname === "ingressai.chat";
-      window.INGRESSAI_API = normalizeApi(isProdDomain ? FORCE_PROD : (qsApi || FORCE_PROD));
+      window.INGRESSAI_API = normalizeApi(qsApi || PROD);
     })();
   </script>
 
@@ -204,10 +202,7 @@
         <a href="#organizadores" class="link-like" id="nav-org">Organizadores</a>
         <a href="#validador" class="link-like" id="nav-val" hidden>Validador</a>
         <a href="#" class="link-like" id="nav-login" data-login>Entrar</a>
-      </div>
-      <div class="tags" aria-live="polite">
-        <span class="tag off" id="api-indicator">api offline</span>
-        <span class="tag off" id="auth-indicator">offline</span>
+        <span class="tag off" id="auth-indicator" aria-live="polite">offline</span>
       </div>
     </div>
   </header>
@@ -453,3 +448,4 @@
   </script>
 </body>
 </html>
+
