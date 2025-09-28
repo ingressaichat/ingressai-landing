@@ -300,7 +300,6 @@ function computeGross(preco,qtd){ return Math.max(0, Number(preco)||0) * Math.ma
 function computeNet(preco,qtd,feePct){ const bruto = computeGross(preco,qtd); return Number((bruto*(1-(Number(feePct)||0)/100)).toFixed(2)); }
 
 function applyPlanFromInputs(){
-  // Simplificado: 8% (atl) ou 10% (prod) via texto do chip (pode melhorar depois)
   const note = "Selecione o plano (8% ou 10%) — o restante é repassado na hora.";
   calcNote.textContent = note;
   const preco = $("#preco"); const qtd = $("#qtd");
@@ -337,7 +336,6 @@ function closeLogin(){
   if (!loginModal) return;
   loginModal.classList.remove("is-open"); loginModal.setAttribute("aria-hidden","true");
 }
-// intercepta todos [data-login]
 document.addEventListener("click", (e)=>{
   const link = e.target.closest("[data-login]");
   if (link) { e.preventDefault(); openLogin(); }
@@ -378,7 +376,6 @@ codeVerify?.addEventListener("click", async ()=>{
       credentials: "include"
     });
     setAuthState(true, authPhone, !!res.isOrganizer);
-    // abre dashboard no backend (cookie de sessão foi setado no domínio do backend)
     window.open(`${BASE_ROOT}/app/login`, "_blank","noopener,noreferrer");
     loginHint.textContent="Pronto! Você está autenticado.";
     closeLogin();
