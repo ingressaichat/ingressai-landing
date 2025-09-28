@@ -1,15 +1,13 @@
 console.log("[IngressAI] app.js boot");
 
-/* ========= CONFIG ========= */
+// ====== CONFIG BASE/API ======
 const API_PARAM = new URLSearchParams(location.search).get("api");
 const ENV_API   = (typeof window !== "undefined" && window.INGRESSAI_API) ? window.INGRESSAI_API : "";
-// default: Railway (produção)
 const BASE_WITH_API = String(API_PARAM || ENV_API || "https://ingressai-backend-production.up.railway.app/api").replace(/\/$/, "");
 const BASE_ROOT     = BASE_WITH_API.replace(/\/api$/, "");
 const WHATSAPP_NUMBER = "5534999992747"; // suporte/comercial
 
-/* ========= UTILS ========= */
-// tenta várias URLs até a primeira que responder 2xx
+// ====== HELPERS DE REDE ======
 async function tryFetch(paths, opts) {
   let lastErr;
   for (const p of paths) {
@@ -21,27 +19,28 @@ async function tryFetch(paths, opts) {
   }
   throw lastErr || new Error("Falha na requisição");
 }
+
 async function fetchJson(url, opts) {
   const res = await fetch(url, {
     headers: { "Accept": "application/json", ...(opts?.headers || {}) },
     mode: "cors",
-    credentials: opts?.credentials || "omit", // "include" só nos endpoints de auth/validator
+    credentials: opts?.credentials || "omit", // "include" só em auth/validator
     ...opts
   });
   let j = null; try { j = await res.json(); } catch {}
   if (!res.ok) throw new Error(j?.error || res.statusText || "Request failed");
   return j;
 }
+
 function waHref(text){return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`}
 
-/* ========= ESTADO ========= */
+// ====== ESTADO ======
 let eventos = [];
 let evIndex = {};
 let isOrganizer = false;
 let authPhone = "";
-let isOnline = false;
 
-/* ========= HELPERS ========= */
+// ====== HELPERS ======
 const BRL = new Intl.NumberFormat("pt-BR",{ style:"currency", currency:"BRL" });
 const parseBR = v => Number(String(v).replace(/[^\d,.-]/g,"").replace(/\./g,"").replace(",", ".")) || 0;
 const money   = v => BRL.format(isFinite(v)?v:0);
@@ -53,7 +52,21 @@ function formatDate(iso){
 }
 function normalizeStatusLabel(s){ if(!s) return ""; return s.replace("Últimos ingressos","Último lote"); }
 
-/* ========= AUTH/UI STATE ========= */
+// ====== INDICADORES (API e AUTH) ======
+function setApiIndicator(online){
+  const el = $("#api-indicator"); if (!el) return;
+  if (online) { el.textContent = "api online"; el.classList.remove("off"); el.classList.add("on"); }
+  else { el.textContent = "api offline"; el.classList.add("off"); el.classList.remove("on"); }
+}
+async function checkBackendOnline(){
+  try {
+    // usa /events como health simples
+    const r = await fetch(`${BASE_WITH_API}/events`, { mode:"cors", headers:{Accept:"application/json"} });
+    setApiIndicator(r.ok);
+  } catch { setApiIndicator(false); }
+}
+
+// ====== AUTH/UI STATE ======
 function setAuthState(state, phone="", organizerFlag=false){
   isOrganizer = !!state && !!organizerFlag;
   authPhone = phone || "";
@@ -66,31 +79,23 @@ function setAuthState(state, phone="", organizerFlag=false){
   }
   applyAuthState();
 }
-function updateOnlineIndicator(){
-  const tag = $("#auth-indicator");
-  if (!tag) return;
-  // prioridade: se organizador -> "organizador"; senão mostra "online/offline"
-  if (isOrganizer) {
-    tag.textContent = "organizador";
-    tag.classList.remove("off"); tag.classList.add("on");
-    return;
-  }
-  if (isOnline) {
-    tag.textContent = "online";
-    tag.classList.remove("off"); tag.classList.add("on");
-  } else {
-    tag.textContent = "offline";
-    tag.classList.add("off"); tag.classList.remove("on");
-  }
-}
 function applyAuthState(){
+  const tag = $("#auth-indicator");
   const navVal = $("#nav-val");
   const orgPanel = $("#org-detail");
   const preco = $("#preco");
   const qtd = $("#qtd");
   const orgQuick = $("#org-quick");
 
-  updateOnlineIndicator();
+  if (tag) {
+    if (isOrganizer) {
+      tag.textContent = "organizador";
+      tag.classList.remove("off"); tag.classList.add("on");
+    } else {
+      tag.textContent = "offline";
+      tag.classList.add("off"); tag.classList.remove("on");
+    }
+  }
   if (navVal) navVal.hidden = !isOrganizer;
   if (orgPanel) orgPanel.classList.toggle("is-disabled", !isOrganizer);
   if (preco) preco.disabled = !isOrganizer;
@@ -109,7 +114,7 @@ function initAuthFromStorage(){
   applyAuthState();
 }
 
-/* ========= HEADER/ANIMAÇÃO ========= */
+// ====== HEADER/ANIMAÇÃO ======
 function initHeader(){
   document.addEventListener("click",e=>{
     const el=e.target.closest(".btn,.view");
@@ -133,7 +138,7 @@ function initHeader(){
   onScroll(); window.addEventListener("scroll", onScroll, { passive:true });
 }
 
-/* ========= VITRINE ========= */
+// ====== VITRINE ======
 const MAIN_CITIES = ["Uberaba","Uberlândia","Belo Horizonte","Ribeirão Preto","Franca"];
 let selectedCity='Todas';
 let query='';
@@ -289,7 +294,7 @@ function closeSheetSafe(e){
   }catch(err){ console.error("closeSheet fail:", err); }
 }
 
-/* ========= ORGANIZADORES (calculadora/setup) ========= */
+// ====== ORGANIZADORES (calculadora/setup) ======
 const std        = $("#std-card");
 const calcBox    = $("#calc-box");
 const calcNote   = $("#calc-note");
@@ -308,6 +313,7 @@ if (std) std.innerHTML = "<ul class='std-list'>" + commonFeatures.map(f=>"<li>"+
 
 function computeGross(preco,qtd){ return Math.max(0, Number(preco)||0) * Math.max(1, parseInt(qtd||1,10)); }
 function computeNet(preco,qtd,feePct){ const bruto = computeGross(preco,qtd); return Number((bruto*(1-(Number(feePct)||0)/100)).toFixed(2)); }
+
 function applyPlanFromInputs(){
   const note = "Selecione o plano (8% ou 10%) — o restante é repassado na hora.";
   calcNote.textContent = note;
@@ -324,7 +330,7 @@ function applyPlanFromInputs(){
   preco.oninput = recompute; qtd.oninput = recompute;
 }
 
-/* ========= LOGIN (OTP) ========= */
+// ====== LOGIN (OTP) ======
 const loginModal   = $("#login-modal");
 const loginSendBtn = $("#login-send");
 const loginCancelBtn = $("#login-cancel");
@@ -345,7 +351,6 @@ function closeLogin(){
   if (!loginModal) return;
   loginModal.classList.remove("is-open"); loginModal.setAttribute("aria-hidden","true");
 }
-// intercepta todos [data-login]
 document.addEventListener("click", (e)=>{
   const link = e.target.closest("[data-login]");
   if (link) { e.preventDefault(); openLogin(); }
@@ -386,7 +391,6 @@ codeVerify?.addEventListener("click", async ()=>{
       credentials: "include"
     });
     setAuthState(true, authPhone, !!res.isOrganizer);
-    // cookie de sessão setado no domínio do backend
     window.open(`${BASE_ROOT}/app/login`, "_blank","noopener,noreferrer");
     loginHint.textContent="Pronto! Você está autenticado.";
     closeLogin();
@@ -396,7 +400,7 @@ codeVerify?.addEventListener("click", async ()=>{
   }
 });
 
-/* ========= VALIDADOR ========= */
+// ====== VALIDADOR ======
 const valCode = $("#val-code");
 const valBtn  = $("#val-check");
 const valRes  = $("#val-result");
@@ -423,7 +427,7 @@ valBtn?.addEventListener("click", async ()=>{
   }
 });
 
-/* ========= LOAD EVENTS ========= */
+// ====== LOAD EVENTS ======
 async function fetchEventosDoBackend() {
   let arr = [];
   try {
@@ -436,17 +440,11 @@ async function fetchEventosDoBackend() {
     if (Array.isArray(j?.items)) arr = j.items;
     else if (Array.isArray(j?.events)) arr = j.events;
     else if (Array.isArray(j)) arr = j;
-
-    // Se chegou aqui, backend respondeu -> marcar online
-    isOnline = true;
-    updateOnlineIndicator();
   } catch (e) {
     console.warn("events load failed", e);
-    isOnline = false;
-    updateOnlineIndicator();
   }
 
-  const mapped = (arr||[]).map(e => ({
+  const mapped = arr.map(e => ({
     id: String(e.id ?? e._id ?? e.code ?? "EV"),
     nome: e.title || e.nome || "Evento",
     cidade: e.city || e.cidade || "",
@@ -460,20 +458,8 @@ async function fetchEventosDoBackend() {
   }));
 
   if (!mapped.length) {
-    // fallback seguro p/ página não ficar vazia
     const dt = new Date(Date.now()+2*24*60*60*1000).toISOString();
-    mapped.push({
-      id:"TST-INGRESSAI",
-      nome:"Evento Teste IngressAI",
-      cidade:"Uberaba-MG",
-      dataISO:dt,
-      localNome:"Espaço Demo",
-      localUrl:"https://maps.google.com/?q=Espaço%20Demo%20Uberaba",
-      categoria:"IngressAI",
-      status:"Último lote",
-      descricao:"Evento Teste IngressAI",
-      img:""
-    });
+    mapped.push({ id:"TST-INGRESSAI", nome:"Evento Teste IngressAI", cidade:"Uberaba-MG", dataISO:dt, localNome:"Espaço Demo", localUrl:"https://maps.google.com/?q=Espaço%20Demo%20Uberaba", categoria:"IngressAI", status:"Último lote", descricao:"Evento Teste IngressAI", img:"" });
   }
 
   eventos = mapped;
@@ -494,7 +480,7 @@ function injectEventsLdJson(){
   } catch {}
 }
 
-/* ========= NAV / SHEET BINDINGS ========= */
+// ====== NAV / SHEET BINDINGS ======
 document.addEventListener("click", (e)=>{
   const btn = e.target.closest("[data-close='sheet']");
   if (btn) { closeSheetSafe(e); }
@@ -509,22 +495,23 @@ $("#lista-eventos")?.addEventListener("click", (e)=>{
   openSheet(ev);
 });
 
-/* ========= NAV ORGANIZADORES ========= */
+// ====== NAV ORGANIZADORES ======
 $("#nav-org")?.addEventListener("click", ()=>{
   const sec=$("#organizadores");
   if (sec && sec.hasAttribute("hidden")) sec.removeAttribute("hidden");
 });
 
-/* ========= INIT ========= */
+// ====== INIT ======
 document.addEventListener("DOMContentLoaded", async ()=>{
   initHeader();
   initAuthFromStorage();
+  await checkBackendOnline();
 
   // Abrir seção organizadores ao navegar com #hash
   const sec=$("#organizadores");
   const cta=$("#cta-organizadores");
   function openOrganizadores(){ if(sec){ sec.removeAttribute("hidden"); sec.setAttribute("tabindex","-1"); sec.focus?.(); } }
-  cta?.addEventListener("click", (e)=>{ if (cta.getAttribute("href")?.startsWith("#organizadores")) { e.preventDefault(); openOrganizadores(); } });
+  cta?.addEventListener("click", (e)=>{ if (cta?.getAttribute("href")?.startsWith("#organizadores")) { e.preventDefault(); openOrganizadores(); } });
   if (location.hash === "#organizadores") openOrganizadores();
 
   // Carregar eventos
