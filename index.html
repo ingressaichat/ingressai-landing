@@ -186,6 +186,7 @@
         s = s.replace(/([^:])\/{2,}/g,"$1/");
         return s;
       }
+      // Se ?api for passado, usa-o; senão usa PROD
       window.INGRESSAI_API = normalizeApi(qsApi || PROD);
     })();
   </script>
