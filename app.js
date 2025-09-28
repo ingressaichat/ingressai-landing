@@ -1,13 +1,12 @@
 console.log("[IngressAI] app.js boot");
 
-// ====== CONFIG BASE/API ======
 const API_PARAM = new URLSearchParams(location.search).get("api");
 const ENV_API   = (typeof window !== "undefined" && window.INGRESSAI_API) ? window.INGRESSAI_API : "";
 const BASE_WITH_API = String(API_PARAM || ENV_API || "https://ingressai-backend-production.up.railway.app/api").replace(/\/$/, "");
 const BASE_ROOT     = BASE_WITH_API.replace(/\/api$/, "");
 const WHATSAPP_NUMBER = "5534999992747"; // suporte/comercial
 
-// ====== HELPERS DE REDE ======
+// util: tenta várias URLs até a primeira que responder 2xx
 async function tryFetch(paths, opts) {
   let lastErr;
   for (const p of paths) {
@@ -24,7 +23,7 @@ async function fetchJson(url, opts) {
   const res = await fetch(url, {
     headers: { "Accept": "application/json", ...(opts?.headers || {}) },
     mode: "cors",
-    credentials: opts?.credentials || "omit", // "include" só em auth/validator
+    credentials: opts?.credentials || "omit", // usar "include" apenas nos endpoints de auth/validator
     ...opts
   });
   let j = null; try { j = await res.json(); } catch {}
@@ -34,13 +33,14 @@ async function fetchJson(url, opts) {
 
 function waHref(text){return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`}
 
-// ====== ESTADO ======
+/* ========= ESTADO ========= */
 let eventos = [];
 let evIndex = {};
 let isOrganizer = false;
 let authPhone = "";
+let backendOnline = false;
 
-// ====== HELPERS ======
+/* ========= HELPERS ========= */
 const BRL = new Intl.NumberFormat("pt-BR",{ style:"currency", currency:"BRL" });
 const parseBR = v => Number(String(v).replace(/[^\d,.-]/g,"").replace(/\./g,"").replace(",", ".")) || 0;
 const money   = v => BRL.format(isFinite(v)?v:0);
@@ -52,21 +52,7 @@ function formatDate(iso){
 }
 function normalizeStatusLabel(s){ if(!s) return ""; return s.replace("Últimos ingressos","Último lote"); }
 
-// ====== INDICADORES (API e AUTH) ======
-function setApiIndicator(online){
-  const el = $("#api-indicator"); if (!el) return;
-  if (online) { el.textContent = "api online"; el.classList.remove("off"); el.classList.add("on"); }
-  else { el.textContent = "api offline"; el.classList.add("off"); el.classList.remove("on"); }
-}
-async function checkBackendOnline(){
-  try {
-    // usa /events como health simples
-    const r = await fetch(`${BASE_WITH_API}/events`, { mode:"cors", headers:{Accept:"application/json"} });
-    setApiIndicator(r.ok);
-  } catch { setApiIndicator(false); }
-}
-
-// ====== AUTH/UI STATE ======
+/* ========= AUTH/UI STATE ========= */
 function setAuthState(state, phone="", organizerFlag=false){
   isOrganizer = !!state && !!organizerFlag;
   authPhone = phone || "";
@@ -92,8 +78,9 @@ function applyAuthState(){
       tag.textContent = "organizador";
       tag.classList.remove("off"); tag.classList.add("on");
     } else {
-      tag.textContent = "offline";
-      tag.classList.add("off"); tag.classList.remove("on");
+      tag.textContent = backendOnline ? "online" : "offline";
+      tag.classList.toggle("on", backendOnline);
+      tag.classList.toggle("off", !backendOnline);
     }
   }
   if (navVal) navVal.hidden = !isOrganizer;
@@ -114,7 +101,7 @@ function initAuthFromStorage(){
   applyAuthState();
 }
 
-// ====== HEADER/ANIMAÇÃO ======
+/* ========= HEADER/ANIMAÇÃO ========= */
 function initHeader(){
   document.addEventListener("click",e=>{
     const el=e.target.closest(".btn,.view");
@@ -138,7 +125,7 @@ function initHeader(){
   onScroll(); window.addEventListener("scroll", onScroll, { passive:true });
 }
 
-// ====== VITRINE ======
+/* ========= VITRINE ========= */
 const MAIN_CITIES = ["Uberaba","Uberlândia","Belo Horizonte","Ribeirão Preto","Franca"];
 let selectedCity='Todas';
 let query='';
@@ -269,8 +256,7 @@ function openSheet(ev){
     try {
       const qs = new URLSearchParams({ ev: ev.id, to, name: "Visitante", qty: "1" }).toString();
       const endpoints = [
-        `${BASE_WITH_API}/purchase/start?${qs}`,
-        `${BASE_ROOT}/purchase/start?${qs}`
+        `${BASE_WITH_API}/tickets/purchase/start?${qs}` // <<< ROTA CORRETA
       ];
       await tryFetch(endpoints, {});
       alert("🎟️ Ingresso enviado no seu WhatsApp!");
@@ -294,7 +280,7 @@ function closeSheetSafe(e){
   }catch(err){ console.error("closeSheet fail:", err); }
 }
 
-// ====== ORGANIZADORES (calculadora/setup) ======
+/* ========= ORGANIZADORES (calculadora/setup) ========= */
 const std        = $("#std-card");
 const calcBox    = $("#calc-box");
 const calcNote   = $("#calc-note");
@@ -330,7 +316,7 @@ function applyPlanFromInputs(){
   preco.oninput = recompute; qtd.oninput = recompute;
 }
 
-// ====== LOGIN (OTP) ======
+/* ========= LOGIN (OTP) ========= */
 const loginModal   = $("#login-modal");
 const loginSendBtn = $("#login-send");
 const loginCancelBtn = $("#login-cancel");
@@ -351,6 +337,7 @@ function closeLogin(){
   if (!loginModal) return;
   loginModal.classList.remove("is-open"); loginModal.setAttribute("aria-hidden","true");
 }
+// intercepta todos [data-login]
 document.addEventListener("click", (e)=>{
   const link = e.target.closest("[data-login]");
   if (link) { e.preventDefault(); openLogin(); }
@@ -400,7 +387,7 @@ codeVerify?.addEventListener("click", async ()=>{
   }
 });
 
-// ====== VALIDADOR ======
+/* ========= VALIDADOR ========= */
 const valCode = $("#val-code");
 const valBtn  = $("#val-check");
 const valRes  = $("#val-result");
@@ -427,7 +414,7 @@ valBtn?.addEventListener("click", async ()=>{
   }
 });
 
-// ====== LOAD EVENTS ======
+/* ========= LOAD EVENTS ========= */
 async function fetchEventosDoBackend() {
   let arr = [];
   try {
@@ -436,13 +423,16 @@ async function fetchEventosDoBackend() {
       `${BASE_ROOT}/events`
     ];
     const r = await tryFetch(endpoints, { headers:{ Accept:"application/json" } });
+    backendOnline = true;
     const j = await r.json().catch(()=> ({}));
     if (Array.isArray(j?.items)) arr = j.items;
     else if (Array.isArray(j?.events)) arr = j.events;
     else if (Array.isArray(j)) arr = j;
   } catch (e) {
     console.warn("events load failed", e);
+    backendOnline = false;
   }
+  applyAuthState();
 
   const mapped = arr.map(e => ({
     id: String(e.id ?? e._id ?? e.code ?? "EV"),
@@ -454,7 +444,7 @@ async function fetchEventosDoBackend() {
     categoria: e.category || "IngressAI",
     status: e.statusLabel || e.status || "Em breve",
     descricao: e.description || e.title || e.nome || "",
-    img: e.image || e.bannerUrl || ""
+    img: e.image || e.bannerUrl || e.media?.url || ""
   }));
 
   if (!mapped.length) {
@@ -480,7 +470,7 @@ function injectEventsLdJson(){
   } catch {}
 }
 
-// ====== NAV / SHEET BINDINGS ======
+/* ========= NAV / SHEET BINDINGS ========= */
 document.addEventListener("click", (e)=>{
   const btn = e.target.closest("[data-close='sheet']");
   if (btn) { closeSheetSafe(e); }
@@ -495,23 +485,22 @@ $("#lista-eventos")?.addEventListener("click", (e)=>{
   openSheet(ev);
 });
 
-// ====== NAV ORGANIZADORES ======
+/* ========= NAV ORGANIZADORES ========= */
 $("#nav-org")?.addEventListener("click", ()=>{
   const sec=$("#organizadores");
   if (sec && sec.hasAttribute("hidden")) sec.removeAttribute("hidden");
 });
 
-// ====== INIT ======
+/* ========= INIT ========= */
 document.addEventListener("DOMContentLoaded", async ()=>{
   initHeader();
   initAuthFromStorage();
-  await checkBackendOnline();
 
   // Abrir seção organizadores ao navegar com #hash
   const sec=$("#organizadores");
   const cta=$("#cta-organizadores");
   function openOrganizadores(){ if(sec){ sec.removeAttribute("hidden"); sec.setAttribute("tabindex","-1"); sec.focus?.(); } }
-  cta?.addEventListener("click", (e)=>{ if (cta?.getAttribute("href")?.startsWith("#organizadores")) { e.preventDefault(); openOrganizadores(); } });
+  cta?.addEventListener("click", (e)=>{ if (cta.getAttribute("href")?.startsWith("#organizadores")) { e.preventDefault(); openOrganizadores(); } });
   if (location.hash === "#organizadores") openOrganizadores();
 
   // Carregar eventos
@@ -519,6 +508,9 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   buildChips();
   renderCards();
   injectEventsLdJson();
+
+  // Habilita calculadora
+  applyPlanFromInputs();
 
   // Filtros
   chipsRow?.addEventListener("click", e=>{
