@@ -1,4 +1,3 @@
-// app/app.js
 console.log("[IngressAI] app.js boot");
 
 const API_PARAM = new URLSearchParams(location.search).get("api");
