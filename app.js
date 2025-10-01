@@ -1,6 +1,7 @@
-/* app/app.js */
+/* eslint-disable no-undef */
 console.log("[IngressAI] app.js boot");
 
+/* ================== BASES / CONST ================== */
 const API_PARAM = new URLSearchParams(location.search).get("api");
 const ENV_API   = (typeof window !== "undefined" && window.INGRESSAI_API) ? window.INGRESSAI_API : "";
 const BASE_WITH_API = String(API_PARAM || ENV_API || "https://ingressai-backend-production.up.railway.app/api").replace(/\/$/, "");
@@ -35,8 +36,7 @@ async function fetchJson(url, opts) {
 
 const BRL = new Intl.NumberFormat("pt-BR",{ style:"currency", currency:"BRL" });
 const money = v => BRL.format(isFinite(v)?v:0);
-const $  = (s) => document.querySelector(s);
-const $$ = (s) => Array.from(document.querySelectorAll(s));
+const $ = (s) => document.querySelector(s);
 
 function formatDate(iso){
   try { const d = new Date(iso); return d.toLocaleString("pt-BR",{ dateStyle:"medium", timeStyle:"short" }); }
@@ -84,6 +84,7 @@ function initHeader(){
 
 /* ================== vitrine ================== */
 function buildChips(){
+  if (!chipsRow) return;
   chipsRow.innerHTML="";
   const cities = Array.from(new Set(eventos.map(e=>e.city).filter(Boolean)));
   const all = document.createElement("button");
@@ -97,6 +98,7 @@ function buildChips(){
 }
 
 function renderCards(filterCity="", q=""){
+  if (!lista) return;
   lista.innerHTML="";
   const qn=(q||"").toLowerCase();
   const data = eventos.filter(ev=>{
@@ -142,6 +144,7 @@ function buildStatusChip(statusLabel){
 }
 
 function openSheet(ev){
+  if(!sheet || !sheetBody) return;
   sheetBody.innerHTML = `
     <div class="sheet-head">
       <h3 id="sheet-title">${ev.title} — ${ev.city||""}</h3>
@@ -160,9 +163,9 @@ function openSheet(ev){
 
   sheet.setAttribute("aria-hidden","false");
   sheet.setAttribute("aria-labelledby","sheet-title");
-  sheetBackdrop.setAttribute("aria-hidden","false");
+  sheetBackdrop?.setAttribute("aria-hidden","false");
   sheet.classList.add("is-open");
-  sheetBackdrop.classList.add("is-open");
+  sheetBackdrop?.classList.add("is-open");
 
   $("#buy-demo").onclick = async () => {
     const to = prompt("Seu WhatsApp (DDI+DDD+NÚMERO):",""); if(!to) return;
@@ -178,11 +181,12 @@ function openSheet(ev){
 }
 
 function closeSheet(){
+  if(!sheet) return;
   sheet.classList.remove("is-open");
-  sheetBackdrop.classList.remove("is-open");
+  sheetBackdrop?.classList.remove("is-open");
   sheet.removeAttribute("aria-labelledby");
   sheet.setAttribute("aria-hidden","true");
-  sheetBackdrop.setAttribute("aria-hidden","true");
+  sheetBackdrop?.setAttribute("aria-hidden","true");
 }
 
 /* ================== organizadores / calc (stub visual) ================== */
@@ -226,8 +230,24 @@ function closeLogin(){
 }
 
 document.addEventListener("click",(e)=>{
+  // qualquer elemento com data-login abre o modal
   const trg = e.target.closest("[data-login]");
   if (trg){ e.preventDefault(); openLogin(); }
+});
+
+// BOTÕES/LINKS QUE NÃO TINHAM HANDLER → passam a abrir o modal
+$("#open-dashboard")?.addEventListener("click", (e)=>{ e.preventDefault(); openLogin(); });
+$("#open-dashboard-2")?.addEventListener("click", (e)=>{ e.preventDefault(); openLogin(); });
+$("#open-login-inline")?.addEventListener("click", (e)=>{ e.preventDefault(); openLogin(); });
+
+// fallback: qualquer link para ./app/login.html abre o modal
+document.addEventListener("click", (e)=>{
+  const a = e.target.closest("a[href]");
+  if(!a) return;
+  const href = a.getAttribute("href") || "";
+  if (href.replace(location.origin,"").startsWith("./app/login.html")){
+    e.preventDefault(); openLogin();
+  }
 });
 
 loginCancel?.addEventListener("click", closeLogin);
@@ -267,8 +287,11 @@ codeVerify?.addEventListener("click", async ()=>{
       credentials: "include"
     });
     loginHint.textContent="Pronto! Você está autenticado.";
-    // redireciona na MESMA aba para evitar bloqueio de popup
-    location.href = `${BASE_ROOT}/app/dashboard.html`;
+    // Abre o dashboard hospedado no backend. Caso a página não exista, cai no /app/
+    const dashUrl      = `${BASE_ROOT}/app/dashboard.html`;
+    const dashFallback = `${BASE_ROOT}/app/`;
+    window.open(dashUrl, "_blank", "noopener,noreferrer") || window.open(dashFallback, "_blank", "noopener,noreferrer");
+    closeLogin();
   } catch (e) {
     console.error(e);
     loginHint.textContent="Código inválido, expirado ou bloqueado por CORS.";
@@ -319,11 +342,6 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   cta?.addEventListener("click", (e)=>{ if (cta.getAttribute("href")?.startsWith("#organizadores")) { e.preventDefault(); openOrganizadores(); } });
   if (location.hash === "#organizadores") openOrganizadores();
 
-  // Força botões/links a abrirem a modal de login (antes iam para href estático)
-  $$("#open-dashboard, #open-dashboard-2, #open-login-inline, a[href='./app/login.html']").forEach(el=>{
-    el.setAttribute("data-login",""); // habilita o delegation global
-  });
-
   // Health → indicador online/offline
   try{
     const h = await fetchJson(`${BASE_WITH_API}/health`, {});
@@ -335,14 +353,14 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     authTag.classList.toggle("on", !!backendOnline);
   }
 
-  // Carregar eventos
+  // Carregar eventos (shape compatível com /api/events)
   try{
     const r = await tryFetch([ `${BASE_WITH_API}/events`, `${BASE_ROOT}/events` ], { headers:{ Accept:"application/json" } });
     const j = await r.json().catch(()=> ({}));
     const arr = Array.isArray(j?.items) ? j.items : (Array.isArray(j) ? j : []);
     eventos = arr.length ? arr : [{
-      id:"TST-INGRESSAI",
-      title:"Evento Teste IngressAI",
+      id:"demo-1",
+      title:"Evento Demo IngressAI",
       city:"Uberaba-MG",
       venue:"Espaço Demo",
       date:new Date(Date.now()+2*86400e3).toISOString(),
@@ -354,8 +372,8 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   }catch(e){
     console.warn("falha /events", e);
     eventos = [{
-      id:"TST-INGRESSAI",
-      title:"Evento Teste IngressAI",
+      id:"demo-1",
+      title:"Evento Demo IngressAI",
       city:"Uberaba-MG",
       venue:"Espaço Demo",
       date:new Date(Date.now()+2*86400e3).toISOString(),
@@ -374,17 +392,19 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     const b=e.target.closest("button.chip"); if(!b) return;
     chipsRow.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-selected","false"));
     b.setAttribute("aria-selected","true");
-    renderCards(b.dataset.city||"", inputBusca.value);
+    renderCards(b.dataset.city||"", inputBusca?.value || "");
   });
 
   let debounce;
   inputBusca?.addEventListener("input", ()=>{
     clearTimeout(debounce);
     debounce=setTimeout(()=>{
-      const active = chipsRow.querySelector('.chip[aria-selected="true"]');
+      const active = chipsRow?.querySelector('.chip[aria-selected="true"]');
       renderCards(active?.dataset.city||"", inputBusca.value);
     }, 180);
   });
 
   console.log("[IngressAI] ready", { BASE_WITH_API, BASE_ROOT });
+  window.__INGRESSAI_BOOTED__ = true;
 });
+
