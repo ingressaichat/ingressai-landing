@@ -22,7 +22,7 @@
   <link rel="icon" href="./favicon.png" type="image/png" />
   <link rel="preload" as="image" href="./logo_ingressai.png" />
 
-  <!-- estilos condensados (iguais aos seus, só removi duplicatas) -->
+  <!-- estilos (iguais aos seus, só sem duplicatas) -->
   <style>
     :root{
       --phi:1.618;--s0:8px;--s1:calc(var(--s0)*var(--phi));--s2:calc(var(--s1)*var(--phi));--s3:calc(var(--s2)*var(--phi));--s4:calc(var(--s3)*var(--phi));
@@ -143,53 +143,10 @@
     })();
   </script>
 
-  <!-- Loader resiliente do app.js -->
-  <script>
-  (function(){
-    window.__landingProbe = Date.now();
-    const candidates = [
-      'app/app.js',   // pasta app/ ao lado do index.html
-      '/app/app.js',  // pasta app/ na raiz do domínio
-      './app.js'      // app.js ao lado do index.html
-    ];
-    let i = 0;
-    function inject(src){
-      const s = document.createElement('script');
-      s.src = src + '?v=2';
-      s.defer = true;
-      s.onerror = next;
-      s.onload = function(){ window.__appSrcLoaded = src; };
-      document.head.appendChild(s);
-    }
-    function next(){
-      i++;
-      if (i < candidates.length) inject(candidates[i]);
-      else window.__appBootFailed = true;
-    }
-    inject(candidates[i]);
-
-    // feedback se não subiu
-    setTimeout(function(){
-      if (!window.__appBooted) {
-        const tag = document.getElementById('auth-indicator');
-        if (tag) {
-          tag.textContent = 'script ausente';
-          tag.classList.remove('on');
-          tag.classList.add('off');
-        }
-        console.warn('[IngressAI] app.js não carregou. Tentativas:', candidates);
-      }
-    }, 1500);
-  })();
-  </script>
+  <!-- JS principal (vitrine, OTP, validador) -->
+  <script defer src="./app/app.js"></script>
 </head>
 <body>
-  <noscript>
-    <div style="padding:12px;background:#fff3f3;border:1px solid #ffdada">
-      Ative o JavaScript para ver os eventos.
-    </div>
-  </noscript>
-
   <!-- HEADER -->
   <header role="banner">
     <div class="container nav">
@@ -298,7 +255,7 @@
                 <div class="calc-result" id="calc-gross-row"><span>Total bruto</span><strong id="calc-gross">R$ 0,00</strong></div>
                 <div class="calc-result"><span>Você recebe</span><strong id="calc-net">R$ 0,00</strong></div>
                 <div class="panel-cta" style="margin-top:var(--s2)">
-                  <a class="btn btn--ghost btn--sm" id="open-dashboard" href="./app/login.html">Entrar no Dashboard</a>
+                  <a class="btn btn--ghost btn--sm" id="open-dashboard" href="./app/login.html" data-login>Entrar no Dashboard</a>
                 </div>
               </div>
             </details>
@@ -310,9 +267,9 @@
               <div class="cmd">
                 <div>
                   <p><strong>Acompanhe vendas</strong>, baixe lista de compradores e <strong>valide QR Code</strong> no modo Validador.</p>
-                  <p>Acesso por <em>código de verificação</em> enviado ao seu WhatsApp. <a id="open-login-inline" href="./app/login.html">Abrir login</a>.</p>
+                  <p>Acesso por <em>código de verificação</em> enviado ao seu WhatsApp. <a id="open-login-inline" href="./app/login.html" data-login>Abrir login</a>.</p>
                 </div>
-                <a class="btn btn--secondary btn--sm" id="open-dashboard-2" href="./app/login.html">Abrir Dashboard</a>
+                <a class="btn btn--secondary btn--sm" id="open-dashboard-2" href="./app/login.html" data-login>Abrir Dashboard</a>
               </div>
             </details>
           </div>
@@ -398,5 +355,3 @@
   </script>
 </body>
 </html>
-
-
