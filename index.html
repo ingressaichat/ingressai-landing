@@ -22,7 +22,6 @@
   <link rel="icon" href="./favicon.png" type="image/png" />
   <link rel="preload" as="image" href="./logo_ingressai.png" />
 
-  <!-- estilos (iguais aos seus, só sem duplicatas) -->
   <style>
     :root{
       --phi:1.618;--s0:8px;--s1:calc(var(--s0)*var(--phi));--s2:calc(var(--s1)*var(--phi));--s3:calc(var(--s2)*var(--phi));--s4:calc(var(--s3)*var(--phi));
@@ -126,6 +125,22 @@
     .legal{display:flex;flex-wrap:wrap;gap:var(--s1);justify-content:center;margin-top:calc(var(--s0)*1.2)}
     .legal a{text-decoration:underline;font-weight:600}
     .foot-meta{display:flex;flex-wrap:wrap;gap:10px;align-items:center;color:#667792;justify-content:center}
+    .tag{display:inline-flex;align-items:center;gap:6px;padding:.25rem .5rem;border-radius:999px;border:1px solid #e7eefb;font-weight:800}
+    .tag.on{background:#f3fff7;border-color:#d7f4e1;color:#1f7a3e}
+    .tag.off{background:#fff7f7;border-color:#ffe0e0;color:#9a2323}
+    .modal{position:fixed;inset:0;display:none;place-items:center;background:rgba(11,18,32,.36);z-index:50}
+    .modal.is-open{display:grid}
+    .modal-card{background:#fff;border-radius:16px;padding:20px;min-width:clamp(320px,90vw,420px);box-shadow:var(--shadow)}
+    .modal-card h3{margin:0 0 8px 0;font-weight:900}
+    .input{border:1px solid #e5ecff;border-radius:10px;padding:.7rem .9rem;font:inherit}
+    .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:10px}
+    .hint{margin-top:8px;color:#445570}
+    .sheet-close{position:absolute;top:10px;right:10px;width:40px;height:40px;border:1px solid #e8eeff;border-radius:12px;background:#fff;display:grid;place-items:center}
+    .panel-grid{display:grid;gap:12px}
+    .panel-card{background:#fff;border:1px solid #e5ecff;border-radius:12px;padding:14px}
+    .disclosure__summary{cursor:pointer;font-weight:800}
+    .cmd{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+    .validator .input{width:100%}
   </style>
 
   <!-- Config dinâmica do backend (override via ?api=...) -->
@@ -145,6 +160,18 @@
 
   <!-- JS principal (vitrine, OTP, validador) -->
   <script defer src="./app/app.js"></script>
+  <!-- Fallback se /app/app.js não existir: tenta ./app.js -->
+  <script>
+    window.addEventListener("load", function(){
+      if (!window.__INGRESSAI_BOOTED__) {
+        const s=document.createElement("script");
+        s.src="./app.js";
+        s.defer=true;
+        s.onload=()=>console.log("[IngressAI] fallback app.js carregado");
+        document.body.appendChild(s);
+      }
+    });
+  </script>
 </head>
 <body>
   <!-- HEADER -->
@@ -329,8 +356,8 @@
 
   <!-- MODAL LOGIN -->
   <div class="modal" id="login-modal" aria-hidden="true" role="dialog" aria-modal="true">
-    <div class="modal-card">
-      <h3>Entrar no Dashboard</h3>
+    <div class="modal-card" role="document" aria-labelledby="login-title">
+      <h3 id="login-title">Entrar no Dashboard</h3>
       <label class="sr-only" for="login-phone">Seu WhatsApp (com DDI + DDD)</label>
       <input id="login-phone" class="input" inputmode="numeric" placeholder="ex.: 5534999999999" autocomplete="tel" />
       <div class="modal-actions">
