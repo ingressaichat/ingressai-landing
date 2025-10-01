@@ -4,9 +4,9 @@ const API_PARAM = new URLSearchParams(location.search).get("api");
 const ENV_API   = (typeof window !== "undefined" && window.INGRESSAI_API) ? window.INGRESSAI_API : "";
 const BASE_WITH_API = String(API_PARAM || ENV_API || "https://ingressai-backend-production.up.railway.app/api").replace(/\/$/, "");
 const BASE_ROOT     = BASE_WITH_API.replace(/\/api$/, "");
-const WHATSAPP_NUMBER = "5534999992747"; // suporte/comercial
+const WHATSAPP_NUMBER = "5534999992747";
 
-// util: tenta várias URLs até a primeira que responder 2xx
+// util: tenta 2 urls
 async function tryFetch(paths, opts) {
   let lastErr;
   for (const p of paths) {
@@ -18,29 +18,25 @@ async function tryFetch(paths, opts) {
   }
   throw lastErr || new Error("Falha na requisição");
 }
-
 async function fetchJson(url, opts) {
   const res = await fetch(url, {
     headers: { "Accept": "application/json", ...(opts?.headers || {}) },
     mode: "cors",
-    credentials: opts?.credentials || "omit", // usar "include" apenas nos endpoints de auth/validator
+    credentials: opts?.credentials || "omit", // "include" só em auth/validator
     ...opts
   });
-  let j = null; try { j = await res.json(); } catch {}
+  let j=null; try{ j = await res.json(); }catch{}
   if (!res.ok) throw new Error(j?.error || res.statusText || "Request failed");
   return j;
 }
-
 function waHref(text){return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`}
 
-/* ========= ESTADO ========= */
 let eventos = [];
 let evIndex = {};
 let isOrganizer = false;
 let authPhone = "";
 let backendOnline = false;
 
-/* ========= HELPERS ========= */
 const BRL = new Intl.NumberFormat("pt-BR",{ style:"currency", currency:"BRL" });
 const parseBR = v => Number(String(v).replace(/[^\d,.-]/g,"").replace(/\./g,"").replace(",", ".")) || 0;
 const money   = v => BRL.format(isFinite(v)?v:0);
@@ -52,7 +48,7 @@ function formatDate(iso){
 }
 function normalizeStatusLabel(s){ if(!s) return ""; return s.replace("Últimos ingressos","Último lote"); }
 
-/* ========= AUTH/UI STATE ========= */
+/* ====== AUTH/UI ====== */
 function setAuthState(state, phone="", organizerFlag=false){
   isOrganizer = !!state && !!organizerFlag;
   authPhone = phone || "";
@@ -101,7 +97,7 @@ function initAuthFromStorage(){
   applyAuthState();
 }
 
-/* ========= HEADER/ANIMAÇÃO ========= */
+/* ====== HEADER / anima ====== */
 function initHeader(){
   document.addEventListener("click",e=>{
     const el=e.target.closest(".btn,.view");
@@ -117,7 +113,7 @@ function initHeader(){
     requestAnimationFrame(()=>{
       const y=window.scrollY||document.documentElement.scrollTop||0;
       header&&header.classList.toggle("is-scrolled", y>8);
-      const p=Math.min(1,Math.max(0,(y-HIDE_START)/(HIDE_END-HIDE_START)));
+      const p=Math.min(1,(Math.max(0,(y-HIDE_START)/(HIDE_END-HIDE_START))));
       if(hero){ hero.style.setProperty("--hero-p", p.toFixed(3)); hero.classList.toggle("is-hidden", p>=1); }
       ticking=false;
     });
@@ -125,7 +121,7 @@ function initHeader(){
   onScroll(); window.addEventListener("scroll", onScroll, { passive:true });
 }
 
-/* ========= VITRINE ========= */
+/* ====== VITRINE ====== */
 const MAIN_CITIES = ["Uberaba","Uberlândia","Belo Horizonte","Ribeirão Preto","Franca"];
 let selectedCity='Todas';
 let query='';
@@ -245,7 +241,7 @@ function openSheet(ev){
     btns.push(`<button type="button" class="btn btn--secondary btn--sm" data-buy="${ev.id}">Comprar ingresso (teste)</button>`);
   }
   if (isOrganizer) {
-    btns.push(`<a class="btn btn--ghost btn--sm" href="${BASE_ROOT}/app/login?ev=${encodeURIComponent(ev.id)}" target="_blank" rel="noopener noreferrer">Editar no Dashboard</a>`);
+    btns.push(`<a class="btn btn--ghost btn--sm" href="${BASE_ROOT}/app/login" target="_blank" rel="noopener noreferrer">Abrir Dashboard</a>`);
   }
   actions.innerHTML = btns.join(" ");
   sheetBody.replaceChildren(media, head, meta1, meta2, meta3, desc, actions);
@@ -256,7 +252,7 @@ function openSheet(ev){
     try {
       const qs = new URLSearchParams({ ev: ev.id, to, name: "Visitante", qty: "1" }).toString();
       const endpoints = [
-        `${BASE_WITH_API}/tickets/purchase/start?${qs}` // <<< ROTA CORRETA
+        `${BASE_WITH_API}/tickets/purchase/start?${qs}` // rota pública certa
       ];
       await tryFetch(endpoints, {});
       alert("🎟️ Ingresso enviado no seu WhatsApp!");
@@ -280,7 +276,7 @@ function closeSheetSafe(e){
   }catch(err){ console.error("closeSheet fail:", err); }
 }
 
-/* ========= ORGANIZADORES (calculadora/setup) ========= */
+/* ====== ORGANIZADORES ====== */
 const std        = $("#std-card");
 const calcBox    = $("#calc-box");
 const calcNote   = $("#calc-note");
@@ -302,21 +298,21 @@ function computeNet(preco,qtd,feePct){ const bruto = computeGross(preco,qtd); re
 
 function applyPlanFromInputs(){
   const note = "Selecione o plano (8% ou 10%) — o restante é repassado na hora.";
-  calcNote.textContent = note;
+  if (calcNote) calcNote.textContent = note;
   const preco = $("#preco"); const qtd = $("#qtd");
-  if (!preco || !qtd) return;
-  const fee = 10; // default visual
+  const fee = 10; // default
   const recompute=()=>{
-    const p=parseBR(preco.value||"0");
-    const q=Math.max(1,parseInt(qtd.value||"1",10));
+    const p=parseBR(preco?.value||"0");
+    const q=Math.max(1,parseInt(qtd?.value||"1",10));
     const bruto=computeGross(p,q);
-    calcGross.textContent=money(bruto);
-    calcNet.textContent=money(computeNet(p,q,fee));
+    if (calcGross) calcGross.textContent=money(bruto);
+    if (calcNet)   calcNet.textContent=money(computeNet(p,q,fee));
   };
-  preco.oninput = recompute; qtd.oninput = recompute;
+  preco && (preco.oninput = recompute);
+  qtd && (qtd.oninput = recompute);
 }
 
-/* ========= LOGIN (OTP) ========= */
+/* ====== LOGIN (OTP) ====== */
 const loginModal   = $("#login-modal");
 const loginSendBtn = $("#login-send");
 const loginCancelBtn = $("#login-cancel");
@@ -327,17 +323,8 @@ const codeVerify   = $("#code-verify");
 const codeInput    = $("#login-code");
 const loginHint    = $("#login-hint");
 
-function openLogin(){
-  if (!loginModal) return;
-  loginHint.textContent=""; codeBlock.style.display="none";
-  loginModal.classList.add("is-open"); loginModal.setAttribute("aria-hidden","false");
-  loginPhone?.focus();
-}
-function closeLogin(){
-  if (!loginModal) return;
-  loginModal.classList.remove("is-open"); loginModal.setAttribute("aria-hidden","true");
-}
-// intercepta todos [data-login]
+function openLogin(){ if (loginModal){ loginHint.textContent=""; codeBlock.style.display="none"; loginModal.classList.add("is-open"); loginModal.setAttribute("aria-hidden","false"); loginPhone?.focus(); } }
+function closeLogin(){ if (loginModal){ loginModal.classList.remove("is-open"); loginModal.setAttribute("aria-hidden","true"); } }
 document.addEventListener("click", (e)=>{
   const link = e.target.closest("[data-login]");
   if (link) { e.preventDefault(); openLogin(); }
@@ -365,7 +352,6 @@ loginSendBtn?.addEventListener("click", async ()=>{
     loginHint.textContent="Falha ao enviar código (CORS ou indisponível).";
   }
 });
-
 codeVerify?.addEventListener("click", async ()=>{
   const code = String(codeInput.value||"").trim();
   if (!/^\d{3,6}$/.test(code)) { loginHint.textContent="Código inválido."; return; }
@@ -387,34 +373,26 @@ codeVerify?.addEventListener("click", async ()=>{
   }
 });
 
-/* ========= VALIDADOR ========= */
-const valCode = $("#val-code");
-const valBtn  = $("#val-check");
-const valRes  = $("#val-result");
-valBtn?.addEventListener("click", async ()=>{
-  const raw = String(valCode.value||"").trim();
-  if (!raw) { valRes.innerHTML = '<span class="invalid">Informe um código.</span>'; return; }
+/* ====== VALIDADOR ====== */
+$("#val-check")?.addEventListener("click", async ()=>{
+  const raw = String($("#val-code").value||"").trim();
+  if (!raw) { $("#val-result").innerHTML = '<span class="invalid">Informe um código.</span>'; return; }
   const code = raw.replace(/^ingressai:ticket:/i,'');
   try {
-    valRes.textContent="Checando…";
+    $("#val-result").textContent="Checando…";
     const j = await fetchJson(`${BASE_WITH_API}/validator/check`, {
       method:"POST",
       headers:{ "Content-Type":"application/json" },
       body: JSON.stringify({ code }),
       credentials: "include"
     });
-    if (j.valid) {
-      valRes.innerHTML = `<div class="valid">✅ Válido — Ticket #${j.ticketId} • Evento: ${j.eventId} • Nome: ${j.buyerName||"-"}</div>`;
-    } else {
-      valRes.innerHTML = `<div class="invalid">❌ Inválido (${j.reason||"desconhecido"})</div>`;
-    }
-  } catch (e) {
-    console.error(e);
-    valRes.innerHTML = `<div class="invalid">❌ Erro na validação (CORS/Network)</div>`;
-  }
+    $("#val-result").innerHTML = j.valid
+      ? `<div class="valid">✅ Válido — Ticket #${j.ticketId} • Evento: ${j.eventId} • Nome: ${j.buyerName||"-"}</div>`
+      : `<div class="invalid">❌ Inválido (${j.reason||"desconhecido"})</div>`;
+  } catch (e) { console.error(e); $("#val-result").innerHTML = `<div class="invalid">❌ Erro na validação (CORS/Network)</div>`; }
 });
 
-/* ========= LOAD EVENTS ========= */
+/* ====== EVENTOS ====== */
 async function fetchEventosDoBackend() {
   let arr = [];
   try {
@@ -470,7 +448,7 @@ function injectEventsLdJson(){
   } catch {}
 }
 
-/* ========= NAV / SHEET BINDINGS ========= */
+/* ====== NAV / SHEET BINDINGS ====== */
 document.addEventListener("click", (e)=>{
   const btn = e.target.closest("[data-close='sheet']");
   if (btn) { closeSheetSafe(e); }
@@ -485,31 +463,28 @@ $("#lista-eventos")?.addEventListener("click", (e)=>{
   openSheet(ev);
 });
 
-/* ========= NAV ORGANIZADORES ========= */
+/* ====== NAV ORGANIZADORES ====== */
 $("#nav-org")?.addEventListener("click", ()=>{
   const sec=$("#organizadores");
   if (sec && sec.hasAttribute("hidden")) sec.removeAttribute("hidden");
 });
 
-/* ========= INIT ========= */
+/* ====== INIT ====== */
 document.addEventListener("DOMContentLoaded", async ()=>{
   initHeader();
   initAuthFromStorage();
 
-  // Abrir seção organizadores ao navegar com #hash
+  // abrir seção organizadores via hash
   const sec=$("#organizadores");
   const cta=$("#cta-organizadores");
   function openOrganizadores(){ if(sec){ sec.removeAttribute("hidden"); sec.setAttribute("tabindex","-1"); sec.focus?.(); } }
   cta?.addEventListener("click", (e)=>{ if (cta.getAttribute("href")?.startsWith("#organizadores")) { e.preventDefault(); openOrganizadores(); } });
   if (location.hash === "#organizadores") openOrganizadores();
 
-  // Carregar eventos
   await fetchEventosDoBackend();
   buildChips();
   renderCards();
   injectEventsLdJson();
-
-  // Habilita calculadora
   applyPlanFromInputs();
 
   // Filtros
