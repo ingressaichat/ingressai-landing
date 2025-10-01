@@ -1,3 +1,4 @@
+/* app/app.js */
 console.log("[IngressAI] app.js boot");
 
 const API_PARAM = new URLSearchParams(location.search).get("api");
@@ -23,7 +24,7 @@ async function fetchJson(url, opts) {
   const res = await fetch(url, {
     headers: { "Accept": "application/json", ...(opts?.headers || {}) },
     mode: "cors",
-    credentials: opts?.credentials || "omit", // "include" só p/ auth/validator
+    credentials: opts?.credentials || "omit",
     ...opts
   });
   const ct = res.headers.get("content-type") || "";
@@ -34,7 +35,8 @@ async function fetchJson(url, opts) {
 
 const BRL = new Intl.NumberFormat("pt-BR",{ style:"currency", currency:"BRL" });
 const money = v => BRL.format(isFinite(v)?v:0);
-const $ = (s) => document.querySelector(s);
+const $  = (s) => document.querySelector(s);
+const $$ = (s) => Array.from(document.querySelectorAll(s));
 
 function formatDate(iso){
   try { const d = new Date(iso); return d.toLocaleString("pt-BR",{ dateStyle:"medium", timeStyle:"short" }); }
@@ -166,7 +168,6 @@ function openSheet(ev){
     const to = prompt("Seu WhatsApp (DDI+DDD+NÚMERO):",""); if(!to) return;
     const qs = new URLSearchParams({ ev: ev.id, to, name: "Participante", qty: "1" }).toString();
     try{
-      // ROTA CORRETA conforme backend: /purchase/start
       await tryFetch([ `${BASE_WITH_API}/purchase/start?${qs}` ], {});
       alert("🎟️ Ingresso enviado no seu WhatsApp!");
     }catch(e){
@@ -210,8 +211,19 @@ const codeVerify   = $("#code-verify");
 const codeInput    = $("#login-code");
 const loginHint    = $("#login-hint");
 
-function openLogin(){ if(!loginModal) return; loginHint.textContent=""; codeBlock.style.display="none"; loginModal.classList.add("is-open"); loginModal.setAttribute("aria-hidden","false"); loginPhone?.focus(); }
-function closeLogin(){ if(!loginModal) return; loginModal.classList.remove("is-open"); loginModal.setAttribute("aria-hidden","true"); }
+function openLogin(){
+  if(!loginModal) return;
+  loginHint.textContent="";
+  codeBlock.style.display="none";
+  loginModal.classList.add("is-open");
+  loginModal.setAttribute("aria-hidden","false");
+  loginPhone?.focus();
+}
+function closeLogin(){
+  if(!loginModal) return;
+  loginModal.classList.remove("is-open");
+  loginModal.setAttribute("aria-hidden","true");
+}
 
 document.addEventListener("click",(e)=>{
   const trg = e.target.closest("[data-login]");
@@ -230,7 +242,7 @@ loginSendBtn?.addEventListener("click", async ()=>{
       method:"POST",
       headers:{ "Content-Type":"application/json" },
       body: JSON.stringify({ phone }),
-      credentials: "include" // precisa setar cookie da API
+      credentials: "include"
     });
     loginHint.textContent="Código enviado no seu WhatsApp. Digite abaixo para verificar.";
     codeBlock.style.display="block";
@@ -252,12 +264,11 @@ codeVerify?.addEventListener("click", async ()=>{
       method:"POST",
       headers:{ "Content-Type":"application/json" },
       body: JSON.stringify({ phone, code }),
-      credentials: "include" // confirma a sessão cross-site
+      credentials: "include"
     });
     loginHint.textContent="Pronto! Você está autenticado.";
-    // opcional: abrir dashboard hospedado no backend
-    window.open(`${BASE_ROOT}/app/dashboard.html`, "_blank", "noopener,noreferrer");
-    closeLogin();
+    // redireciona na MESMA aba para evitar bloqueio de popup
+    location.href = `${BASE_ROOT}/app/dashboard.html`;
   } catch (e) {
     console.error(e);
     loginHint.textContent="Código inválido, expirado ou bloqueado por CORS.";
@@ -308,6 +319,11 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   cta?.addEventListener("click", (e)=>{ if (cta.getAttribute("href")?.startsWith("#organizadores")) { e.preventDefault(); openOrganizadores(); } });
   if (location.hash === "#organizadores") openOrganizadores();
 
+  // Força botões/links a abrirem a modal de login (antes iam para href estático)
+  $$("#open-dashboard, #open-dashboard-2, #open-login-inline, a[href='./app/login.html']").forEach(el=>{
+    el.setAttribute("data-login",""); // habilita o delegation global
+  });
+
   // Health → indicador online/offline
   try{
     const h = await fetchJson(`${BASE_WITH_API}/health`, {});
@@ -319,7 +335,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     authTag.classList.toggle("on", !!backendOnline);
   }
 
-  // Carregar eventos (shape compatível com /api/events)
+  // Carregar eventos
   try{
     const r = await tryFetch([ `${BASE_WITH_API}/events`, `${BASE_ROOT}/events` ], { headers:{ Accept:"application/json" } });
     const j = await r.json().catch(()=> ({}));
@@ -372,6 +388,3 @@ document.addEventListener("DOMContentLoaded", async ()=>{
 
   console.log("[IngressAI] ready", { BASE_WITH_API, BASE_ROOT });
 });
-
-// sinaliza para o loader do index.html que o app subiu
-window.__appBooted = true;
