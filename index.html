@@ -7,6 +7,8 @@
   <title>IngressAI — Ingressos em minutos, direto no WhatsApp</title>
   <meta name="description" content="Compre ingressos em minutos pelo WhatsApp. Vitrine por cidade, checkout instantâneo, repasse T+0 e validação por QR Code." />
   <meta name="robots" content="index,follow,max-image-preview:large" />
+
+  <!-- OG/Twitter -->
   <meta property="og:title" content="IngressAI — Ingressos em minutos" />
   <meta property="og:description" content="Vitrine por cidade, checkout instantâneo, QR Code antifraude e repasse T+0." />
   <meta property="og:type" content="website" />
@@ -14,11 +16,13 @@
   <meta property="og:site_name" content="IngressAI" />
   <meta property="og:locale" content="pt_BR" />
   <meta name="twitter:card" content="summary_large_image" />
+
   <meta name="theme-color" content="#2F7DD9" />
   <meta name="color-scheme" content="light" />
   <link rel="icon" href="./favicon.png" type="image/png" />
   <link rel="preload" as="image" href="./logo_ingressai.png" />
 
+  <!-- estilos condensados (iguais aos seus, só removi duplicatas) -->
   <style>
     :root{
       --phi:1.618;--s0:8px;--s1:calc(var(--s0)*var(--phi));--s2:calc(var(--s1)*var(--phi));--s3:calc(var(--s2)*var(--phi));--s4:calc(var(--s3)*var(--phi));
@@ -26,8 +30,7 @@
       --ink:#0b1220;--muted:#5b6b86;--bg:#f6f8fc;--card:#ffffff;
       --blue-2:#2F7DD9;--blue-soft:#eaf3ff;
       --shadow:0 10px 28px rgba(47,125,217,.14),0 2px 6px rgba(11,18,32,.08);
-      --shadow-soft:0 6px 18px rgba(47,125,217,.12);
-      --ring:0 0 0 2px rgba(74,147,240,.18);
+      --shadow-soft:0 6px 18px rgba(47,125,217,.12);--ring:0 0 0 2px rgba(74,147,240,.18);
       --container-max:calc(680px*var(--phi));--btn-h:52px;--radius-pill:999px;--t-fast:.18s;--t-med:.28s;
     }
     *{box-sizing:border-box}
@@ -39,29 +42,20 @@
     .subtle{color:var(--muted)}
     :where(section,[id]){scroll-margin-top:96px}
 
-    /* Header */
     header{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid #e7eefb;transition:box-shadow var(--t-fast),border-color var(--t-fast),background-color var(--t-fast)}
     header.is-scrolled{box-shadow:var(--shadow);border-color:#e1e9fb}
     .nav{display:flex;flex-direction:column;align-items:center;gap:var(--s1);padding:var(--s1) 0}
     .nav-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
     .link-like{border:1px solid #e7eefb;background:#fff;border-radius:12px;padding:.6rem .8rem;box-shadow:var(--shadow-soft);font-weight:800;min-height:40px;display:inline-grid;place-items:center}
 
-    /* Little tag (online/offline/organizador) */
-    .tag{display:inline-flex;align-items:center;gap:6px;border:1px solid #e6eaf6;border-radius:999px;padding:.2rem .55rem;font-weight:800;font-size:.78rem}
-    .tag.on{background:#eef9f2;border-color:#cfead9;color:#0b7a3b}
-    .tag.off{background:#fff6f6;border-color:#ffd6d6;color:#a33a3a}
-
-    /* Hero */
     .hero{padding:var(--s4) 0;opacity:calc(1 - var(--hero-p,0));transform:translateY(calc(-6px * var(--hero-p,0)));transition:opacity var(--t-fast) linear,transform var(--t-fast) linear}
     .hero.is-hidden{opacity:0;height:0;padding:0;margin:0;overflow:hidden}
     .hero h1{font-size:clamp(calc(1.25rem*var(--phi)),6.2vw,calc(1.25rem*var(--phi)*var(--phi)));line-height:var(--lh-compact);margin:0 0 var(--s2) 0;font-weight:850;text-align:center}
     .hero-brand{display:grid;gap:var(--s1);place-items:center;margin-bottom:var(--s2)}
     .badges{display:flex;gap:calc(var(--s1)*1.4);align-items:center;justify-content:center;flex-wrap:wrap;margin-top:6px}
     .badge{display:inline-flex;align-items:center;gap:.55rem;padding:0;background:transparent;border-radius:0;box-shadow:none;font-weight:700;cursor:default;user-select:none}
-    .badge img{height:18px;width:auto;display:block}
-    .badge span{color:#445570;font-weight:700;opacity:.95}
+    .badge img{height:18px;width:auto;display:block}.badge span{color:#445570;font-weight:700;opacity:.95}
 
-    /* Buttons */
     .btn{min-height:var(--btn-h);padding:0 var(--s2);border-radius:var(--radius-pill);border:1px solid #d6e4ff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;letter-spacing:.2px;gap:10px;background:#fff;color:#0b1220;transition:transform .08s,box-shadow var(--t-fast)}
     .btn--secondary{box-shadow:var(--shadow-soft)}
     .btn--ghost{background:#fff;border-color:#e1e8f6;box-shadow:none;color:#2d3b50}
@@ -69,7 +63,6 @@
     .btn.is-disabled{opacity:.6;pointer-events:none;filter:grayscale(.08)}
     .cta-inline{display:flex;justify-content:flex-start;margin-top:calc(var(--s1)*-1);margin-bottom:var(--s1)}
 
-    /* Proofs / features */
     .proofs{padding:var(--s2) 0 var(--s3)}
     .features{display:grid;gap:var(--s0);grid-template-columns:repeat(2,minmax(0,1fr))}
     @media(min-width:900px){.features{grid-template-columns:repeat(4,minmax(0,1fr))}}
@@ -80,11 +73,9 @@
     .feature strong{font-weight:800;font-size:calc(var(--fs-0)*1.02);line-height:1.2;text-align:center}
     .feature small{color:var(--muted);font-size:calc(var(--fs--1));line-height:1.4;text-align:center}
 
-    /* Sections */
     .section{padding:calc(var(--s4)*1.1) 0;content-visibility:auto}
     .section h2{font-size:clamp(calc(1rem*var(--phi)),3.8vw,calc(1.1rem*var(--phi)*var(--phi)));margin:0 0 var(--s2) 0;font-weight:800}
 
-    /* Filters / chips */
     .filters{display:grid;grid-template-columns:1fr;gap:var(--s1);margin:0 0 var(--s1) 0}
     @media(min-width:680px){.filters{grid-template-columns:1fr max-content}}
     .search input{width:100%;border:1px solid #e5ecff;border-radius:999px;padding:.9rem 1rem;font:inherit;box-shadow:var(--shadow-soft);font-weight:600;font-size:16px}
@@ -92,7 +83,6 @@
     .chip{appearance:none;border:1px solid #e5ecff;background:#fff;border-radius:999px;padding:.6rem .95rem;font-weight:800;color:#415577;cursor:pointer;white-space:nowrap;min-height:40px;scroll-snap-align:start}
     .chip[aria-selected="true"]{background:var(--blue-2);color:#fff;border-color:rgba(27,95,179,.35);box-shadow:0 6px 14px rgba(47,125,217,.25)}
 
-    /* Cards grid */
     .cards{display:grid;grid-template-columns:repeat(1,minmax(0,1fr));gap:var(--s1)}
     @media(min-width:700px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(min-width:1000px){.cards{grid-template-columns:repeat(3,minmax(0,1fr))}}
@@ -109,7 +99,6 @@
     .card-media{width:100%;aspect-ratio:1.35;border-radius:calc(var(--s1));border:1px solid #eaf1ff;background:radial-gradient(600px 280px at 20% 0%,rgba(47,125,217,.12),transparent 60%),linear-gradient(180deg,#fff,#f5f9ff);display:grid;place-items:center;color:#8fb5ff;font-weight:800}
     .card-media img{width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block}
 
-    /* Sheet / modal */
     .sheet-backdrop{position:fixed;inset:0;background:rgba(11,18,32,.36);opacity:0;pointer-events:none;transition:opacity var(--t-fast)}
     .sheet-backdrop.is-open{opacity:1;pointer-events:auto}
     .sheet{position:fixed;left:0;right:0;bottom:0;height:72vh;max-height:760px;background:#fff;border-top-left-radius:24px;border-top-right-radius:24px;box-shadow:0 -24px 48px rgba(11,18,32,.16);transform:translateY(100%);transition:transform var(--t-med) cubic-bezier(.2,.7,.2,1);display:flex;flex-direction:column;padding:var(--s2);z-index:40}
@@ -118,17 +107,16 @@
     .sheet-media{width:100%;aspect-ratio:1.35;border:1px solid #eaf1ff;border-radius:16px;background:radial-gradient(600px 280px at 20% 0%,rgba(47,125,217,.12),transparent 60%),linear-gradient(180deg,#fff,#f5f9ff);margin-top:var(--s0);margin-bottom:var(--s1);overflow:hidden;display:block}
     .sheet-media img{width:100%;height:100%;object-fit:cover;display:block}
     .sheet-head{display:flex;flex-direction:column;gap:6px;align-items:flex-start;margin-top:0}
+
     .status-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid #e6eaf6;border-radius:999px;padding:.25rem .55rem;font-weight:800;font-size:.8rem}
     .status-chip .dot{width:.5rem;height:.5rem;border-radius:50%}
     .status-chip.low{color:#b64848;border-color:#ffdede;background:#fff7f7}
     .status-chip.soon{color:#1B5FB3;border-color:#cfe3ff;background:#f3f8ff}
     .status-chip.sold{color:#6b7280;border-color:#e3e4ea;background:#fafbfc}
 
-    /* Painéis */
     .std-card{background:#fff;border:1px solid #e5ecff;border-radius:calc(var(--s2));padding:var(--s2);box-shadow:var(--shadow-soft)}
     .std-list{margin:0;padding-left:1.25rem;display:grid;gap:6px}
 
-    /* Footer */
     footer{background:#fff;border-top:1px solid #e7eefb;margin-top:var(--s4)}
     .foot{max-width:var(--container-max);margin:0 auto;padding:var(--s3) var(--s3)}
     .foot-block{display:grid;gap:var(--s2);justify-items:center;text-align:center}
@@ -138,20 +126,9 @@
     .legal{display:flex;flex-wrap:wrap;gap:var(--s1);justify-content:center;margin-top:calc(var(--s0)*1.2)}
     .legal a{text-decoration:underline;font-weight:600}
     .foot-meta{display:flex;flex-wrap:wrap;gap:10px;align-items:center;color:#667792;justify-content:center}
-
-    /* Modal login (faltava no seu HTML atual) */
-    .modal{position:fixed;inset:0;display:none;place-items:center;background:rgba(11,18,32,.36);z-index:50}
-    .modal.is-open{display:grid}
-    .modal-card{background:#fff;border:1px solid #e5ecff;border-radius:16px;box-shadow:var(--shadow);padding:var(--s2);width:min(520px,92vw);display:grid;gap:12px}
-    .modal-card h3{margin:0;font-weight:900}
-    .modal-actions{display:flex;gap:10px;justify-content:flex-end}
-    .hint{color:#5b6b86;font-size:.9rem}
-
-    /* Validator colors */
-    .valid{color:#0b7a3b}.invalid{color:#a33a3a}
   </style>
 
-  <!-- Config dinâmica da API (override via ?api=...) -->
+  <!-- Config dinâmica do backend (override via ?api=...) -->
   <script>
     (function () {
       const qsApi = new URLSearchParams(location.search).get("api") || "";
@@ -166,15 +143,58 @@
     })();
   </script>
 
-  <!-- JS principal -->
-  <script defer src="./app/app.js"></script>
+  <!-- Loader resiliente do app.js -->
+  <script>
+  (function(){
+    window.__landingProbe = Date.now();
+    const candidates = [
+      'app/app.js',   // pasta app/ ao lado do index.html
+      '/app/app.js',  // pasta app/ na raiz do domínio
+      './app.js'      // app.js ao lado do index.html
+    ];
+    let i = 0;
+    function inject(src){
+      const s = document.createElement('script');
+      s.src = src + '?v=2';
+      s.defer = true;
+      s.onerror = next;
+      s.onload = function(){ window.__appSrcLoaded = src; };
+      document.head.appendChild(s);
+    }
+    function next(){
+      i++;
+      if (i < candidates.length) inject(candidates[i]);
+      else window.__appBootFailed = true;
+    }
+    inject(candidates[i]);
+
+    // feedback se não subiu
+    setTimeout(function(){
+      if (!window.__appBooted) {
+        const tag = document.getElementById('auth-indicator');
+        if (tag) {
+          tag.textContent = 'script ausente';
+          tag.classList.remove('on');
+          tag.classList.add('off');
+        }
+        console.warn('[IngressAI] app.js não carregou. Tentativas:', candidates);
+      }
+    }, 1500);
+  })();
+  </script>
 </head>
 <body>
+  <noscript>
+    <div style="padding:12px;background:#fff3f3;border:1px solid #ffdada">
+      Ative o JavaScript para ver os eventos.
+    </div>
+  </noscript>
+
   <!-- HEADER -->
   <header role="banner">
     <div class="container nav">
       <div class="nav-actions">
-        <a href="#vitrine" class="link-like" id="nav-vitrine">Vitrine</a>
+        <a href="#vitrine" class="link-like">Vitrine</a>
         <a href="#organizadores" class="link-like" id="nav-org">Organizadores</a>
         <a href="#validador" class="link-like" id="nav-val" hidden>Validador</a>
         <a href="#" class="link-like" id="nav-login" data-login>Entrar</a>
@@ -188,14 +208,14 @@
     <!-- HERO -->
     <section class="hero" aria-labelledby="hero-title">
       <div class="hero-brand">
-        <img src="./logo_ingressai.png" alt="IngressAI" width="160" height="160" loading="eager" fetchpriority="high" />
+        <img src="./logo_ingressai.png" alt="IngressAI" width="160" height="160" />
         <div class="badges" aria-label="Selos">
           <span class="badge" aria-label="Powered by Meta Business Platform">
-            <img src="./meta.png" alt="Meta" width="24" height="24" loading="lazy" decoding="async" />
+            <img src="./meta.png" alt="Meta" width="24" height="24" />
             <span>Powered by Meta Business Platform</span>
           </span>
           <span class="badge" aria-label="WhatsApp Business API">
-            <img src="./whatsapp_business.png" alt="WhatsApp Business" width="24" height="24" loading="lazy" decoding="async" />
+            <img src="./whatsapp_business.png" alt="WhatsApp Business" width="24" height="24" />
             <span>WhatsApp Business API</span>
           </span>
         </div>
@@ -378,4 +398,5 @@
   </script>
 </body>
 </html>
+
 
