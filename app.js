@@ -1,14 +1,13 @@
 /* eslint-disable no-console */
 console.log("[IngressAI] app.js boot");
 
-// ================== CONFIG DINÂMICA DO BACKEND ==================
 const API_PARAM = new URLSearchParams(location.search).get("api");
 const ENV_API   = (typeof window !== "undefined" && window.INGRESSAI_API) ? window.INGRESSAI_API : "";
 const BASE_WITH_API = String(API_PARAM || ENV_API || "https://ingressai-backend-production.up.railway.app/api").replace(/\/$/, "");
 const BASE_ROOT     = BASE_WITH_API.replace(/\/api$/, "");
 const WHATSAPP_NUMBER = "5534999992747";
 
-// ================== HELPERS ==================
+/* ================== helpers ================== */
 async function tryFetch(paths, opts) {
   let lastErr;
   for (const p of paths) {
@@ -45,7 +44,7 @@ function formatDate(iso){
 function normalizeStatusLabel(s){ if(!s) return ""; return s.replace("Últimos ingressos","Último lote"); }
 function waHref(text){return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`}
 
-// ================== ESTADO/UI ==================
+/* ================== estado/UI ================== */
 let eventos = [];
 let evIndex = {};
 let backendOnline = false;
@@ -58,16 +57,14 @@ const sheetBody     = $("#sheet-body");
 const sheetBackdrop = $("#sheet-backdrop");
 const authTag       = $("#auth-indicator");
 
-// ================== HEADER/HERO ==================
+/* ================== header/hero ================== */
 function initHeader(){
-  // micro-efeito de clique em botões .btn/.view
   document.addEventListener("click",e=>{
     const el=e.target.closest(".btn,.view");
     if(!el) return;
     el.style.transform="translateY(0) scale(.98)";
     setTimeout(()=>{ el.style.transform=""; }, 120);
   });
-
   const hero=$(".hero"); const header=$("header");
   const HIDE_START=16,HIDE_END=240; let ticking=false;
   function onScroll(){
@@ -84,7 +81,7 @@ function initHeader(){
   onScroll(); window.addEventListener("scroll", onScroll, { passive:true });
 }
 
-// ================== VITRINE ==================
+/* ================== vitrine ================== */
 function buildChips(){
   chipsRow.innerHTML="";
   const cities = Array.from(new Set(eventos.map(e=>e.city).filter(Boolean)));
@@ -187,95 +184,22 @@ function closeSheet(){
   sheetBackdrop.setAttribute("aria-hidden","true");
 }
 
-// ================== ORGANIZADORES / CALCULADORA + INTAKE ==================
-(function initCalcAndIntake(){
-  const box = document.getElementById("calc-setup");
-  if (!box) return;
-
-  let kind = "simples"; // "simples" | "vip"
-  const fees = {
-    simples: { pct: 0.08, fix: 2.90, label: "Taxa: 8% + R$ 2,90 (simples)" },
-    vip:     { pct: 0.10, fix: 3.90, label: "Taxa: 10% + R$ 3,90 (mesas/VIP)" }
-  };
-
-  const nodes = {
-    price: document.getElementById("cs-price"),
-    cap:   document.getElementById("cs-cap"),
-    fees:  document.getElementById("cs-fees"),
-    gross: document.getElementById("cs-gross"),
-    net:   document.getElementById("cs-net"),
-    hint:  document.getElementById("req-hint"),
-    form:  document.getElementById("req-form"),
-    title: document.getElementById("req-title"),
-    city:  document.getElementById("req-city"),
-    date:  document.getElementById("req-date"),
-    venue: document.getElementById("req-venue"),
-    phone: document.getElementById("req-phone"),
-  };
-
-  function recalc(){
-    const price = parseFloat(String(nodes.price.value||"").replace(",", ".")) || 0;
-    const cap   = parseInt(String(nodes.cap.value||"").replace(/\D/g,"")) || 0;
-    const f     = fees[kind];
-    const gross = price * cap;
-    const tax   = Math.max(0, (price * f.pct + f.fix)) * cap;
-    const net   = gross - tax;
-    nodes.fees.textContent = f.label;
-    nodes.gross.textContent = money(gross);
-    nodes.net.textContent = money(net);
-  }
-
-  // troca de categoria
-  box.addEventListener("click", (e)=>{
-    const b = e.target.closest(".chip[data-kind]");
-    if (!b) return;
-    kind = b.dataset.kind;
-    box.querySelectorAll(".chip[data-kind]").forEach(x => x.setAttribute("aria-pressed","false"));
-    b.setAttribute("aria-pressed","true");
-    recalc();
-  });
-
-  ["input","change"].forEach(ev=>{
-    nodes.price?.addEventListener(ev, recalc);
-    nodes.cap?.addEventListener(ev, recalc);
-  });
-  recalc();
-
-  // solicitar criação (intake leve)
-  nodes.form?.addEventListener("submit", async (e)=>{
-    e.preventDefault();
-    nodes.hint.textContent = "Enviando…";
-
-    const phone = String(nodes.phone.value||"").replace(/[^\d]/g,"");
-    if (!/^\d{10,15}$/.test(phone)) { nodes.hint.textContent="Número inválido (DDI+DDD+NÚMERO)."; return; }
-
-    const payload = {
-      phone,
-      title: (nodes.title.value||"").trim(),
-      city:  (nodes.city.value||"").trim(),
-      date:  nodes.date.value || null,
-      venue: (nodes.venue.value||"").trim() || null,
-      kind
-    };
-
-    try{
-      await fetchJson(`${BASE_WITH_API}/org/intake`, {
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify(payload),
-        credentials: "include"
-      });
-      nodes.hint.textContent = "Recebido ✔️ — vamos validar e você será avisado no WhatsApp.";
-      nodes.form.reset();
-      recalc();
-    }catch(err){
-      console.error(err);
-      nodes.hint.textContent = "Falhou ao enviar. Tente novamente em instantes.";
-    }
-  });
+/* ================== organizadores / calc (stub visual) ================== */
+(function initOrgCalc(){
+  const std = $("#std-card");
+  if (!std) return;
+  const features=[
+    "Criação de evento 100% pelo WhatsApp",
+    "Geração automática de ingresso com QR Code",
+    "Link público de vendas e acompanhamento em tempo real",
+    "Repasse na hora ao organizador",
+    "Página de validador liberada ao criar o evento",
+    "Lista de compradores atualizada"
+  ];
+  std.innerHTML = "<ul class='std-list'>" + features.map(f=>`<li>${f}</li>`).join("") + "</ul>";
 })();
 
-// ================== LOGIN MODAL (OTP) ==================
+/* ================== login modal (OTP) ================== */
 const loginModal   = $("#login-modal");
 const loginSendBtn = $("#login-send");
 const loginCancel  = $("#login-cancel");
@@ -286,19 +210,27 @@ const codeVerify   = $("#code-verify");
 const codeInput    = $("#login-code");
 const loginHint    = $("#login-hint");
 
-function openLogin(){ if(!loginModal) return; loginHint.textContent=""; codeBlock.style.display="none"; loginModal.classList.add("is-open"); loginModal.setAttribute("aria-hidden","false"); loginPhone?.focus(); }
-function closeLogin(){ if(!loginModal) return; loginModal.classList.remove("is-open"); loginModal.setAttribute("aria-hidden","true"); }
-
-// abrir dashboard SEM popup (mesma aba) para evitar “abre e some”
-function gotoDashboardSameTab() {
-  const dashUrl = `${BASE_ROOT}/app/dashboard.html`;
-  // pequena janela pra garantir gravação do cookie de sessão antes de navegar
-  setTimeout(()=> { location.assign(dashUrl); }, 250);
+function openLogin(){
+  if(!loginModal) return;
+  loginHint.textContent="";
+  codeBlock.style.display="none";
+  loginModal.classList.add("is-open");
+  loginModal.setAttribute("aria-hidden","false");
+  loginPhone?.focus();
+}
+function closeLogin(){
+  if(!loginModal) return;
+  loginModal.classList.remove("is-open");
+  loginModal.setAttribute("aria-hidden","true");
 }
 
+// **delegação**: qualquer elemento com [data-login] abre modal
 document.addEventListener("click",(e)=>{
   const trg = e.target.closest("[data-login]");
-  if (trg){ e.preventDefault(); openLogin(); }
+  if (trg){
+    e.preventDefault();
+    openLogin();
+  }
 });
 
 loginCancel?.addEventListener("click", closeLogin);
@@ -313,7 +245,7 @@ loginSendBtn?.addEventListener("click", async ()=>{
       method:"POST",
       headers:{ "Content-Type":"application/json" },
       body: JSON.stringify({ phone }),
-      credentials: "include" // precisa setar cookie da API
+      credentials: "include" // precisa cookie da API
     });
     loginHint.textContent="Código enviado no seu WhatsApp. Digite abaixo para verificar.";
     codeBlock.style.display="block";
@@ -335,27 +267,18 @@ codeVerify?.addEventListener("click", async ()=>{
       method:"POST",
       headers:{ "Content-Type":"application/json" },
       body: JSON.stringify({ phone, code }),
-      credentials: "include" // confirma a sessão cross-site
+      credentials: "include"
     });
-    loginHint.textContent="Pronto! Você está autenticado. Abrindo dashboard…";
-    // navega na MESMA ABA
-    gotoDashboardSameTab();
+    loginHint.textContent="Pronto! Redirecionando…";
+    // **abrir dashboard na MESMA aba** (evita popup-blocker)
+    location.assign(`${BASE_ROOT}/app/dashboard.html`);
   } catch (e) {
     console.error(e);
     loginHint.textContent="Código inválido, expirado ou bloqueado por CORS.";
   }
 });
 
-// atalhos “Abrir Dashboard” em links/botões (mesma aba)
-document.addEventListener("click", (e)=>{
-  const openDash = e.target.closest("#open-dashboard, #open-dashboard-2, a[href$='dashboard.html']");
-  if (openDash){
-    e.preventDefault();
-    gotoDashboardSameTab();
-  }
-});
-
-// ================== NAVEGAÇÃO / SHEET BINDINGS ==================
+/* ================== navegação / sheet bindings ================== */
 document.addEventListener("click", (e)=>{
   if (e.target.closest("[data-close='sheet']")) { e.preventDefault(); closeSheet(); }
   const openBtn = e.target.closest("[data-open]");
@@ -366,15 +289,17 @@ document.addEventListener("click", (e)=>{
 sheetBackdrop?.addEventListener("click", closeSheet);
 document.addEventListener("keydown", (e)=>{ if(e.key==="Escape" && sheet?.classList?.contains("is-open")) closeSheet(); });
 
-// ================== INIT ==================
+/* ================== init ================== */
 document.addEventListener("DOMContentLoaded", async ()=>{
   initHeader();
 
-  // Abrir seção organizadores ao navegar com #hash
+  // Abre “organizadores” ao usar #hash
   const sec=$("#organizadores");
   const cta=$("#cta-organizadores");
   function openOrganizadores(){ if(sec){ sec.removeAttribute("hidden"); sec.setAttribute("tabindex","-1"); sec.focus?.(); } }
-  cta?.addEventListener("click", (e)=>{ if (cta.getAttribute("href")?.startsWith("#organizadores")) { e.preventDefault(); openOrganizadores(); } });
+  cta?.addEventListener("click", (e)=>{
+    if (cta.getAttribute("href")?.startsWith("#organizadores")) { e.preventDefault(); openOrganizadores(); }
+  });
   if (location.hash === "#organizadores") openOrganizadores();
 
   // Health → indicador online/offline
@@ -441,3 +366,4 @@ document.addEventListener("DOMContentLoaded", async ()=>{
 
   console.log("[IngressAI] ready", { BASE_WITH_API, BASE_ROOT });
 });
+
