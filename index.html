@@ -22,7 +22,6 @@
   <link rel="icon" href="./favicon.png" type="image/png" />
   <link rel="preload" as="image" href="./logo_ingressai.png" />
 
-  <!-- estilos condensados -->
   <style>
     :root{
       --phi:1.618;--s0:8px;--s1:calc(var(--s0)*var(--phi));--s2:calc(var(--s1)*var(--phi));--s3:calc(var(--s2)*var(--phi));--s4:calc(var(--s3)*var(--phi));
@@ -56,10 +55,10 @@
     .hero h1{font-size:clamp(calc(1.25rem*var(--phi)),6.2vw,calc(1.25rem*var(--phi)*var(--phi)));line-height:var(--lh-compact);margin:0 0 var(--s2) 0;font-weight:850;text-align:center}
     .hero-brand{display:grid;gap:var(--s1);place-items:center;margin-bottom:var(--s2)}
     .badges{display:flex;gap:calc(var(--s1)*1.4);align-items:center;justify-content:center;flex-wrap:wrap;margin-top:6px}
-    .badge{display:inline-flex;align-items:center;gap:.55rem;padding:0;background:transparent;border-radius:0;box-shadow:none;font-weight:700;cursor:default;user-select:none}
+    .badge{display:inline-flex;align-items:center;gap:.55rem;padding:0;background:transparent;border-radius:0;box-shadow:none;font-weight:700;user-select:none}
     .badge img{height:18px;width:auto;display:block}.badge span{color:#445570;font-weight:700;opacity:.95}
 
-    .btn{min-height:var(--btn-h);padding:0 var(--s2);border-radius:var(--radius-pill);border:1px solid #d6e4ff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;letter-spacing:.2px;gap:10px;background:#fff;color:#0b1220;transition:transform .08s,box-shadow var(--t-fast)}
+    .btn{min-height:var(--btn-h);padding:0 var(--s2);border-radius:var(--radius-pill);border:1px solid #d6e4ff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;gap:10px;background:#fff;color:#0b1220;transition:transform .08s,box-shadow var(--t-fast)}
     .btn--secondary{box-shadow:var(--shadow-soft)}
     .btn--ghost{background:#fff;border-color:#e1e8f6;box-shadow:none;color:#2d3b50}
     .btn--sm{min-height:40px;padding:0 .9rem;font-size:1rem}
@@ -82,7 +81,7 @@
     .filters{display:grid;grid-template-columns:1fr;gap:var(--s1);margin:0 0 var(--s1) 0}
     @media(min-width:680px){.filters{grid-template-columns:1fr max-content}}
     .search input{width:100%;border:1px solid #e5ecff;border-radius:999px;padding:.9rem 1rem;font:inherit;box-shadow:var(--shadow-soft);font-weight:600;font-size:16px}
-    .chips{display:flex;gap:8px;align-items:center;overflow:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;scroll-snap-type:x proximity}
+    .chips{display:flex;gap:8px;align-items:center;overflow:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity}
     .chip{appearance:none;border:1px solid #e5ecff;background:#fff;border-radius:999px;padding:.6rem .95rem;font-weight:800;color:#415577;cursor:pointer;white-space:nowrap;min-height:40px;scroll-snap-align:start}
     .chip[aria-selected="true"]{background:var(--blue-2);color:#fff;border-color:rgba(27,95,179,.35);box-shadow:0 6px 14px rgba(47,125,217,.25)}
 
@@ -130,6 +129,12 @@
     .legal{display:flex;flex-wrap:wrap;gap:var(--s1);justify-content:center;margin-top:calc(var(--s0)*1.2)}
     .legal a{text-decoration:underline;font-weight:600}
     .foot-meta{display:flex;flex-wrap:wrap;gap:10px;align-items:center;color:#667792;justify-content:center}
+
+    /* Diagnostics (discreto) */
+    #diag{position:fixed;left:8px;bottom:8px;z-index:99;background:#fff;border:1px solid #e7eefb;border-radius:10px;padding:8px 10px;box-shadow:var(--shadow-soft);font-size:12px;color:#3a4a63}
+    #diag b{font-weight:800}
+    #err-overlay{position:fixed;inset:0;background:rgba(0,0,0,.66);color:#fff;z-index:999;display:none;align-items:center;justify-content:center;padding:24px}
+    #err-overlay pre{max-width:960px;max-height:70vh;overflow:auto;background:#111;border-radius:12px;padding:16px;font-size:13px;line-height:1.35;border:1px solid #333}
   </style>
 
   <!-- Config dinâmica do backend (override via ?api=...) -->
@@ -138,16 +143,20 @@
       const qsApi = new URLSearchParams(location.search).get("api") || "";
       const PROD = "https://ingressai-backend-production.up.railway.app/api";
       function normalizeApi(raw){
-        let s = String(raw||"").trim().replace(/[.\s/]+$/g,"");
-        if(!/\/api$/i.test(s)) s += "/api";
-        s = s.replace(/([^:])\/{2,}/g,"$1/");
+        let s = String(raw || "").trim();
+        if (!s) s = PROD;
+        // remove DUPLICAÇÕES de barra no meio (não mexe no esquema https://)
+        s = s.replace(/([^:]\/)\/+/g, "$1");
+        // garante sufixo /api (apenas se não existir)
+        if (!/\/api$/i.test(s)) s = s.replace(/\/+$/,"") + "/api";
         return s;
       }
-      window.INGRESSAI_API = normalizeApi(qsApi || PROD);
+      window.INGRESSAI_API = normalizeApi(qsApi);
+      window.APP_CONFIG = { API: window.INGRESSAI_API };
     })();
   </script>
 
-  <!-- JS principal (vitrine, OTP, abrir dashboard após verificar) -->
+  <!-- JS principal (defer) -->
   <script defer src="./app/app.js"></script>
 </head>
 <body>
@@ -157,7 +166,7 @@
       <div class="nav-actions">
         <a href="#vitrine" class="link-like">Vitrine</a>
         <a href="#organizadores" class="link-like" id="nav-org">Organizadores</a>
-        <!-- Validador removido da landing (fica no dashboard) -->
+        <!-- Validador removido da landing; fica no dashboard -->
         <a href="#" class="link-like" id="nav-login" data-login>Entrar</a>
         <span class="tag off" id="auth-indicator" aria-live="polite">offline</span>
       </div>
@@ -171,11 +180,11 @@
       <div class="hero-brand">
         <img src="./logo_ingressai.png" alt="IngressAI" width="160" height="160" />
         <div class="badges" aria-label="Selos">
-          <span class="badge" aria-label="Powered by Meta Business Platform">
+          <span class="badge">
             <img src="./meta.png" alt="Meta" width="24" height="24" />
             <span>Powered by Meta Business Platform</span>
           </span>
-          <span class="badge" aria-label="WhatsApp Business API">
+          <span class="badge">
             <img src="./whatsapp_business.png" alt="WhatsApp Business" width="24" height="24" />
             <span>WhatsApp Business API</span>
           </span>
@@ -259,7 +268,6 @@
                 <div class="calc-result" id="calc-gross-row"><span>Total bruto</span><strong id="calc-gross">R$ 0,00</strong></div>
                 <div class="calc-result"><span>Você recebe</span><strong id="calc-net">R$ 0,00</strong></div>
                 <div class="panel-cta" style="margin-top:var(--s2)">
-                  <!-- abre modal OTP; após verificar, redireciona p/ dashboard -->
                   <a class="btn btn--ghost btn--sm" id="open-dashboard" href="#" data-login>Entrar no Dashboard</a>
                 </div>
               </div>
@@ -342,8 +350,11 @@
     </div>
   </div>
 
-  <script type="application/ld+json">
-  {"@context":"https://schema.org","@type":"Organization","name":"IngressAI","url":"https://ingressai.chat/","logo":"https://ingressai.chat/logo_ingressai.png","sameAs":["https://instagram.com/ingressai"],"contactPoint":[{"@type":"ContactPoint","contactType":"customer support","areaServed":"BR","availableLanguage":"pt-BR"}]}
-  </script>
+  <!-- Diagnostics (mostra API/health) -->
+  <div id="diag" aria-live="polite">API: <b id="d-api">—</b> • Health: <b id="d-health">?</b> • Eventos: <b id="d-ev">0</b></div>
+
+  <!-- Overlay de erro JS -->
+  <div id="err-overlay"><pre id="err-pre"></pre></div>
+
 </body>
 </html>
