@@ -52,8 +52,9 @@
     .hero h1{font-size:clamp(calc(1.25rem*var(--phi)),6.2vw,calc(1.25rem*var(--phi)*var(--phi)));line-height:var(--lh-compact);margin:0 0 var(--s2) 0;font-weight:850;text-align:center}
     .hero-brand{display:grid;gap:var(--s1);place-items:center;margin-bottom:var(--s2)}
     .badges{display:flex;gap:calc(var(--s1)*1.4);align-items:center;justify-content:center;flex-wrap:wrap;margin-top:6px}
+    .badge img{height:18px;width:auto;display:block}
+    .badge span{color:#445570;font-weight:700;opacity:.95}
     .badge{display:inline-flex;align-items:center;gap:.55rem;padding:0;background:transparent;border-radius:0;box-shadow:none;font-weight:700;cursor:default;user-select:none}
-    .badge img{height:18px;width:auto;display:block}.badge span{color:#445570;font-weight:700;opacity:.95}
 
     .btn{min-height:var(--btn-h);padding:0 var(--s2);border-radius:var(--radius-pill);border:1px solid #d6e4ff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;letter-spacing:.2px;gap:10px;background:#fff;color:#0b1220;transition:transform .08s,box-shadow var(--t-fast)}
     .btn--secondary{box-shadow:var(--shadow-soft)}
@@ -154,7 +155,7 @@
       <div class="nav-actions">
         <a href="#vitrine" class="link-like">Vitrine</a>
         <a href="#organizadores" class="link-like" id="nav-org">Organizadores</a>
-        <a href="#validador" class="link-like" id="nav-val">Validador</a>
+        <!-- Removido Validador da landing -->
         <a href="#" class="link-like" id="nav-login" data-login>Entrar</a>
         <span class="tag off" id="auth-indicator" aria-live="polite">offline</span>
       </div>
@@ -290,19 +291,6 @@
       </div>
     </section>
 
-    <!-- VALIDADOR -->
-    <section id="validador" class="section" aria-labelledby="val-title">
-      <h2 id="val-title">Validador</h2>
-      <div class="validator">
-        <p class="hint">Cole ou digite o <strong>código</strong> do QR (formato <code>ingressai:ticket:&lt;code&gt;</code> ou apenas o <em>code</em>).</p>
-        <div style="display:grid;gap:10px;grid-template-columns:1fr max-content">
-          <input id="val-code" class="input" placeholder="ex.: ingressai:ticket:ABCD1234EF" autocomplete="off" />
-          <button id="val-check" class="btn btn--secondary btn--sm" type="button">Checar</button>
-        </div>
-        <div id="val-result" style="margin-top:10px"></div>
-      </div>
-    </section>
-
     <!-- SHEET -->
     <div class="sheet-backdrop" id="sheet-backdrop" aria-hidden="true"></div>
     <aside class="sheet" id="sheet" aria-hidden="true" role="dialog" aria-modal="true">
@@ -368,4 +356,3 @@
   </script>
 </body>
 </html>
-
