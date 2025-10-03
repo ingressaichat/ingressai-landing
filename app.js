@@ -7,6 +7,31 @@ const BASE_WITH_API = String(API_PARAM || ENV_API || "https://ingressai-backend-
 const BASE_ROOT     = BASE_WITH_API.replace(/\/api$/, "");
 const WHATSAPP_NUMBER = "5534999992747";
 
+/* ============== Diagnostics helpers ============== */
+function setDiag(k, v){
+  const el = document.getElementById(k);
+  if (el) el.textContent = v;
+}
+(function initDiag(){
+  setDiag("d-api", BASE_WITH_API);
+})();
+
+/* ============== Global error overlay ============== */
+window.addEventListener("error", (e)=>{
+  const ov = document.getElementById("err-overlay");
+  const pre= document.getElementById("err-pre");
+  if (!ov || !pre) return;
+  pre.textContent = String(e.error?.stack || e.message || e.filename || e).slice(0, 5000);
+  ov.style.display = "flex";
+});
+window.addEventListener("unhandledrejection", (e)=>{
+  const ov = document.getElementById("err-overlay");
+  const pre= document.getElementById("err-pre");
+  if (!ov || !pre) return;
+  pre.textContent = "Promise rejection:\n" + String(e.reason?.stack || e.reason || "").slice(0, 5000);
+  ov.style.display = "flex";
+});
+
 /* ================== helpers ================== */
 async function tryFetch(paths, opts) {
   let lastErr;
@@ -19,20 +44,23 @@ async function tryFetch(paths, opts) {
   }
   throw lastErr || new Error("Falha na requisição");
 }
-
 async function fetchJson(url, opts) {
   const res = await fetch(url, {
     headers: { "Accept": "application/json", ...(opts?.headers || {}) },
     mode: "cors",
-    credentials: opts?.credentials || "omit", // "include" só p/ auth/validator
+    credentials: opts?.credentials || "omit",
     ...opts
   });
   const ct = res.headers.get("content-type") || "";
-  const j = ct.includes("application/json") ? await res.json().catch(()=>null) : await res.text();
-  if (!res.ok) throw new Error((j && j.error) || res.statusText || "Request failed");
+  const isJson = ct.includes("application/json");
+  const j = isJson ? await res.json().catch(()=>null) : await res.text();
+  if (!res.ok) {
+    const err = new Error((j && j.error) || res.statusText || "Request failed");
+    err.response = j;
+    throw err;
+  }
   return j;
 }
-
 const BRL = new Intl.NumberFormat("pt-BR",{ style:"currency", currency:"BRL" });
 const money = v => BRL.format(isFinite(v)?v:0);
 const $ = (s) => document.querySelector(s);
@@ -94,7 +122,6 @@ function buildChips(){
     chipsRow.appendChild(b);
   });
 }
-
 function renderCards(filterCity="", q=""){
   lista.innerHTML="";
   const qn=(q||"").toLowerCase();
@@ -103,6 +130,7 @@ function renderCards(filterCity="", q=""){
     const byQ = qn ? (ev.title||"").toLowerCase().includes(qn) || (ev.description||"").toLowerCase().includes(qn) : true;
     return byCity && byQ;
   });
+  setDiag("d-ev", String(data.length||0));
 
   if (!data.length){
     const empty=document.createElement("div");
@@ -133,13 +161,11 @@ function renderCards(filterCity="", q=""){
     lista.appendChild(card);
   });
 }
-
 function buildStatusChip(statusLabel){
   const key = statusLabel==="Esgotado" ? "sold" : (statusLabel==="Último lote" ? "low" : "soon");
   const lbl = statusLabel || "Em breve";
   return `<span class="status-chip ${key}"><span class="dot" aria-hidden="true"></span>${lbl}</span>`;
 }
-
 function openSheet(ev){
   sheetBody.innerHTML = `
     <div class="sheet-head">
@@ -156,7 +182,6 @@ function openSheet(ev){
       </div>
     </div>
   `;
-
   sheet.setAttribute("aria-hidden","false");
   sheet.setAttribute("aria-labelledby","sheet-title");
   sheetBackdrop.setAttribute("aria-hidden","false");
@@ -175,7 +200,6 @@ function openSheet(ev){
     }
   };
 }
-
 function closeSheet(){
   sheet.classList.remove("is-open");
   sheetBackdrop.classList.remove("is-open");
@@ -210,27 +234,12 @@ const codeVerify   = $("#code-verify");
 const codeInput    = $("#login-code");
 const loginHint    = $("#login-hint");
 
-function openLogin(){
-  if(!loginModal) return;
-  loginHint.textContent="";
-  codeBlock.style.display="none";
-  loginModal.classList.add("is-open");
-  loginModal.setAttribute("aria-hidden","false");
-  loginPhone?.focus();
-}
-function closeLogin(){
-  if(!loginModal) return;
-  loginModal.classList.remove("is-open");
-  loginModal.setAttribute("aria-hidden","true");
-}
+function openLogin(){ if(!loginModal) return; loginHint.textContent=""; codeBlock.style.display="none"; loginModal.classList.add("is-open"); loginModal.setAttribute("aria-hidden","false"); loginPhone?.focus(); }
+function closeLogin(){ if(!loginModal) return; loginModal.classList.remove("is-open"); loginModal.setAttribute("aria-hidden","true"); }
 
-// **delegação**: qualquer elemento com [data-login] abre modal
 document.addEventListener("click",(e)=>{
   const trg = e.target.closest("[data-login]");
-  if (trg){
-    e.preventDefault();
-    openLogin();
-  }
+  if (trg){ e.preventDefault(); openLogin(); }
 });
 
 loginCancel?.addEventListener("click", closeLogin);
@@ -245,7 +254,7 @@ loginSendBtn?.addEventListener("click", async ()=>{
       method:"POST",
       headers:{ "Content-Type":"application/json" },
       body: JSON.stringify({ phone }),
-      credentials: "include" // precisa cookie da API
+      credentials: "include"
     });
     loginHint.textContent="Código enviado no seu WhatsApp. Digite abaixo para verificar.";
     codeBlock.style.display="block";
@@ -270,7 +279,6 @@ codeVerify?.addEventListener("click", async ()=>{
       credentials: "include"
     });
     loginHint.textContent="Pronto! Redirecionando…";
-    // **abrir dashboard na MESMA aba** (evita popup-blocker)
     location.assign(`${BASE_ROOT}/app/dashboard.html`);
   } catch (e) {
     console.error(e);
@@ -291,79 +299,89 @@ document.addEventListener("keydown", (e)=>{ if(e.key==="Escape" && sheet?.classL
 
 /* ================== init ================== */
 document.addEventListener("DOMContentLoaded", async ()=>{
-  initHeader();
-
-  // Abre “organizadores” ao usar #hash
-  const sec=$("#organizadores");
-  const cta=$("#cta-organizadores");
-  function openOrganizadores(){ if(sec){ sec.removeAttribute("hidden"); sec.setAttribute("tabindex","-1"); sec.focus?.(); } }
-  cta?.addEventListener("click", (e)=>{
-    if (cta.getAttribute("href")?.startsWith("#organizadores")) { e.preventDefault(); openOrganizadores(); }
-  });
-  if (location.hash === "#organizadores") openOrganizadores();
-
-  // Health → indicador online/offline
   try{
-    const h = await fetchJson(`${BASE_WITH_API}/health`, {});
-    backendOnline = !!h?.ok;
-  }catch{ backendOnline = false; }
-  if (authTag){
-    authTag.textContent = backendOnline ? "online" : "offline";
-    authTag.classList.toggle("off", !backendOnline);
-    authTag.classList.toggle("on", !!backendOnline);
-  }
+    initHeader();
 
-  // Carregar eventos (shape compatível com /api/events)
-  try{
-    const r = await tryFetch([ `${BASE_WITH_API}/events`, `${BASE_ROOT}/events` ], { headers:{ Accept:"application/json" } });
-    const j = await r.json().catch(()=> ({}));
-    const arr = Array.isArray(j?.items) ? j.items : (Array.isArray(j) ? j : []);
-    eventos = arr.length ? arr : [{
-      id:"TST-INGRESSAI",
-      title:"Evento Teste IngressAI",
-      city:"Uberaba-MG",
-      venue:"Espaço Demo",
-      date:new Date(Date.now()+2*86400e3).toISOString(),
-      price: 60,
-      statusLabel:"Último lote",
-      image:""
-    }];
-    evIndex = Object.fromEntries(eventos.map(e=>[String(e.id), e]));
+    // Abre “organizadores” ao usar #hash
+    const sec=$("#organizadores");
+    const cta=$("#cta-organizadores");
+    function openOrganizadores(){ if(sec){ sec.removeAttribute("hidden"); sec.setAttribute("tabindex","-1"); sec.focus?.(); } }
+    cta?.addEventListener("click", (e)=>{
+      if (cta.getAttribute("href")?.startsWith("#organizadores")) { e.preventDefault(); openOrganizadores(); }
+    });
+    if (location.hash === "#organizadores") openOrganizadores();
+
+    // Health → indicador online/offline
+    try{
+      const h = await fetchJson(`${BASE_WITH_API}/health`, {});
+      backendOnline = !!h?.ok;
+    }catch(e){
+      console.warn("health fail", e);
+      backendOnline = false;
+    }
+    if (authTag){
+      authTag.textContent = backendOnline ? "online" : "offline";
+      authTag.classList.toggle("off", !backendOnline);
+      authTag.classList.toggle("on", !!backendOnline);
+    }
+    setDiag("d-health", backendOnline ? "online" : "offline");
+
+    // Carregar eventos
+    try{
+      const r = await tryFetch([ `${BASE_WITH_API}/events`, `${BASE_ROOT}/events` ], { headers:{ Accept:"application/json" } });
+      const j = await r.json().catch(()=> ({}));
+      const arr = Array.isArray(j?.items) ? j.items : (Array.isArray(j) ? j : []);
+      eventos = arr.length ? arr : [{
+        id:"TST-INGRESSAI",
+        title:"Evento Teste IngressAI",
+        city:"Uberaba-MG",
+        venue:"Espaço Demo",
+        date:new Date(Date.now()+2*86400e3).toISOString(),
+        price: 60,
+        statusLabel:"Último lote",
+        image:""
+      }];
+      evIndex = Object.fromEntries(eventos.map(e=>[String(e.id), e]));
+    }catch(e){
+      console.warn("falha /events", e);
+      eventos = [{
+        id:"TST-INGRESSAI",
+        title:"Evento Teste IngressAI",
+        city:"Uberaba-MG",
+        venue:"Espaço Demo",
+        date:new Date(Date.now()+2*86400e3).toISOString(),
+        price: 60,
+        statusLabel:"Último lote",
+        image:""
+      }];
+      evIndex = Object.fromEntries(eventos.map(e=>[String(e.id), e]));
+    }
+
+    buildChips();
+    renderCards();
+
+    // Filtros
+    chipsRow?.addEventListener("click", e=>{
+      const b=e.target.closest("button.chip"); if(!b) return;
+      chipsRow.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-selected","false"));
+      b.setAttribute("aria-selected","true");
+      renderCards(b.dataset.city||"", inputBusca.value);
+    });
+
+    let debounce;
+    inputBusca?.addEventListener("input", ()=>{
+      clearTimeout(debounce);
+      debounce=setTimeout(()=>{
+        const active = chipsRow.querySelector('.chip[aria-selected="true"]');
+        renderCards(active?.dataset.city||"", inputBusca.value);
+      }, 180);
+    });
+
+    console.log("[IngressAI] ready", { BASE_WITH_API, BASE_ROOT, backendOnline });
   }catch(e){
-    console.warn("falha /events", e);
-    eventos = [{
-      id:"TST-INGRESSAI",
-      title:"Evento Teste IngressAI",
-      city:"Uberaba-MG",
-      venue:"Espaço Demo",
-      date:new Date(Date.now()+2*86400e3).toISOString(),
-      price: 60,
-      statusLabel:"Último lote",
-      image:""
-    }];
-    evIndex = Object.fromEntries(eventos.map(e=>[String(e.id), e]));
+    console.error("init crash", e);
+    const ov = document.getElementById("err-overlay");
+    const pre= document.getElementById("err-pre");
+    if (ov && pre){ pre.textContent = "Init error:\n" + String(e.stack || e); ov.style.display = "flex"; }
   }
-
-  buildChips();
-  renderCards();
-
-  // Filtros
-  chipsRow?.addEventListener("click", e=>{
-    const b=e.target.closest("button.chip"); if(!b) return;
-    chipsRow.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-selected","false"));
-    b.setAttribute("aria-selected","true");
-    renderCards(b.dataset.city||"", inputBusca.value);
-  });
-
-  let debounce;
-  inputBusca?.addEventListener("input", ()=>{
-    clearTimeout(debounce);
-    debounce=setTimeout(()=>{
-      const active = chipsRow.querySelector('.chip[aria-selected="true"]');
-      renderCards(active?.dataset.city||"", inputBusca.value);
-    }, 180);
-  });
-
-  console.log("[IngressAI] ready", { BASE_WITH_API, BASE_ROOT });
 });
-
