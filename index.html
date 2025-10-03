@@ -12,7 +12,7 @@
   <meta property="og:title" content="IngressAI — Ingressos em minutos" />
   <meta property="og:description" content="Vitrine por cidade, checkout instantâneo, QR Code antifraude e repasse T+0." />
   <meta property="og:type" content="website" />
-  <meta property="og:image" content="./logo_ingressai.png" />
+  <meta property="og:image" content="https://ingressai.chat/logo_ingressai.png" />
   <meta property="og:site_name" content="IngressAI" />
   <meta property="og:locale" content="pt_BR" />
   <meta name="twitter:card" content="summary_large_image" />
@@ -22,6 +22,7 @@
   <link rel="icon" href="./favicon.png" type="image/png" />
   <link rel="preload" as="image" href="./logo_ingressai.png" />
 
+  <!-- estilos condensados -->
   <style>
     :root{
       --phi:1.618;--s0:8px;--s1:calc(var(--s0)*var(--phi));--s2:calc(var(--s1)*var(--phi));--s3:calc(var(--s2)*var(--phi));--s4:calc(var(--s3)*var(--phi));
@@ -46,15 +47,17 @@
     .nav{display:flex;flex-direction:column;align-items:center;gap:var(--s1);padding:var(--s1) 0}
     .nav-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
     .link-like{border:1px solid #e7eefb;background:#fff;border-radius:12px;padding:.6rem .8rem;box-shadow:var(--shadow-soft);font-weight:800;min-height:40px;display:inline-grid;place-items:center}
+    .tag{border:1px solid #e7eefb;border-radius:10px;padding:.2rem .5rem;font-weight:800}
+    .tag.off{color:#b64848;border-color:#ffdede;background:#fff7f7}
+    .tag.on{color:#128c41;border-color:#cfead8;background:#edfff5}
 
     .hero{padding:var(--s4) 0;opacity:calc(1 - var(--hero-p,0));transform:translateY(calc(-6px * var(--hero-p,0)));transition:opacity var(--t-fast) linear,transform var(--t-fast) linear}
     .hero.is-hidden{opacity:0;height:0;padding:0;margin:0;overflow:hidden}
     .hero h1{font-size:clamp(calc(1.25rem*var(--phi)),6.2vw,calc(1.25rem*var(--phi)*var(--phi)));line-height:var(--lh-compact);margin:0 0 var(--s2) 0;font-weight:850;text-align:center}
     .hero-brand{display:grid;gap:var(--s1);place-items:center;margin-bottom:var(--s2)}
     .badges{display:flex;gap:calc(var(--s1)*1.4);align-items:center;justify-content:center;flex-wrap:wrap;margin-top:6px}
-    .badge img{height:18px;width:auto;display:block}
-    .badge span{color:#445570;font-weight:700;opacity:.95}
     .badge{display:inline-flex;align-items:center;gap:.55rem;padding:0;background:transparent;border-radius:0;box-shadow:none;font-weight:700;cursor:default;user-select:none}
+    .badge img{height:18px;width:auto;display:block}.badge span{color:#445570;font-weight:700;opacity:.95}
 
     .btn{min-height:var(--btn-h);padding:0 var(--s2);border-radius:var(--radius-pill);border:1px solid #d6e4ff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;letter-spacing:.2px;gap:10px;background:#fff;color:#0b1220;transition:transform .08s,box-shadow var(--t-fast)}
     .btn--secondary{box-shadow:var(--shadow-soft)}
@@ -107,6 +110,7 @@
     .sheet-media{width:100%;aspect-ratio:1.35;border:1px solid #eaf1ff;border-radius:16px;background:radial-gradient(600px 280px at 20% 0%,rgba(47,125,217,.12),transparent 60%),linear-gradient(180deg,#fff,#f5f9ff);margin-top:var(--s0);margin-bottom:var(--s1);overflow:hidden;display:block}
     .sheet-media img{width:100%;height:100%;object-fit:cover;display:block}
     .sheet-head{display:flex;flex-direction:column;gap:6px;align-items:flex-start;margin-top:0}
+    .sheet-close{position:absolute;top:10px;right:10px;border:none;background:#fff;border-radius:10px;width:36px;height:36px;display:grid;place-items:center;box-shadow:var(--shadow-soft);cursor:pointer}
 
     .status-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid #e6eaf6;border-radius:999px;padding:.25rem .55rem;font-weight:800;font-size:.8rem}
     .status-chip .dot{width:.5rem;height:.5rem;border-radius:50%}
@@ -126,8 +130,6 @@
     .legal{display:flex;flex-wrap:wrap;gap:var(--s1);justify-content:center;margin-top:calc(var(--s0)*1.2)}
     .legal a{text-decoration:underline;font-weight:600}
     .foot-meta{display:flex;flex-wrap:wrap;gap:10px;align-items:center;color:#667792;justify-content:center}
-    .hint{color:#556c92}
-    .input{width:100%;border:1px solid #e5ecff;border-radius:10px;padding:.7rem .9rem;font:inherit;background:#fff}
   </style>
 
   <!-- Config dinâmica do backend (override via ?api=...) -->
@@ -145,8 +147,8 @@
     })();
   </script>
 
-  <!-- JS principal -->
-  <script defer src="./app.js"></script>
+  <!-- JS principal (vitrine, OTP, abrir dashboard após verificar) -->
+  <script defer src="./app/app.js"></script>
 </head>
 <body>
   <!-- HEADER -->
@@ -155,7 +157,7 @@
       <div class="nav-actions">
         <a href="#vitrine" class="link-like">Vitrine</a>
         <a href="#organizadores" class="link-like" id="nav-org">Organizadores</a>
-        <!-- Removido Validador da landing -->
+        <!-- Validador removido da landing (fica no dashboard) -->
         <a href="#" class="link-like" id="nav-login" data-login>Entrar</a>
         <span class="tag off" id="auth-indicator" aria-live="polite">offline</span>
       </div>
@@ -247,46 +249,35 @@
     <!-- ORGANIZADORES -->
     <section id="organizadores" class="section" aria-labelledby="orgs-title" tabindex="-1" hidden>
       <h2 id="orgs-title">Soluções para organizadores</h2>
-
-      <!-- Calculadora & Solicitação -->
-      <div class="std-card" id="calc-setup">
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
-          <button type="button" class="chip" data-kind="simples" aria-pressed="true">Ingresso Simples</button>
-          <button type="button" class="chip" data-kind="vip">Mesas / VIP</button>
-        </div>
-
-        <div style="display:grid;gap:10px">
-          <div style="display:grid;gap:8px;grid-template-columns:repeat(2,1fr)">
-            <label>Preço médio<input id="cs-price" class="input" inputmode="decimal" placeholder="ex.: 60" /></label>
-            <label>Capacidade<input id="cs-cap" class="input" inputmode="numeric" placeholder="ex.: 200" /></label>
+      <div id="std-card" class="std-card"></div>
+      <div class="org-panel" id="org-detail" role="tabpanel" tabindex="0" aria-live="polite">
+        <div class="panel-grid">
+          <div class="panel-card">
+            <details class="disclosure" open>
+              <summary class="disclosure__summary">Calculadora &amp; Setup</summary>
+              <div class="calc" id="calc-box" data-fee="">
+                <div class="calc-result" id="calc-gross-row"><span>Total bruto</span><strong id="calc-gross">R$ 0,00</strong></div>
+                <div class="calc-result"><span>Você recebe</span><strong id="calc-net">R$ 0,00</strong></div>
+                <div class="panel-cta" style="margin-top:var(--s2)">
+                  <!-- abre modal OTP; após verificar, redireciona p/ dashboard -->
+                  <a class="btn btn--ghost btn--sm" id="open-dashboard" href="#" data-login>Entrar no Dashboard</a>
+                </div>
+              </div>
+            </details>
           </div>
-          <div id="cs-fees" class="hint">Taxa: 8% + R$ 2,90 (simples)</div>
-          <div style="display:flex;justify-content:space-between">
-            <span>Total bruto</span><strong id="cs-gross">R$ 0,00</strong>
-          </div>
-          <div style="display:flex;justify-content:space-between">
-            <span>Você recebe</span><strong id="cs-net">R$ 0,00</strong>
-          </div>
-        </div>
 
-        <hr style="margin:14px 0;border:none;border-top:1px solid #eef2ff">
-
-        <form id="req-form" style="display:grid;gap:8px">
-          <div style="display:grid;gap:8px;grid-template-columns:repeat(2,1fr)">
-            <input id="req-title" class="input" placeholder="Nome do evento" />
-            <input id="req-city" class="input" placeholder="Cidade/UF" />
+          <div class="panel-card">
+            <details class="disclosure" open>
+              <summary class="disclosure__summary">Dashboard</summary>
+              <div class="cmd">
+                <div>
+                  <p><strong>Acompanhe vendas</strong>, baixe lista de compradores e <strong>valide QR Code</strong> no modo Validador.</p>
+                  <p>Acesso por <em>código de verificação</em> enviado ao seu WhatsApp. <a id="open-login-inline" href="#" data-login>Abrir login</a>.</p>
+                </div>
+                <a class="btn btn--secondary btn--sm" id="open-dashboard-2" href="#" data-login>Abrir Dashboard</a>
+              </div>
+            </details>
           </div>
-          <div style="display:grid;gap:8px;grid-template-columns:repeat(2,1fr)">
-            <input id="req-date" class="input" type="date" />
-            <input id="req-venue" class="input" placeholder="Local (opcional)" />
-          </div>
-          <input id="req-phone" class="input" inputmode="numeric" placeholder="Seu WhatsApp (DDI+DDD+NÚMERO)" />
-          <button class="btn btn--secondary btn--sm" type="submit">Solicitar criação</button>
-          <small class="hint" id="req-hint"></small>
-        </form>
-
-        <div class="panel-cta" style="margin-top:14px">
-          <a class="btn btn--ghost btn--sm" id="open-dashboard" href="./app/dashboard.html">Abrir Dashboard</a>
         </div>
       </div>
     </section>
@@ -328,26 +319,26 @@
     </div>
   </footer>
 
-  <!-- MODAL LOGIN -->
+  <!-- MODAL LOGIN (OTP) -->
   <div class="modal" id="login-modal" aria-hidden="true" role="dialog" aria-modal="true">
-    <div class="modal-card" style="background:#fff;border:1px solid #e5ecff;border-radius:16px;padding:16px;box-shadow:0 10px 26px rgba(47,125,217,.16);max-width:520px;margin:8vh auto">
-      <h3 style="margin-top:0">Entrar no Dashboard</h3>
+    <div class="modal-card">
+      <h3>Entrar no Dashboard</h3>
       <label class="sr-only" for="login-phone">Seu WhatsApp (com DDI + DDD)</label>
       <input id="login-phone" class="input" inputmode="numeric" placeholder="ex.: 5534999999999" autocomplete="tel" />
-      <div class="modal-actions" style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+      <div class="modal-actions">
         <button class="btn btn--ghost btn--sm" id="login-cancel" type="button">Cancelar</button>
         <button class="btn btn--secondary btn--sm" id="login-send" type="button">Receber código</button>
       </div>
 
-      <div id="code-block" style="display:none;margin-top:10px">
+      <div id="code-block" style="display:none">
         <label class="sr-only" for="login-code">Código de verificação</label>
         <input id="login-code" class="input" inputmode="numeric" maxlength="6" placeholder="Código (4–6 dígitos)" />
-        <div class="modal-actions" style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+        <div class="modal-actions">
           <button class="btn btn--ghost btn--sm" id="code-back" type="button">Voltar</button>
           <button class="btn btn--secondary btn--sm" id="code-verify" type="button">Verificar</button>
         </div>
       </div>
-      <div class="hint" id="login-hint" style="margin-top:8px"></div>
+      <div class="hint" id="login-hint"></div>
     </div>
   </div>
 
