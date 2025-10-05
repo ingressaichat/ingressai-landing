@@ -8,7 +8,7 @@
   <meta name="description" content="Compre ingressos em minutos pelo WhatsApp. Vitrine por cidade, checkout instantâneo, repasse T+0 e validação por QR Code." />
   <meta name="robots" content="index,follow,max-image-preview:large" />
 
-  <!-- API por META (evita CSP bloquear inline script) -->
+  <!-- API base (pode ser sobrescrita por ?api=...) -->
   <meta name="ingressai-api" content="https://ingressai-backend-production.up.railway.app/api" />
 
   <!-- OG/Twitter -->
@@ -25,10 +25,12 @@
   <link rel="icon" href="./favicon.png" type="image/png" />
   <link rel="preload" as="image" href="./logo_ingressai.png" />
 
+  <!-- estilos -->
   <style>
-    :root{--phi:1.618;--s0:8px;--s1:calc(var(--s0)*var(--phi));--s2:calc(var(--s1)*var(--phi));--s3:calc(var(--s2)*var(--phi));--s4:calc(var(--s3)*var(--phi));
+    :root{
+      --phi:1.618;--s0:8px;--s1:calc(var(--s0)*var(--phi));--s2:calc(var(--s1)*var(--phi));--s3:calc(var(--s2)*var(--phi));--s4:calc(var(--s3)*var(--phi));
       --fs-0:1rem;--fs--1:calc(var(--fs-0)/var(--phi));--lh:1.45;--lh-compact:1.22;
-      --ink:#0b1220;--muted:#5b6b86;--bg:#f6f8fc;--card:#ffffff;--blue-2:#2F7DD9;
+      --ink:#0b1220;--muted:#5b6b86;--bg:#f6f8fc;--card:#ffffff;--blue-2:#2F7DD9;--blue-soft:#eaf3ff;
       --shadow:0 10px 28px rgba(47,125,217,.14),0 2px 6px rgba(11,18,32,.08);
       --shadow-soft:0 6px 18px rgba(47,125,217,.12);--ring:0 0 0 2px rgba(74,147,240,.18);
       --container-max:calc(680px*var(--phi));--btn-h:52px;--radius-pill:999px;--t-fast:.18s;--t-med:.28s}
@@ -120,6 +122,15 @@
     .std-card{background:#fff;border:1px solid #e5ecff;border-radius:calc(var(--s2));padding:var(--s2);box-shadow:var(--shadow-soft)}
     .std-list{margin:0;padding-left:1.25rem;display:grid;gap:6px}
 
+    /* organizadores */
+    .org-grid{display:grid;gap:var(--s1)}
+    @media(min-width:880px){.org-grid{grid-template-columns:1fr 1fr}}
+    .panel-card{background:#fff;border:1px solid #e5ecff;border-radius:calc(var(--s2));padding:var(--s2);box-shadow:var(--shadow-soft)}
+    .disclosure__summary{cursor:pointer;font-weight:800}
+    .calc-result{display:flex;align-items:center;justify-content:space-between;padding:.6rem 1rem;border:1px solid #eaf1ff;border-radius:12px;margin:.35rem 0}
+    .panel-cta{display:flex;gap:10px;flex-wrap:wrap}
+
+    /* footer */
     footer{background:#fff;border-top:1px solid #e7eefb;margin-top:var(--s4)}
     .foot{max-width:var(--container-max);margin:0 auto;padding:var(--s3) var(--s3)}
     .foot-block{display:grid;gap:var(--s2);justify-items:center;text-align:center}
@@ -130,16 +141,18 @@
     .legal a{text-decoration:underline;font-weight:600}
     .foot-meta{display:flex;flex-wrap:wrap;gap:10px;align-items:center;color:#667792;justify-content:center}
 
+    /* diag & erros */
     #diag{position:fixed;left:8px;bottom:8px;z-index:99;background:#fff;border:1px solid #e7eefb;border-radius:10px;padding:8px 10px;box-shadow:var(--shadow-soft);font-size:12px;color:#3a4a63}
     #diag b{font-weight:800}
     #err-overlay{position:fixed;inset:0;background:rgba(0,0,0,.66);color:#fff;z-index:999;display:none;align-items:center;justify-content:center;padding:24px}
     #err-overlay pre{max-width:960px;max-height:70vh;overflow:auto;background:#111;border-radius:12px;padding:16px;font-size:13px;line-height:1.35;border:1px solid #333}
   </style>
 
-  <!-- IMPORTANTE: path RELATIVO, funciona em subpastas do domínio -->
+  <!-- JS principal (NADA de HTML embutido aqui) -->
   <script defer src="./app/app.js"></script>
 </head>
 <body>
+  <!-- HEADER -->
   <header role="banner">
     <div class="container nav">
       <div class="nav-actions">
@@ -151,47 +164,79 @@
     </div>
   </header>
 
+  <!-- MAIN -->
   <main class="container" role="main">
+    <!-- HERO -->
     <section class="hero" aria-labelledby="hero-title">
       <div class="hero-brand">
         <img src="./logo_ingressai.png" alt="IngressAI" width="160" height="160" />
-        <div class="badges">
-          <span class="badge"><img src="./meta.png" alt="Meta" width="24" height="24" /><span>Powered by Meta Business Platform</span></span>
-          <span class="badge"><img src="./whatsapp_business.png" alt="WhatsApp Business" width="24" height="24" /><span>WhatsApp Business API</span></span>
+        <div class="badges" aria-label="Selos">
+          <span class="badge" aria-label="Powered by Meta Business Platform">
+            <img src="./meta.png" alt="Meta" width="24" height="24" />
+            <span>Powered by Meta Business Platform</span>
+          </span>
+          <span class="badge" aria-label="WhatsApp Business API">
+            <img src="./whatsapp_business.png" alt="WhatsApp Business" width="24" height="24" />
+            <span>WhatsApp Business API</span>
+          </span>
         </div>
       </div>
       <h1 id="hero-title">Crie eventos com a IngressAI.</h1>
     </section>
 
     <div class="cta-inline">
-      <a href="#organizadores" class="btn btn--secondary btn--sm" id="cta-organizadores">Soluções para organizadores</a>
+      <a href="#organizadores" class="btn btn--secondary btn--sm" id="cta-organizadores" aria-label="Abrir soluções para organizadores">Soluções para organizadores</a>
     </div>
 
+    <!-- PROVAS -->
     <section class="proofs" aria-labelledby="proofs-title">
       <h2 id="proofs-title" class="sr-only">Provas de valor</h2>
-      <div class="features">
+      <div class="features" aria-label="Provas">
         <div class="feature">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.6" y="6.6" width="16.8" height="10.8" rx="2.4"/><circle class="cut" cx="3.6" cy="12" r="1"/><circle class="cut" cx="20.4" cy="12" r="1"/><path class="bolt" d="M12 9.4 L10.2 12 h1.55 l-.75 3.0 L14 11.2 h-1.6 z"/></svg>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3.6" y="6.6" width="16.8" height="10.8" rx="2.4" />
+            <circle class="cut" cx="3.6" cy="12" r="1" />
+            <circle class="cut" cx="20.4" cy="12" r="1" />
+            <path class="bolt" d="M12 9.4 L10.2 12 h1.55 l-.75 3.0 L14 11.2 h-1.6 z" />
+          </svg>
           <div class="meta"><strong>Venda automatizada</strong><small>via WhatsApp</small></div>
         </div>
         <div class="feature">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10a 8 8 0 0 1 14-2"/><path d="M4 6v4h4"/><path d="M20 14a 8 8 0 0 1-14 2"/><path d="M20 18v-4h-4"/></svg>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 10a 8 8 0 0 1 14-2" />
+            <path d="M4 6v4h4" />
+            <path d="M20 14a 8 8 0 0 1-14 2" />
+            <path d="M20 18v-4h-4" />
+          </svg>
           <div class="meta"><strong>Repasse imediato</strong><small>via Pix</small></div>
         </div>
         <div class="feature">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.1"/><rect class="qr-fill" x="5.6" y="5.6" width="2.8" height="2.8" rx=".35"/><rect x="14" y="3" width="7" height="7" rx="1.1"/><rect class="qr-fill" x="16.6" y="5.6" width="2.8" height="2.8" rx=".35"/><rect x="3" y="14" width="7" height="7" rx="1.1"/><rect class="qr-fill" x="5.6" y="16.6" width="2.8" height="2.8" rx=".35"/></svg>
-          <div class="meta"><strong>QR Code Antifraude</strong><small>+ validador web</small></div>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3" y="3" width="7" height="7" rx="1.1" />
+            <rect class="qr-fill" x="5.6" y="5.6" width="2.8" height="2.8" rx=".35" />
+            <rect x="14" y="3" width="7" height="7" rx="1.1" />
+            <rect class="qr-fill" x="16.6" y="5.6" width="2.8" height="2.8" rx=".35" />
+            <rect x="3" y="14" width="7" height="7" rx="1.1" />
+            <rect class="qr-fill" x="5.6" y="16.6" width="2.8" height="2.8" rx=".35" />
+          </svg>
+          <div class="meta"><strong>QR Code Antifraude</strong><small>+ validador no Dashboard</small></div>
         </div>
         <div class="feature">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7h11M9 12h11M9 17h11"/><rect x="4" y="6" width="2.2" height="2.2" rx=".35"/><rect x="4" y="11" width="2.2" height="2.2" rx=".35"/><rect x="4" y="16" width="2.2" height="2.2" rx=".35"/></svg>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9 7h11M9 12h11M9 17h11" />
+            <rect x="4" y="6" width="2.2" height="2.2" rx=".35" />
+            <rect x="4" y="11" width="2.2" height="2.2" rx=".35" />
+            <rect x="4" y="16" width="2.2" height="2.2" rx=".35" />
+          </svg>
           <div class="meta"><strong>Dashboard</strong><small>Ingressos & acesso</small></div>
         </div>
       </div>
     </section>
 
+    <!-- VITRINE -->
     <section id="vitrine" class="section" aria-labelledby="vitrine-title" tabindex="-1">
       <h2 id="vitrine-title">Eventos em destaque</h2>
-      <div class="filters">
+      <div class="filters" aria-label="Filtros">
         <div class="search">
           <label for="busca-eventos" class="sr-only">Buscar evento</label>
           <input type="search" id="busca-eventos" placeholder="Buscar evento" inputmode="search" autocomplete="off" aria-describedby="vitrine-title" />
@@ -201,40 +246,75 @@
       <div class="cards" id="lista-eventos" aria-live="polite"></div>
     </section>
 
+    <!-- ORGANIZADORES -->
     <section id="organizadores" class="section" aria-labelledby="orgs-title" tabindex="-1" hidden>
       <h2 id="orgs-title">Soluções para organizadores</h2>
-      <div id="std-card" class="std-card"></div>
-      <div class="org-panel" id="org-detail" role="tabpanel" tabindex="0" aria-live="polite">
-        <div class="panel-grid">
-          <div class="panel-card">
-            <details class="disclosure" open>
-              <summary class="disclosure__summary">Calculadora &amp; Setup</summary>
-              <div class="calc" id="calc-box" data-fee="">
-                <div class="calc-result" id="calc-gross-row"><span>Total bruto</span><strong id="calc-gross">R$ 0,00</strong></div>
-                <div class="calc-result"><span>Você recebe</span><strong id="calc-net">R$ 0,00</strong></div>
-                <div class="panel-cta" style="margin-top:var(--s2)">
-                  <a class="btn btn--ghost btn--sm" id="open-dashboard" href="#" data-login>Entrar no Dashboard</a>
-                </div>
-              </div>
-            </details>
-          </div>
 
-          <div class="panel-card">
-            <details class="disclosure" open>
-              <summary class="disclosure__summary">Dashboard</summary>
-              <div class="cmd">
-                <div>
-                  <p><strong>Acompanhe vendas</strong>, baixe lista de compradores e <strong>valide QR Code</strong> no modo Validador.</p>
-                  <p>Acesso por <em>código de verificação</em> enviado ao seu WhatsApp. <a id="open-login-inline" href="#" data-login>Abrir login</a>.</p>
-                </div>
-                <a class="btn btn--secondary btn--sm" id="open-dashboard-2" href="#" data-login>Abrir Dashboard</a>
+      <!-- blocos explicativos + calculadora -->
+      <div id="std-card" class="std-card"></div>
+
+      <div class="org-grid" id="org-detail" role="tabpanel" tabindex="0" aria-live="polite">
+        <!-- Calculadora & Setup -->
+        <div class="panel-card">
+          <details class="disclosure" open>
+            <summary class="disclosure__summary">Calculadora &amp; Setup</summary>
+
+            <!-- categorias -->
+            <div class="std-card" style="margin:.8rem 0">
+              <strong>Categoria</strong>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px">
+                <label><input type="radio" name="org-cat" value="promotor" checked> Promotor/Produtor</label>
+                <label><input type="radio" name="org-cat" value="casa"> Casa/Estabelecimento</label>
               </div>
-            </details>
-          </div>
+            </div>
+
+            <div class="calc" id="calc-box" data-fee="">
+              <div class="calc-result" id="calc-gross-row"><span>Total bruto</span><strong id="calc-gross">R$ 0,00</strong></div>
+              <div class="calc-result"><span>Você recebe</span><strong id="calc-net">R$ 0,00</strong></div>
+
+              <div class="panel-cta" style="margin-top:var(--s2)">
+                <!-- abre modal de login via data-login (OTP) -->
+                <a class="btn btn--ghost btn--sm" id="open-dashboard" href="#" data-login>Entrar no Dashboard</a>
+              </div>
+            </div>
+          </details>
+        </div>
+
+        <!-- Solicitar criação de evento -->
+        <div class="panel-card">
+          <details class="disclosure" open>
+            <summary class="disclosure__summary">Solicitar criação de evento</summary>
+            <p>Preencha seus dados e peça a criação do evento. Após nossa aprovação, você será notificado no WhatsApp e seu número será liberado para acessar o Dashboard.</p>
+
+            <form id="req-form" class="std-card" onsubmit="return false;" aria-describedby="req-hint">
+              <div style="display:grid;gap:10px">
+                <label>Seu WhatsApp (DDI+DDD+Número)
+                  <input id="req-phone" class="input" inputmode="numeric" placeholder="ex.: 5534999999999" autocomplete="tel" />
+                </label>
+                <label>Nome do evento
+                  <input id="req-title" class="input" placeholder="ex.: Festa Sunset" />
+                </label>
+                <label>Cidade
+                  <input id="req-city" class="input" placeholder="ex.: Uberaba-MG" />
+                </label>
+                <label>Local (opcional)
+                  <input id="req-venue" class="input" placeholder="ex.: Espaço Demo" />
+                </label>
+                <label>Data (opcional)
+                  <input id="req-date" type="datetime-local" class="input" />
+                </label>
+              </div>
+              <div class="panel-cta" style="margin-top:10px">
+                <button id="req-send" class="btn btn--secondary btn--sm" type="button" data-login>Enviar e acompanhar no Dashboard</button>
+              </div>
+              <div class="hint" id="req-hint" style="margin-top:6px;color:#5b6b86">Você receberá o código de login por WhatsApp.</div>
+            </form>
+          </details>
         </div>
       </div>
     </section>
 
+    <!-- SHEET (detalhe do evento) -->
     <div class="sheet-backdrop" id="sheet-backdrop" aria-hidden="true"></div>
     <aside class="sheet" id="sheet" aria-hidden="true" role="dialog" aria-modal="true">
       <button type="button" class="sheet-close" id="sheet-close" data-close="sheet" aria-label="Fechar">
@@ -244,6 +324,7 @@
     </aside>
   </main>
 
+  <!-- FOOTER -->
   <footer role="contentinfo">
     <div class="foot">
       <div class="foot-block">
@@ -270,29 +351,36 @@
     </div>
   </footer>
 
+  <!-- MODAL LOGIN (OTP) -->
   <div class="modal" id="login-modal" aria-hidden="true" role="dialog" aria-modal="true">
-    <div class="modal-card">
-      <h3>Entrar no Dashboard</h3>
+    <div class="modal-card" style="background:#fff;border:1px solid #e5ecff;border-radius:16px;box-shadow:var(--shadow-soft);padding:var(--s2);max-width:420px;margin:10vh auto">
+      <h3 style="margin-top:0">Entrar no Dashboard</h3>
       <label class="sr-only" for="login-phone">Seu WhatsApp (com DDI + DDD)</label>
-      <input id="login-phone" class="input" inputmode="numeric" placeholder="ex.: 5534999999999" autocomplete="tel" />
-      <div class="modal-actions">
+      <input id="login-phone" class="input" inputmode="numeric" placeholder="ex.: 5534999999999" autocomplete="tel" style="width:100%;border:1px solid #e5ecff;border-radius:999px;padding:.9rem 1rem;margin:.35rem 0" />
+      <div class="modal-actions" style="display:flex;gap:10px;justify-content:flex-end">
         <button class="btn btn--ghost btn--sm" id="login-cancel" type="button">Cancelar</button>
         <button class="btn btn--secondary btn--sm" id="login-send" type="button">Receber código</button>
       </div>
 
-      <div id="code-block" style="display:none">
+      <div id="code-block" style="display:none;margin-top:10px">
         <label class="sr-only" for="login-code">Código de verificação</label>
-        <input id="login-code" class="input" inputmode="numeric" maxlength="6" placeholder="Código (4–6 dígitos)" />
-        <div class="modal-actions">
+        <input id="login-code" class="input" inputmode="numeric" maxlength="6" placeholder="Código (4–6 dígitos)" style="width:100%;border:1px solid #e5ecff;border-radius:999px;padding:.9rem 1rem;margin:.35rem 0" />
+        <div class="modal-actions" style="display:flex;gap:10px;justify-content:flex-end">
           <button class="btn btn--ghost btn--sm" id="code-back" type="button">Voltar</button>
           <button class="btn btn--secondary btn--sm" id="code-verify" type="button">Verificar</button>
         </div>
       </div>
-      <div class="hint" id="login-hint"></div>
+      <div class="hint" id="login-hint" style="margin-top:8px;color:#5b6b86"></div>
     </div>
   </div>
 
+  <!-- diag + overlay de erro -->
   <div id="diag" aria-live="polite">API: <b id="d-api">—</b> • Health: <b id="d-health">?</b> • Eventos: <b id="d-ev">0</b></div>
-  <div id="err-overlay"><pre id="err-pre"></pre></div>
+  <div id="err-overlay" role="alertdialog" aria-modal="true"><pre id="err-pre"></pre></div>
+
+  <!-- schema -->
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"Organization","name":"IngressAI","url":"https://ingressai.chat/","logo":"https://ingressai.chat/logo_ingressai.png","sameAs":["https://instagram.com/ingressai"],"contactPoint":[{"@type":"ContactPoint","contactType":"customer support","areaServed":"BR","availableLanguage":"pt-BR"}]}
+  </script>
 </body>
 </html>
