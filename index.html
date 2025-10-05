@@ -8,7 +8,7 @@
   <meta name="description" content="Compre ingressos em minutos pelo WhatsApp. Vitrine por cidade, checkout instantâneo, repasse T+0 e validação por QR Code." />
   <meta name="robots" content="index,follow,max-image-preview:large" />
 
-  <!-- API base (pode ser sobrescrita por ?api=...) -->
+  <!-- API: o app.js lê daqui caso não use ?api= -->
   <meta name="ingressai-api" content="https://ingressai-backend-production.up.railway.app/api" />
 
   <!-- OG/Twitter -->
@@ -25,21 +25,22 @@
   <link rel="icon" href="./favicon.png" type="image/png" />
   <link rel="preload" as="image" href="./logo_ingressai.png" />
 
-  <!-- estilos -->
   <style>
     :root{
       --phi:1.618;--s0:8px;--s1:calc(var(--s0)*var(--phi));--s2:calc(var(--s1)*var(--phi));--s3:calc(var(--s2)*var(--phi));--s4:calc(var(--s3)*var(--phi));
       --fs-0:1rem;--fs--1:calc(var(--fs-0)/var(--phi));--lh:1.45;--lh-compact:1.22;
-      --ink:#0b1220;--muted:#5b6b86;--bg:#f6f8fc;--card:#ffffff;--blue-2:#2F7DD9;--blue-soft:#eaf3ff;
+      --ink:#0b1220;--muted:#5b6b86;--bg:#f6f8fc;--card:#ffffff;
+      --blue-2:#2F7DD9;--blue-soft:#eaf3ff;
       --shadow:0 10px 28px rgba(47,125,217,.14),0 2px 6px rgba(11,18,32,.08);
       --shadow-soft:0 6px 18px rgba(47,125,217,.12);--ring:0 0 0 2px rgba(74,147,240,.18);
-      --container-max:calc(680px*var(--phi));--btn-h:52px;--radius-pill:999px;--t-fast:.18s;--t-med:.28s}
+      --container-max:calc(680px*var(--phi));--btn-h:52px;--radius-pill:999px;--t-fast:.18s;--t-med:.28s;
+    }
     *{box-sizing:border-box}
-    html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font:16px/var(--lh) system-ui,-apple-system,Segoe UI,Roboto,Inter}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font:16px/var(--lh) -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Ubuntu,Inter,system-ui,sans-serif}
     a{color:inherit;text-decoration:none}
     :focus-visible{outline:none;box-shadow:var(--ring)}
     .container{max-width:var(--container-max);margin:0 auto;padding:0 var(--s3)}
-    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%)}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
     .subtle{color:var(--muted)}
     :where(section,[id]){scroll-margin-top:96px}
 
@@ -48,19 +49,19 @@
     .nav{display:flex;flex-direction:column;align-items:center;gap:var(--s1);padding:var(--s1) 0}
     .nav-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
     .link-like{border:1px solid #e7eefb;background:#fff;border-radius:12px;padding:.6rem .8rem;box-shadow:var(--shadow-soft);font-weight:800;min-height:40px;display:inline-grid;place-items:center}
-    .tag{border:1px solid #e7eefb;border-radius:10px;padding:.2rem .5rem;font-weight:800}
-    .tag.off{color:#b64848;border-color:#ffdede;background:#fff7f7}
-    .tag.on{color:#128c41;border-color:#cfead8;background:#edfff5}
+    .tag{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:.25rem .6rem;font:inherit;font-weight:800}
+    .tag.on{background:#e9f7ec;color:#157f3b;border:1px solid #cfe8d7}
+    .tag.off{background:#fff4f4;color:#b64848;border:1px solid #ffdede}
 
     .hero{padding:var(--s4) 0;opacity:calc(1 - var(--hero-p,0));transform:translateY(calc(-6px * var(--hero-p,0)));transition:opacity var(--t-fast) linear,transform var(--t-fast) linear}
     .hero.is-hidden{opacity:0;height:0;padding:0;margin:0;overflow:hidden}
     .hero h1{font-size:clamp(calc(1.25rem*var(--phi)),6.2vw,calc(1.25rem*var(--phi)*var(--phi)));line-height:var(--lh-compact);margin:0 0 var(--s2) 0;font-weight:850;text-align:center}
     .hero-brand{display:grid;gap:var(--s1);place-items:center;margin-bottom:var(--s2)}
     .badges{display:flex;gap:calc(var(--s1)*1.4);align-items:center;justify-content:center;flex-wrap:wrap;margin-top:6px}
-    .badge{display:inline-flex;align-items:center;gap:.55rem;padding:0;background:transparent;border-radius:0;box-shadow:none;font-weight:700}
+    .badge{display:inline-flex;align-items:center;gap:.55rem;padding:0;background:transparent;border-radius:0;box-shadow:none;font-weight:700;cursor:default;user-select:none}
     .badge img{height:18px;width:auto;display:block}.badge span{color:#445570;font-weight:700;opacity:.95}
 
-    .btn{min-height:var(--btn-h);padding:0 var(--s2);border-radius:var(--radius-pill);border:1px solid #d6e4ff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;gap:10px;background:#fff;color:#0b1220;transition:transform .08s,box-shadow var(--t-fast)}
+    .btn{min-height:var(--btn-h);padding:0 var(--s2);border-radius:var(--radius-pill);border:1px solid #d6e4ff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;letter-spacing:.2px;gap:10px;background:#fff;color:#0b1220;transition:transform .08s,box-shadow var(--t-fast)}
     .btn--secondary{box-shadow:var(--shadow-soft)}
     .btn--ghost{background:#fff;border-color:#e1e8f6;box-shadow:none;color:#2d3b50}
     .btn--sm{min-height:40px;padding:0 .9rem;font-size:1rem}
@@ -83,7 +84,7 @@
     .filters{display:grid;grid-template-columns:1fr;gap:var(--s1);margin:0 0 var(--s1) 0}
     @media(min-width:680px){.filters{grid-template-columns:1fr max-content}}
     .search input{width:100%;border:1px solid #e5ecff;border-radius:999px;padding:.9rem 1rem;font:inherit;box-shadow:var(--shadow-soft);font-weight:600;font-size:16px}
-    .chips{display:flex;gap:8px;align-items:center;overflow:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity}
+    .chips{display:flex;gap:8px;align-items:center;overflow:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;scroll-snap-type:x proximity}
     .chip{appearance:none;border:1px solid #e5ecff;background:#fff;border-radius:999px;padding:.6rem .95rem;font-weight:800;color:#415577;cursor:pointer;white-space:nowrap;min-height:40px;scroll-snap-align:start}
     .chip[aria-selected="true"]{background:var(--blue-2);color:#fff;border-color:rgba(27,95,179,.35);box-shadow:0 6px 14px rgba(47,125,217,.25)}
 
@@ -111,7 +112,6 @@
     .sheet-media{width:100%;aspect-ratio:1.35;border:1px solid #eaf1ff;border-radius:16px;background:radial-gradient(600px 280px at 20% 0%,rgba(47,125,217,.12),transparent 60%),linear-gradient(180deg,#fff,#f5f9ff);margin-top:var(--s0);margin-bottom:var(--s1);overflow:hidden;display:block}
     .sheet-media img{width:100%;height:100%;object-fit:cover;display:block}
     .sheet-head{display:flex;flex-direction:column;gap:6px;align-items:flex-start;margin-top:0}
-    .sheet-close{position:absolute;top:10px;right:10px;border:none;background:#fff;border-radius:10px;width:36px;height:36px;display:grid;place-items:center;box-shadow:var(--shadow-soft);cursor:pointer}
 
     .status-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid #e6eaf6;border-radius:999px;padding:.25rem .55rem;font-weight:800;font-size:.8rem}
     .status-chip .dot{width:.5rem;height:.5rem;border-radius:50%}
@@ -122,15 +122,6 @@
     .std-card{background:#fff;border:1px solid #e5ecff;border-radius:calc(var(--s2));padding:var(--s2);box-shadow:var(--shadow-soft)}
     .std-list{margin:0;padding-left:1.25rem;display:grid;gap:6px}
 
-    /* organizadores */
-    .org-grid{display:grid;gap:var(--s1)}
-    @media(min-width:880px){.org-grid{grid-template-columns:1fr 1fr}}
-    .panel-card{background:#fff;border:1px solid #e5ecff;border-radius:calc(var(--s2));padding:var(--s2);box-shadow:var(--shadow-soft)}
-    .disclosure__summary{cursor:pointer;font-weight:800}
-    .calc-result{display:flex;align-items:center;justify-content:space-between;padding:.6rem 1rem;border:1px solid #eaf1ff;border-radius:12px;margin:.35rem 0}
-    .panel-cta{display:flex;gap:10px;flex-wrap:wrap}
-
-    /* footer */
     footer{background:#fff;border-top:1px solid #e7eefb;margin-top:var(--s4)}
     .foot{max-width:var(--container-max);margin:0 auto;padding:var(--s3) var(--s3)}
     .foot-block{display:grid;gap:var(--s2);justify-items:center;text-align:center}
@@ -141,15 +132,30 @@
     .legal a{text-decoration:underline;font-weight:600}
     .foot-meta{display:flex;flex-wrap:wrap;gap:10px;align-items:center;color:#667792;justify-content:center}
 
-    /* diag & erros */
-    #diag{position:fixed;left:8px;bottom:8px;z-index:99;background:#fff;border:1px solid #e7eefb;border-radius:10px;padding:8px 10px;box-shadow:var(--shadow-soft);font-size:12px;color:#3a4a63}
-    #diag b{font-weight:800}
-    #err-overlay{position:fixed;inset:0;background:rgba(0,0,0,.66);color:#fff;z-index:999;display:none;align-items:center;justify-content:center;padding:24px}
-    #err-overlay pre{max-width:960px;max-height:70vh;overflow:auto;background:#111;border-radius:12px;padding:16px;font-size:13px;line-height:1.35;border:1px solid #333}
+    /* Overlay de erro (debug se algo quebrar) */
+    #err-overlay{position:fixed;inset:0;background:rgba(0,0,0,.66);display:none;align-items:center;justify-content:center;z-index:9999}
+    #err-card{background:#0b1220;color:#fff;max-width:960px;width:96%;border-radius:12px;padding:16px;border:1px solid #2b3344}
+    #err-card h4{margin:0 0 8px 0}
+    #err-pre{margin:0;white-space:pre-wrap;font-size:.9rem;max-height:60vh;overflow:auto}
+    .diag{font-size:.85rem;color:#566781;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:.5rem 0}
+    .diag div{background:#fff;border:1px solid #e7eefb;border-radius:8px;padding:6px 8px}
+    .diag strong{display:block}
   </style>
 
-  <!-- JS principal (NADA de HTML embutido aqui) -->
-  <script defer src="./app/app.js"></script>
+  <!-- Normaliza API global (caso precise) -->
+  <script>
+    (function () {
+      const qsApi = new URLSearchParams(location.search).get("api") || "";
+      const PROD = "https://ingressai-backend-production.up.railway.app/api";
+      function normalizeApi(raw){
+        let s = String(raw||"").trim().replace(/[.\s/]+$/g,"");
+        if(!/\/api$/i.test(s)) s += "/api";
+        s = s.replace(/([^:])\/{2,}/g,"$1/");
+        return s;
+      }
+      window.INGRESSAI_API = normalizeApi(qsApi || PROD);
+    })();
+  </script>
 </head>
 <body>
   <!-- HEADER -->
@@ -158,6 +164,7 @@
       <div class="nav-actions">
         <a href="#vitrine" class="link-like">Vitrine</a>
         <a href="#organizadores" class="link-like" id="nav-org">Organizadores</a>
+        <!-- Validador saiu da landing e fica no dashboard -->
         <a href="#" class="link-like" id="nav-login" data-login>Entrar</a>
         <span class="tag off" id="auth-indicator" aria-live="polite">offline</span>
       </div>
@@ -219,7 +226,7 @@
             <rect x="3" y="14" width="7" height="7" rx="1.1" />
             <rect class="qr-fill" x="5.6" y="16.6" width="2.8" height="2.8" rx=".35" />
           </svg>
-          <div class="meta"><strong>QR Code Antifraude</strong><small>+ validador no Dashboard</small></div>
+          <div class="meta"><strong>QR Code Antifraude</strong><small>+ validador (no Dashboard)</small></div>
         </div>
         <div class="feature">
           <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -250,71 +257,44 @@
     <section id="organizadores" class="section" aria-labelledby="orgs-title" tabindex="-1" hidden>
       <h2 id="orgs-title">Soluções para organizadores</h2>
 
-      <!-- blocos explicativos + calculadora -->
-      <div id="std-card" class="std-card"></div>
-
-      <div class="org-grid" id="org-detail" role="tabpanel" tabindex="0" aria-live="polite">
-        <!-- Calculadora & Setup -->
-        <div class="panel-card">
-          <details class="disclosure" open>
-            <summary class="disclosure__summary">Calculadora &amp; Setup</summary>
-
-            <!-- categorias -->
-            <div class="std-card" style="margin:.8rem 0">
-              <strong>Categoria</strong>
-              <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px">
-                <label><input type="radio" name="org-cat" value="promotor" checked> Promotor/Produtor</label>
-                <label><input type="radio" name="org-cat" value="casa"> Casa/Estabelecimento</label>
-              </div>
-            </div>
-
-            <div class="calc" id="calc-box" data-fee="">
-              <div class="calc-result" id="calc-gross-row"><span>Total bruto</span><strong id="calc-gross">R$ 0,00</strong></div>
-              <div class="calc-result"><span>Você recebe</span><strong id="calc-net">R$ 0,00</strong></div>
-
-              <div class="panel-cta" style="margin-top:var(--s2)">
-                <!-- abre modal de login via data-login (OTP) -->
-                <a class="btn btn--ghost btn--sm" id="open-dashboard" href="#" data-login>Entrar no Dashboard</a>
-              </div>
-            </div>
-          </details>
-        </div>
-
-        <!-- Solicitar criação de evento -->
-        <div class="panel-card">
-          <details class="disclosure" open>
-            <summary class="disclosure__summary">Solicitar criação de evento</summary>
-            <p>Preencha seus dados e peça a criação do evento. Após nossa aprovação, você será notificado no WhatsApp e seu número será liberado para acessar o Dashboard.</p>
-
-            <form id="req-form" class="std-card" onsubmit="return false;" aria-describedby="req-hint">
-              <div style="display:grid;gap:10px">
-                <label>Seu WhatsApp (DDI+DDD+Número)
-                  <input id="req-phone" class="input" inputmode="numeric" placeholder="ex.: 5534999999999" autocomplete="tel" />
-                </label>
-                <label>Nome do evento
-                  <input id="req-title" class="input" placeholder="ex.: Festa Sunset" />
-                </label>
-                <label>Cidade
-                  <input id="req-city" class="input" placeholder="ex.: Uberaba-MG" />
-                </label>
-                <label>Local (opcional)
-                  <input id="req-venue" class="input" placeholder="ex.: Espaço Demo" />
-                </label>
-                <label>Data (opcional)
-                  <input id="req-date" type="datetime-local" class="input" />
-                </label>
-              </div>
-              <div class="panel-cta" style="margin-top:10px">
-                <button id="req-send" class="btn btn--secondary btn--sm" type="button" data-login>Enviar e acompanhar no Dashboard</button>
-              </div>
-              <div class="hint" id="req-hint" style="margin-top:6px;color:#5b6b86">Você receberá o código de login por WhatsApp.</div>
-            </form>
-          </details>
+      <!-- Calculadora simples por categoria -->
+      <div class="std-card">
+        <fieldset style="display:flex;gap:12px;flex-wrap:wrap;border:0;margin:0 0 .5rem 0;padding:0">
+          <legend class="sr-only">Categoria</legend>
+          <label><input type="radio" name="org-cat" value="promotor" checked /> Promotor/Produtora</label>
+          <label><input type="radio" name="org-cat" value="casa" /> Casa/Estabelecimento</label>
+        </fieldset>
+        <div class="diag">
+          <div><strong>Total bruto</strong><span id="calc-gross">R$ 0,00</span></div>
+          <div><strong>Você recebe</strong><span id="calc-net">R$ 0,00</span></div>
+          <div><strong>Eventos carregados</strong><span id="d-ev">–</span></div>
         </div>
       </div>
+
+      <!-- Proposta / Solicitação de criação -->
+      <div class="std-card" style="margin-top:12px">
+        <h3 style="margin-top:0">Quero criar meu evento</h3>
+        <form id="req-form">
+          <div style="display:grid;gap:8px;grid-template-columns:1fr">
+            <input id="req-phone" class="input" inputmode="numeric" placeholder="Seu WhatsApp (DDI+DDD+NÚMERO)" autocomplete="tel" />
+            <input id="req-title" class="input" placeholder="Nome do evento" />
+            <input id="req-city" class="input" placeholder="Cidade" />
+            <input id="req-venue" class="input" placeholder="Local (opcional)" />
+            <input id="req-date" class="input" type="datetime-local" placeholder="Data (opcional)" />
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+              <button id="req-send" class="btn btn--secondary btn--sm" type="button">Solicitar criação</button>
+              <span id="req-hint" class="subtle" aria-live="polite"></span>
+            </div>
+          </div>
+        </form>
+        <p class="subtle" style="margin:.5rem 0 0">Após sua aprovação no bot, o evento sobe e seu número é liberado para o Dashboard.</p>
+      </div>
+
+      <!-- Texto com features -->
+      <div id="std-card" class="std-card" style="margin-top:12px"></div>
     </section>
 
-    <!-- SHEET (detalhe do evento) -->
+    <!-- SHEET -->
     <div class="sheet-backdrop" id="sheet-backdrop" aria-hidden="true"></div>
     <aside class="sheet" id="sheet" aria-hidden="true" role="dialog" aria-modal="true">
       <button type="button" class="sheet-close" id="sheet-close" data-close="sheet" aria-label="Fechar">
@@ -322,6 +302,17 @@
       </button>
       <div class="sheet-body" id="sheet-body"></div>
     </aside>
+
+    <!-- Diagnóstico rápido -->
+    <div class="std-card" style="margin-top:16px">
+      <h3 style="margin-top:0">Diagnóstico</h3>
+      <div class="diag">
+        <div><strong>API</strong><span id="d-api">–</span></div>
+        <div><strong>Health</strong><span id="d-health">–</span></div>
+        <div><strong>Eventos</strong><span id="d-ev">–</span></div>
+      </div>
+      <p class="subtle" style="margin:0">Se “API” ou “Health” ficarem off, confirme CORS no backend e o caminho do <code>app.js</code>.</p>
+    </div>
   </main>
 
   <!-- FOOTER -->
@@ -353,34 +344,41 @@
 
   <!-- MODAL LOGIN (OTP) -->
   <div class="modal" id="login-modal" aria-hidden="true" role="dialog" aria-modal="true">
-    <div class="modal-card" style="background:#fff;border:1px solid #e5ecff;border-radius:16px;box-shadow:var(--shadow-soft);padding:var(--s2);max-width:420px;margin:10vh auto">
-      <h3 style="margin-top:0">Entrar no Dashboard</h3>
+    <div class="modal-card">
+      <h3>Entrar no Dashboard</h3>
       <label class="sr-only" for="login-phone">Seu WhatsApp (com DDI + DDD)</label>
-      <input id="login-phone" class="input" inputmode="numeric" placeholder="ex.: 5534999999999" autocomplete="tel" style="width:100%;border:1px solid #e5ecff;border-radius:999px;padding:.9rem 1rem;margin:.35rem 0" />
-      <div class="modal-actions" style="display:flex;gap:10px;justify-content:flex-end">
+      <input id="login-phone" class="input" inputmode="numeric" placeholder="ex.: 5534999999999" autocomplete="tel" />
+      <div class="modal-actions">
         <button class="btn btn--ghost btn--sm" id="login-cancel" type="button">Cancelar</button>
         <button class="btn btn--secondary btn--sm" id="login-send" type="button">Receber código</button>
       </div>
 
-      <div id="code-block" style="display:none;margin-top:10px">
+      <div id="code-block" style="display:none">
         <label class="sr-only" for="login-code">Código de verificação</label>
-        <input id="login-code" class="input" inputmode="numeric" maxlength="6" placeholder="Código (4–6 dígitos)" style="width:100%;border:1px solid #e5ecff;border-radius:999px;padding:.9rem 1rem;margin:.35rem 0" />
-        <div class="modal-actions" style="display:flex;gap:10px;justify-content:flex-end">
+        <input id="login-code" class="input" inputmode="numeric" maxlength="6" placeholder="Código (4–6 dígitos)" />
+        <div class="modal-actions">
           <button class="btn btn--ghost btn--sm" id="code-back" type="button">Voltar</button>
           <button class="btn btn--secondary btn--sm" id="code-verify" type="button">Verificar</button>
         </div>
       </div>
-      <div class="hint" id="login-hint" style="margin-top:8px;color:#5b6b86"></div>
+      <div class="hint" id="login-hint"></div>
     </div>
   </div>
 
-  <!-- diag + overlay de erro -->
-  <div id="diag" aria-live="polite">API: <b id="d-api">—</b> • Health: <b id="d-health">?</b> • Eventos: <b id="d-ev">0</b></div>
-  <div id="err-overlay" role="alertdialog" aria-modal="true"><pre id="err-pre"></pre></div>
+  <!-- Overlay de erro (debug) -->
+  <div id="err-overlay">
+    <div id="err-card">
+      <h4>Erro de execução do app.js</h4>
+      <pre id="err-pre"></pre>
+    </div>
+  </div>
 
-  <!-- schema -->
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"Organization","name":"IngressAI","url":"https://ingressai.chat/","logo":"https://ingressai.chat/logo_ingressai.png","sameAs":["https://instagram.com/ingressai"],"contactPoint":[{"@type":"ContactPoint","contactType":"customer support","areaServed":"BR","availableLanguage":"pt-BR"}]}
   </script>
+
+  <!-- JS principal (ATENÇÃO AO CAMINHO!) -->
+  <!-- se seu arquivo estiver em outro lugar, ajuste o src abaixo -->
+  <script defer src="./app/app.js"></script>
 </body>
 </html>
