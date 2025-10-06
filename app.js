@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 console.log("[IngressAI] app.js boot");
 
+// ========= Config/API =========
 const API_PARAM = new URLSearchParams(location.search).get("api");
 const ENV_API   = (typeof window !== "undefined" && window.INGRESSAI_API) ? window.INGRESSAI_API : "";
 const BASE_WITH_API = String(API_PARAM || ENV_API || "https://ingressai-backend-production.up.railway.app/api").replace(/\/$/, "");
@@ -88,7 +89,7 @@ const authTag       = $("#auth-indicator");
 /* ================== header/hero ================== */
 function initHeader(){
   document.addEventListener("click",e=>{
-    const el=e.target.closest(".btn,.view");
+    const el=e.target.closest(".btn,.view,.link-like");
     if(!el) return;
     el.style.transform="translateY(0) scale(.98)";
     setTimeout(()=>{ el.style.transform=""; }, 120);
@@ -111,6 +112,7 @@ function initHeader(){
 
 /* ================== vitrine ================== */
 function buildChips(){
+  if (!chipsRow) return;
   chipsRow.innerHTML="";
   const cities = Array.from(new Set(eventos.map(e=>e.city).filter(Boolean)));
   const all = document.createElement("button");
@@ -123,6 +125,7 @@ function buildChips(){
   });
 }
 function renderCards(filterCity="", q=""){
+  if (!lista) return;
   lista.innerHTML="";
   const qn=(q||"").toLowerCase();
   const data = eventos.filter(ev=>{
@@ -167,6 +170,7 @@ function buildStatusChip(statusLabel){
   return `<span class="status-chip ${key}"><span class="dot" aria-hidden="true"></span>${lbl}</span>`;
 }
 function openSheet(ev){
+  if (!sheet || !sheetBody || !sheetBackdrop) return;
   sheetBody.innerHTML = `
     <div class="sheet-head">
       <h3 id="sheet-title">${ev.title} — ${ev.city||""}</h3>
@@ -178,7 +182,7 @@ function openSheet(ev){
       <strong>Quando:</strong> ${formatDate(ev.date)}<br/>
       ${Number.isFinite(+ev.price) ? `<strong>Preço:</strong> ${money(ev.price)}` : ""}</p>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <a class="btn btn--secondary btn--sm" id="buy-demo">Comprar (demo)</a>
+        <a class="btn btn--secondary btn--sm" id="buy-demo" href="#">Comprar (demo)</a>
       </div>
     </div>
   `;
@@ -188,40 +192,27 @@ function openSheet(ev){
   sheet.classList.add("is-open");
   sheetBackdrop.classList.add("is-open");
 
-  $("#buy-demo").onclick = async () => {
+  $("#buy-demo").onclick = async (e) => {
+    e.preventDefault();
     const to = prompt("Seu WhatsApp (DDI+DDD+NÚMERO):",""); if(!to) return;
     const qs = new URLSearchParams({ ev: ev.id, to, name: "Participante", qty: "1" }).toString();
     try{
       await tryFetch([ `${BASE_WITH_API}/purchase/start?${qs}` ], {});
       alert("🎟️ Ingresso enviado no seu WhatsApp!");
-    }catch(e){
-      console.error(e);
+    }catch(err){
+      console.error(err);
       alert("Não consegui enviar agora. Você pode tentar pelo WhatsApp: "+ waHref(`ingressai:start ev=${ev.id} qty=1 autopay=1 name=`));
     }
   };
 }
 function closeSheet(){
+  if (!sheet || !sheetBackdrop) return;
   sheet.classList.remove("is-open");
   sheetBackdrop.classList.remove("is-open");
   sheet.removeAttribute("aria-labelledby");
   sheet.setAttribute("aria-hidden","true");
   sheetBackdrop.setAttribute("aria-hidden","true");
 }
-
-/* ================== organizadores / calc (stub visual) ================== */
-(function initOrgCalc(){
-  const std = $("#std-card");
-  if (!std) return;
-  const features=[
-    "Criação de evento 100% pelo WhatsApp",
-    "Geração automática de ingresso com QR Code",
-    "Link público de vendas e acompanhamento em tempo real",
-    "Repasse na hora ao organizador",
-    "Página de validador liberada ao criar o evento",
-    "Lista de compradores atualizada"
-  ];
-  std.innerHTML = "<ul class='std-list'>" + features.map(f=>`<li>${f}</li>`).join("") + "</ul>";
-})();
 
 /* ================== login modal (OTP) ================== */
 const loginModal   = $("#login-modal");
@@ -234,7 +225,7 @@ const codeVerify   = $("#code-verify");
 const codeInput    = $("#login-code");
 const loginHint    = $("#login-hint");
 
-function openLogin(){ if(!loginModal) return; loginHint.textContent=""; codeBlock.style.display="none"; loginModal.classList.add("is-open"); loginModal.setAttribute("aria-hidden","false"); loginPhone?.focus(); }
+function openLogin(){ if(!loginModal) return; loginHint && (loginHint.textContent=""); codeBlock && (codeBlock.style.display="none"); loginModal.classList.add("is-open"); loginModal.setAttribute("aria-hidden","false"); loginPhone?.focus(); }
 function closeLogin(){ if(!loginModal) return; loginModal.classList.remove("is-open"); loginModal.setAttribute("aria-hidden","true"); }
 
 document.addEventListener("click",(e)=>{
@@ -242,11 +233,12 @@ document.addEventListener("click",(e)=>{
   if (trg){ e.preventDefault(); openLogin(); }
 });
 
-loginCancel?.addEventListener("click", closeLogin);
-codeBack?.addEventListener("click", ()=>{ codeBlock.style.display="none"; loginHint.textContent=""; });
+loginCancel?.addEventListener("click", (e)=>{ e.preventDefault(); closeLogin(); });
+codeBack?.addEventListener("click", (e)=>{ e.preventDefault(); codeBlock.style.display="none"; loginHint.textContent=""; });
 
-loginSendBtn?.addEventListener("click", async ()=>{
-  const phone = String(loginPhone.value||"").replace(/[^\d]/g,"");
+loginSendBtn?.addEventListener("click", async (e)=>{
+  e.preventDefault();
+  const phone = String(loginPhone?.value||"").replace(/[^\d]/g,"");
   if (!/^\d{10,15}$/.test(phone)) { loginHint.textContent="Número inválido. Use DDI+DDD+NÚMERO (ex.: 5534999999999)"; return; }
   try {
     loginHint.textContent="Enviando código…";
@@ -260,15 +252,16 @@ loginSendBtn?.addEventListener("click", async ()=>{
     codeBlock.style.display="block";
     codeInput.focus();
     sessionStorage.setItem("ingr_phone", phone);
-  } catch (e) {
-    console.error(e);
+  } catch (e2) {
+    console.error(e2);
     loginHint.textContent="Falha ao enviar código (CORS ou indisponível).";
   }
 });
 
-codeVerify?.addEventListener("click", async ()=>{
-  const phone = sessionStorage.getItem("ingr_phone") || "";
-  const code  = String(codeInput.value||"").trim();
+codeVerify?.addEventListener("click", async (e)=>{
+  e.preventDefault();
+  const phone = sessionStorage.getItem("ingr_phone") || String(loginPhone?.value||"").replace(/[^\d]/g,"");
+  const code  = String(codeInput?.value||"").trim();
   if (!/^\d{3,6}$/.test(code)) { loginHint.textContent="Código inválido."; return; }
   try {
     loginHint.textContent="Verificando…";
@@ -280,8 +273,8 @@ codeVerify?.addEventListener("click", async ()=>{
     });
     loginHint.textContent="Pronto! Redirecionando…";
     location.assign(`${BASE_ROOT}/app/dashboard.html`);
-  } catch (e) {
-    console.error(e);
+  } catch (e3) {
+    console.error(e3);
     loginHint.textContent="Código inválido, expirado ou bloqueado por CORS.";
   }
 });
@@ -311,9 +304,13 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     });
     if (location.hash === "#organizadores") openOrganizadores();
 
-    // Health → indicador online/offline
+    // Health → tenta /health, cai para /healthz
     try{
-      const h = await fetchJson(`${BASE_WITH_API}/health`, {});
+      const r = await tryFetch(
+        [ `${BASE_WITH_API}/health`, `${BASE_WITH_API}/healthz` ],
+        { headers:{ Accept:"application/json" } }
+      );
+      const h = await r.json().catch(()=> ({}));
       backendOnline = !!h?.ok;
     }catch(e){
       console.warn("health fail", e);
@@ -328,7 +325,10 @@ document.addEventListener("DOMContentLoaded", async ()=>{
 
     // Carregar eventos
     try{
-      const r = await tryFetch([ `${BASE_WITH_API}/events`, `${BASE_ROOT}/events` ], { headers:{ Accept:"application/json" } });
+      const r = await tryFetch(
+        [ `${BASE_WITH_API}/events`, `${BASE_ROOT}/events` ],
+        { headers:{ Accept:"application/json" } }
+      );
       const j = await r.json().catch(()=> ({}));
       const arr = Array.isArray(j?.items) ? j.items : (Array.isArray(j) ? j : []);
       eventos = arr.length ? arr : [{
@@ -363,17 +363,17 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     // Filtros
     chipsRow?.addEventListener("click", e=>{
       const b=e.target.closest("button.chip"); if(!b) return;
-      chipsRow.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-selected","false"));
+      chipsRow?.querySelectorAll(".chip")?.forEach(x=>x.setAttribute("aria-selected","false"));
       b.setAttribute("aria-selected","true");
-      renderCards(b.dataset.city||"", inputBusca.value);
+      renderCards(b.dataset.city||"", inputBusca?.value||"");
     });
 
     let debounce;
     inputBusca?.addEventListener("input", ()=>{
       clearTimeout(debounce);
       debounce=setTimeout(()=>{
-        const active = chipsRow.querySelector('.chip[aria-selected="true"]');
-        renderCards(active?.dataset.city||"", inputBusca.value);
+        const active = chipsRow?.querySelector('.chip[aria-selected="true"]');
+        renderCards(active?.dataset.city||"", inputBusca?.value||"");
       }, 180);
     });
 
