@@ -42,7 +42,7 @@ async function fetchJson(url, opts) {
   const res = await fetch(url, {
     headers: { "Accept": "application/json", ...(opts?.headers || {}) },
     mode: "cors",
-    credentials: opts?.credentials || "omit", // "include" só p/ auth/validator
+    credentials: opts?.credentials || "omit",
     ...opts
   });
   const ct = res.headers.get("content-type") || "";
@@ -74,6 +74,7 @@ function waHref(text){return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIC
 let eventos = [];
 let evIndex = {};
 let backendOnline = false;
+let loginNext = null; // "validator" | "dashboard" | null
 
 const lista         = $("#lista-eventos");
 const inputBusca    = $("#busca-eventos");
@@ -89,8 +90,6 @@ const drawer         = $("#drawer");
 const drawerBackdrop = $("#drawer-backdrop");
 const drawerClose    = $("#drawer-close");
 const drawerCreate   = $("#drawer-create");
-// CTA abaixo do título
-const ctaOrganizadores = $("#cta-organizadores");
 
 // Organizadores
 const orgSection  = $("#organizadores");
@@ -301,7 +300,8 @@ const codeVerify   = $("#code-verify");
 const codeInput    = $("#login-code");
 const loginHint    = $("#login-hint");
 
-function openLogin(){
+function openLogin(next="dashboard"){
+  loginNext = next; // define destino pós-verificação
   if(!loginModal) return;
   loginHint && (loginHint.textContent="");
   codeBlock && (codeBlock.style.display="none");
@@ -316,12 +316,6 @@ function closeLogin(){
   loginModal.setAttribute("aria-hidden","true");
   document.documentElement.style.overflow = "";
 }
-
-document.addEventListener("click",(e)=>{
-  safePreventAnchor(e);
-  const trg = e.target.closest("[data-login]");
-  if (trg){ e.preventDefault(); openLogin(); }
-});
 
 loginCancel?.addEventListener("click", (e)=>{ e.preventDefault(); closeLogin(); });
 codeBack?.addEventListener("click", (e)=>{ e.preventDefault(); codeBlock.style.display="none"; loginHint.textContent=""; });
@@ -361,8 +355,14 @@ codeVerify?.addEventListener("click", async (e)=>{
       body: JSON.stringify({ phone, code }),
       credentials: "include"
     });
-    loginHint.textContent="Pronto! Você está autenticado.";
-    location.assign(`${BASE_ROOT}/app/dashboard.html`);
+    loginHint.textContent="Pronto! Autenticado.";
+    // destino pós-verificação
+    if (loginNext === "validator") {
+      // preferir app/validator.html; se você usa outra rota, ajuste abaixo
+      location.assign(`${BASE_ROOT}/app/validator.html`);
+    } else {
+      location.assign(`${BASE_ROOT}/app/dashboard.html`);
+    }
   } catch (e3) {
     console.error(e3);
     loginHint.textContent="Código inválido, expirado ou bloqueado por CORS.";
@@ -370,7 +370,6 @@ codeVerify?.addEventListener("click", async (e)=>{
 });
 
 /* ================== solicitação de criação de evento ================== */
-const reqForm  = $("#req-form");
 const reqSend  = $("#req-send");
 const reqHint  = $("#req-hint");
 const reqPhone = $("#req-phone");
@@ -381,7 +380,7 @@ const reqDate  = $("#req-date");
 
 reqSend?.addEventListener("click", async (e)=>{
   e.preventDefault();
-  openLogin(); // força login primeiro
+  openLogin("dashboard"); // criar evento → dashboard
 
   const phone = String(reqPhone?.value||"").replace(/[^\d]/g,"");
   const title = String(reqTitle?.value||"").trim();
@@ -425,27 +424,21 @@ reqSend?.addEventListener("click", async (e)=>{
   }
 });
 
-/* ================== ações específicas pedidas ================== */
+/* ================== ações pedidas ================== */
 function openOrganizadores() {
   orgSection?.removeAttribute("hidden");
   orgSection?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-// Botão da gaveta → Criar evento
+// Gaveta → Criar evento
 drawerCreate?.addEventListener("click", () => {
   closeDrawer();
   openOrganizadores();
 });
 
-// CTA abaixo do título → abre organizadores
-ctaOrganizadores?.addEventListener("click", (e) => {
-  e.preventDefault();
-  openOrganizadores();
-});
-
-// Botão Validador dentro de Organizadores
+// Validador (agora abre o modal OTP e redireciona para validator)
 orgValidatorBtn?.addEventListener("click", () => {
-  window.open(`${BASE_ROOT}/validator`, "_blank", "noopener,noreferrer");
+  openLogin("validator"); // usuário entra com número/código e cai no validador
 });
 
 /* ================== navegação / sheet bindings ================== */
@@ -465,6 +458,7 @@ async function initLanding(){
   initHeader();
 
   // diagnostico
+  const dApi = $("#d-api");
   dApi && (dApi.textContent = BASE_WITH_API);
 
   // Health
@@ -477,6 +471,7 @@ async function initLanding(){
     authTag.classList.toggle("off", !backendOnline);
     authTag.classList.toggle("on", !!backendOnline);
   }
+  const dHealth = $("#d-health");
   dHealth && (dHealth.textContent = backendOnline ? "ok" : "off");
 
   // Eventos
