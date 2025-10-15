@@ -44,33 +44,30 @@
     .subtle{color:var(--muted)}
     :where(section,[id]){scroll-margin-top:96px}
 
-    /* HEADER limpo */
-    header{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid #e7eefb;transition:box-shadow var(--t-fast),border-color var(--t-fast),background-color var(--t-fast)}
+    /* Header enxuto com botão único */
+    header{position:sticky;top:0;z-index:40;background:#fff;border-bottom:1px solid #e7eefb;transition:box-shadow var(--t-fast),border-color var(--t-fast),background-color var(--t-fast)}
     header.is-scrolled{box-shadow:var(--shadow);border-color:#e1e9fb}
-    .head{display:flex;align-items:center;justify-content:space-between;padding:12px 0}
+    .head{display:flex;align-items:center;justify-content:space-between;padding:10px 0}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:900}
+    .brand img{width:28px;height:28px}
+    .only-action{display:flex;align-items:center;gap:8px}
+    .menu-btn{appearance:none;border:1px solid #e7eefb;background:#fff;border-radius:12px;padding:.55rem .7rem;box-shadow:var(--shadow-soft);display:inline-grid;place-items:center;cursor:pointer}
+    .menu-btn:active{transform:scale(.98)}
+    .menu-icon{width:26px;height:26px;display:block;color:#2F7DD9}
 
-    /* Botão de menu (ícone lista com 3 pinguinhos + linha) */
-    .action-btn{width:44px;height:44px;display:grid;place-items:center;border:1px solid #e7eefb;border-radius:12px;background:#fff;box-shadow:var(--shadow-soft);cursor:pointer}
-    .action-btn svg{width:22px;height:22px;display:block;color:#0b1220}
-
-    /* Gaveta lateral minimal */
-    .drawer-backdrop{position:fixed;inset:0;background:rgba(11,18,32,.38);opacity:0;pointer-events:none;transition:opacity var(--t-fast);z-index:48}
+    /* Drawer (gaveta lateral) */
+    .drawer{position:fixed;top:0;right:-320px;width:min(320px,90vw);height:100%;background:#fff;border-left:1px solid #e7eefb;box-shadow:-20px 0 40px rgba(11,18,32,.14);transition:right var(--t-med) cubic-bezier(.2,.7,.2,1);z-index:60;padding:16px;display:flex;flex-direction:column;gap:10px}
+    .drawer.is-open{right:0}
+    .drawer-head{display:flex;align-items:center;justify-content:space-between}
+    .drawer-title{font-weight:900;margin:0}
+    .drawer-btn{min-height:44px;padding:0 14px;border-radius:12px;border:1px solid #e7eefb;background:#fff;box-shadow:var(--shadow-soft);font-weight:800;display:inline-flex;align-items:center;gap:8px}
+    .drawer-backdrop{position:fixed;inset:0;background:rgba(11,18,32,.36);opacity:0;pointer-events:none;transition:opacity var(--t-fast);z-index:55}
     .drawer-backdrop.is-open{opacity:1;pointer-events:auto}
-    .drawer{position:fixed;top:0;right:0;height:100%;width:min(92vw,360px);background:#fff;border-left:1px solid #e7eefb;box-shadow:-20px 0 60px rgba(11,18,32,.12);transform:translateX(100%);transition:transform var(--t-med) cubic-bezier(.2,.7,.2,1);z-index:50;display:flex;flex-direction:column;padding:16px}
-    .drawer.is-open{transform:translateX(0)}
-    .drawer-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-    .drawer-close{border:1px solid #e7eefb;background:#fff;border-radius:10px;padding:.4rem .6rem;cursor:pointer}
-    .drawer-nav{display:grid;gap:10px}
 
-    /* Botões / UI já existentes */
-    .btn{min-height:var(--btn-h);padding:0 var(--s2);border-radius:var(--radius-pill);border:1px solid #d6e4ff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;letter-spacing:.2px;gap:10px;background:#fff;color:#0b1220;transition:transform .08s,box-shadow var(--t-fast)}
-    .btn--secondary{box-shadow:var(--shadow-soft)}
-    .btn--ghost{background:#fff;border-color:#e1e8f6;box-shadow:none;color:#2d3b50}
-    .btn--sm{min-height:40px;padding:0 .9rem;font-size:1rem}
-    .btn.is-disabled{opacity:.6;pointer-events:none;filter:grayscale(.08)}
-    .cta-inline{display:flex;justify-content:flex-start;margin-top:calc(var(--s1)*-1);margin-bottom:var(--s1)}
+    .tag{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:.25rem .6rem;font:inherit;font-weight:800}
+    .tag.on{background:#e9f7ec;color:#157f3b;border:1px solid #cfe8d7}
+    .tag.off{background:#fff4f4;color:#b64848;border:1px solid #ffdede}
 
-    /* hero / features / cards / sheet / etc. — (mantidos do seu arquivo) */
     .hero{padding:var(--s4) 0;opacity:calc(1 - var(--hero-p,0));transform:translateY(calc(-6px * var(--hero-p,0)));transition:opacity var(--t-fast) linear,transform var(--t-fast) linear}
     .hero.is-hidden{opacity:0;height:0;padding:0;margin:0;overflow:hidden}
     .hero h1{font-size:clamp(calc(1.25rem*var(--phi)),6.2vw,calc(1.25rem*var(--phi)*var(--phi)));line-height:var(--lh-compact);margin:0 0 var(--s2) 0;font-weight:850;text-align:center}
@@ -78,6 +75,12 @@
     .badges{display:flex;gap:calc(var(--s1)*1.4);align-items:center;justify-content:center;flex-wrap:wrap;margin-top:6px}
     .badge{display:inline-flex;align-items:center;gap:.55rem;padding:0;background:transparent;border-radius:0;box-shadow:none;font-weight:700;cursor:default;user-select:none}
     .badge img{height:18px;width:auto;display:block}.badge span{color:#445570;font-weight:700;opacity:.95}
+
+    .btn{min-height:var(--btn-h);padding:0 var(--s2);border-radius:var(--radius-pill);border:1px solid #d6e4ff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;letter-spacing:.2px;gap:10px;background:#fff;color:#0b1220;transition:transform .08s,box-shadow var(--t-fast)}
+    .btn--secondary{box-shadow:var(--shadow-soft)}
+    .btn--ghost{background:#fff;border-color:#e1e8f6;box-shadow:none;color:#2d3b50}
+    .btn--sm{min-height:40px;padding:0 .9rem;font-size:1rem}
+    .cta-inline{display:flex;justify-content:center;margin-top:calc(var(--s1)*-1);margin-bottom:var(--s1)}
 
     .proofs{padding:var(--s2) 0 var(--s3)}
     .features{display:grid;gap:var(--s0);grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -117,7 +120,7 @@
 
     .sheet-backdrop{position:fixed;inset:0;background:rgba(11,18,32,.36);opacity:0;pointer-events:none;transition:opacity var(--t-fast);z-index:40}
     .sheet-backdrop.is-open{opacity:1;pointer-events:auto}
-    .sheet{position:fixed;left:0;right:0;bottom:0;height:72vh;max-height:760px;background:#fff;border-top-left-radius:24px;border-top-right-radius:24px;box-shadow:0 -24px 48px rgba(11,18,32,.16);transform:translateY(100%);transition:transform var(--t-med) cubic-bezier(.2,.7,.2,1);display:flex;flex-direction:column;padding:var(--s2);z-index:40}
+    .sheet{position:fixed;left:0;right:0;bottom:0;height:72vh;max-height:760px;background:#fff;border-top-left-radius:24px;border-top-right-radius:24px;box-shadow:0 -24px 48px rgba(11,18,32,.16);transform:translateY(100%);transition:transform var(--t-med) cubic-bezier(.2,.7,.2,1);display:flex;flex-direction:column;padding:var(--s2);z-index:45}
     .sheet.is-open{transform:translateY(0)} .sheet h3{margin:0;font-weight:900;line-height:1.2}
     .sheet .sheet-body{overflow:auto;display:flex;flex-direction:column;gap:10px;padding-right:4px;padding-bottom:calc(20px + env(safe-area-inset-bottom))}
     .sheet-media{width:100%;aspect-ratio:1.35;border:1px solid #eaf1ff;border-radius:16px;background:radial-gradient(600px 280px at 20% 0%,rgba(47,125,217,.12),transparent 60%),linear-gradient(180deg,#fff,#f5f9ff);margin-top:var(--s0);margin-bottom:var(--s1);overflow:hidden;display:block}
@@ -143,8 +146,8 @@
     .legal a{text-decoration:underline;font-weight:600}
     .foot-meta{display:flex;flex-wrap:wrap;gap:10px;align-items:center;color:#667792;justify-content:center}
 
-    /* Modal simples (login OTP, mantido) */
-    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(11,18,32,.48);z-index:60}
+    /* Modal simples (OTP) */
+    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(11,18,32,.48);z-index:70}
     .modal[aria-hidden="false"]{display:flex}
     .modal-card{width:min(520px,92vw);background:#fff;border-radius:16px;padding:16px;border:1px solid #e6eaf6;box-shadow:var(--shadow)}
     .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
@@ -177,37 +180,39 @@
   </script>
 </head>
 <body>
-  <!-- HEADER (limpo) -->
+  <!-- HEADER ENXUTO -->
   <header role="banner">
     <div class="container head">
-      <a href="#topo" style="display:flex;align-items:center;gap:10px;text-decoration:none">
-        <img src="./logo_ingressai.png" alt="IngressAI" width="36" height="36" />
-        <strong style="font-weight:900;letter-spacing:.2px">IngressAI</strong>
-      </a>
-      <!-- Botão de menu (ícone lista com 3 pinguinhos e linha) -->
-      <button id="menu-btn" class="action-btn" aria-label="Abrir menu">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <!-- linha -->
-          <path d="M5 6.5h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-          <!-- três pinguinhos -->
-          <circle cx="8" cy="13.5" r="1.4" fill="currentColor" />
-          <circle cx="12" cy="13.5" r="1.4" fill="currentColor" />
-          <circle cx="16" cy="13.5" r="1.4" fill="currentColor" />
-        </svg>
-      </button>
+      <div class="brand">
+        <img src="./logo_ingressai.png" alt="IngressAI" width="28" height="28" />
+        <span>IngressAI</span>
+      </div>
+      <div class="only-action">
+        <span class="tag off" id="auth-indicator" aria-live="polite">offline</span>
+        <!-- Botão único (3 pingos + linhas) -->
+        <button id="drawer-toggle" class="menu-btn" aria-controls="drawer" aria-expanded="false" aria-label="Abrir funções">
+          <svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <!-- três linhas com pingo antes de cada -->
+            <circle cx="5" cy="6" r="1.6" />
+            <rect x="8.2" y="5.2" width="11" height="1.6" rx=".8" />
+            <circle cx="5" cy="12" r="1.6" />
+            <rect x="8.2" y="11.2" width="11" height="1.6" rx=".8" />
+            <circle cx="5" cy="18" r="1.6" />
+            <rect x="8.2" y="17.2" width="11" height="1.6" rx=".8" />
+          </svg>
+        </button>
+      </div>
     </div>
   </header>
 
-  <!-- Gaveta lateral -->
-  <div id="drawer-backdrop" class="drawer-backdrop" aria-hidden="true"></div>
-  <aside id="side-drawer" class="drawer" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="drawer-title">
+  <!-- DRAWER + BACKDROP -->
+  <div class="drawer-backdrop" id="drawer-backdrop" aria-hidden="true"></div>
+  <aside class="drawer" id="drawer" aria-hidden="true" role="dialog" aria-modal="true">
     <div class="drawer-head">
-      <h3 id="drawer-title" style="margin:0">Menu</h3>
-      <button id="drawer-close" class="drawer-close" aria-label="Fechar">✕</button>
+      <h3 class="drawer-title">Funções</h3>
+      <button class="drawer-btn" id="drawer-close" type="button" aria-label="Fechar">Fechar</button>
     </div>
-    <nav class="drawer-nav">
-      <button class="btn btn--secondary btn--sm" id="drawer-create" type="button">Criar evento</button>
-    </nav>
+    <button class="drawer-btn" id="drawer-create" type="button">Criar evento</button>
   </aside>
 
   <!-- MAIN -->
@@ -230,6 +235,7 @@
       <h1 id="hero-title">Crie eventos com a IngressAI.</h1>
     </section>
 
+    <!-- CTA abaixo do título -->
     <div class="cta-inline">
       <a href="#organizadores" class="btn btn--secondary btn--sm" id="cta-organizadores" aria-label="Abrir soluções para organizadores">Soluções para organizadores</a>
     </div>
@@ -296,6 +302,14 @@
     <section id="organizadores" class="section" aria-labelledby="orgs-title" tabindex="-1" hidden>
       <h2 id="orgs-title">Soluções para organizadores</h2>
 
+      <!-- Ação de Validador dentro dos organizadores -->
+      <div class="std-card" style="margin-bottom:12px">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <button id="org-validator" class="btn btn--ghost btn--sm" type="button" aria-label="Abrir validador">Validador</button>
+          <span class="subtle">Acesse o validador do seu evento (QR Code) aqui.</span>
+        </div>
+      </div>
+
       <!-- Calculadora simples por categoria -->
       <div class="std-card">
         <fieldset style="display:flex;gap:12px;flex-wrap:wrap;border:0;margin:0 0 .5rem 0;padding:0">
@@ -329,7 +343,7 @@
         <p class="subtle" style="margin:.5rem 0 0">Após sua aprovação no bot, o evento sobe e seu número é liberado para o Dashboard.</p>
       </div>
 
-      <!-- Texto com features -->
+      <!-- Texto/benefícios -->
       <div id="std-card" class="std-card" style="margin-top:12px"></div>
     </section>
 
@@ -416,7 +430,7 @@
   {"@context":"https://schema.org","@type":"Organization","name":"IngressAI","url":"https://ingressai.chat/","logo":"https://ingressai.chat/logo_ingressai.png","sameAs":["https://instagram.com/ingressai"],"contactPoint":[{"@type":"ContactPoint","contactType":"customer support","areaServed":"BR","availableLanguage":"pt-BR"}]}
   </script>
 
-  <!-- JS principal (ATENÇÃO AO CAMINHO!) -->
+  <!-- JS principal -->
   <script defer src="./app.js"></script>
 </body>
 </html>
