@@ -153,7 +153,7 @@
     .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
     .input{width:100%;border:1px solid #e5ecff;border-radius:10px;padding:.8rem 1rem;font:inherit}
 
-    /* Overlay de erro (debug se algo quebrar) */
+    /* Overlay de erro (debug) */
     #err-overlay{position:fixed;inset:0;background:rgba(0,0,0,.66);display:none;align-items:center;justify-content:center;z-index:9999}
     #err-card{background:#0b1220;color:#fff;max-width:960px;width:96%;border-radius:12px;padding:16px;border:1px solid #2b3344}
     #err-card h4{margin:0 0 8px 0}
@@ -163,7 +163,7 @@
     .diag strong{display:block}
   </style>
 
-  <!-- Normaliza API global (caso precise) -->
+  <!-- Normaliza API global -->
   <script>
     (function () {
       const qsApi = new URLSearchParams(location.search).get("api") || "";
@@ -175,7 +175,7 @@
         return s;
       }
       window.INGRESSAI_API = normalizeApi(qsApi || PROD);
-      window.INGRESSAI_BASE = window.INGRESSAI_API.replace(/\/api$/,''); // usado p/ dashboard/validador
+      window.INGRESSAI_BASE = window.INGRESSAI_API.replace(/\/api$/,'');
     })();
   </script>
 </head>
@@ -192,7 +192,6 @@
         <!-- Botão único (3 pingos + linhas) -->
         <button id="drawer-toggle" class="menu-btn" aria-controls="drawer" aria-expanded="false" aria-label="Abrir funções">
           <svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <!-- três linhas com pingo antes de cada -->
             <circle cx="5" cy="6" r="1.6" />
             <rect x="8.2" y="5.2" width="11" height="1.6" rx=".8" />
             <circle cx="5" cy="12" r="1.6" />
@@ -235,10 +234,7 @@
       <h1 id="hero-title">Crie eventos com a IngressAI.</h1>
     </section>
 
-    <!-- CTA abaixo do título -->
-    <div class="cta-inline">
-      <a href="#organizadores" class="btn btn--secondary btn--sm" id="cta-organizadores" aria-label="Abrir soluções para organizadores">Soluções para organizadores</a>
-    </div>
+    <!-- (REMOVIDO) CTA “Soluções para organizadores” para deixar mais clean -->
 
     <!-- PROVAS -->
     <section class="proofs" aria-labelledby="proofs-title">
@@ -302,11 +298,11 @@
     <section id="organizadores" class="section" aria-labelledby="orgs-title" tabindex="-1" hidden>
       <h2 id="orgs-title">Soluções para organizadores</h2>
 
-      <!-- Ação de Validador dentro dos organizadores -->
+      <!-- Ações (inclui Validador) -->
       <div class="std-card" style="margin-bottom:12px">
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
           <button id="org-validator" class="btn btn--ghost btn--sm" type="button" aria-label="Abrir validador">Validador</button>
-          <span class="subtle">Acesse o validador do seu evento (QR Code) aqui.</span>
+          <span class="subtle">Entre com seu WhatsApp para acessar o validador do seu evento.</span>
         </div>
       </div>
 
@@ -398,7 +394,7 @@
   <!-- MODAL LOGIN (OTP) -->
   <div class="modal" id="login-modal" aria-hidden="true" role="dialog" aria-modal="true">
     <div class="modal-card">
-      <h3>Entrar no Dashboard</h3>
+      <h3>Entrar</h3>
       <label class="sr-only" for="login-phone">Seu WhatsApp (com DDI + DDD)</label>
       <input id="login-phone" class="input" inputmode="numeric" placeholder="ex.: 5534999999999" autocomplete="tel" />
       <div class="modal-actions">
