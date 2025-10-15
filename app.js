@@ -4,6 +4,7 @@
    - Faz health check e indica online/offline
    - Fluxo de OTP e redireciona p/ Dashboard no backend
    - Form de “Quero criar meu evento”
+   - Novo: botão de menu (lista 3 pinguinhos + linha) -> gaveta -> "Criar evento"
 */
 
 (function () {
@@ -29,15 +30,19 @@
     search: $("#busca-eventos"),
     hero: $(".hero"),
     orgSection: $("#organizadores"),
-    orgNav: $("#nav-org"),
     ctaOrg: $("#cta-organizadores"),
-    validator: $("#nav-validator"),
-    loginBtn: $("#nav-login"),
-    authIndicator: $("#auth-indicator"),
+    // Drawer (novo)
+    menuBtn: $("#menu-btn"),
+    drawer: $("#side-drawer"),
+    drawerBackdrop: $("#drawer-backdrop"),
+    drawerClose: $("#drawer-close"),
+    drawerCreate: $("#drawer-create"),
+    // Sheet
     sheet: $("#sheet"),
     sheetBody: $("#sheet-body"),
     sheetBackdrop: $("#sheet-backdrop"),
     sheetClose: $("#sheet-close"),
+    // Organizadores form/calc
     req: {
       phone: $("#req-phone"),
       title: $("#req-title"),
@@ -53,7 +58,7 @@
       ev: $("#d-ev"),
     },
     stdCard: $("#std-card"),
-    // modal login
+    // login modal
     modal: $("#login-modal"),
     loginPhone: $("#login-phone"),
     loginSend: $("#login-send"),
@@ -95,7 +100,7 @@
     return ct.includes("application/json") ? res.json() : res.text();
   }
 
-  // --------- Navegação/header ---------
+  // --------- Header/efeitos + Drawer ---------
   function setHeaderEffects() {
     const onScroll = () => {
       const scrolled = window.scrollY > 10;
@@ -107,46 +112,42 @@
     onScroll();
   }
 
-  function wireAnchorToggles() {
-    // abre/fecha seção organizadores
-    function openOrganizadores() {
-      els.orgSection.hidden = false;
-      els.orgSection.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-    els.orgNav?.addEventListener("click", (e) => {
-      e.preventDefault();
-      openOrganizadores();
-    });
+  function openOrganizadores() {
+    els.orgSection.hidden = false;
+    els.orgSection.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function wireCTAOrganizadores(){
     els.ctaOrg?.addEventListener("click", (e) => {
       e.preventDefault();
       openOrganizadores();
     });
-
-    // Validador → backend
-    els.validator?.addEventListener("click", (e) => {
-      e.preventDefault();
-      window.open(`${BASE}/validator`, "_blank", "noopener,noreferrer");
-    });
   }
 
-  // --------- Health / status ---------
-  async function checkHealth() {
-    els.api.textContent = API;
-    try {
-      const h = await apiFetch("/health");
-      const ok = (h && (h.ok === true || h.status === "ok")) ? "on" : "off";
-      els.health.textContent = ok;
-      els.authIndicator.textContent = ok === "on" ? "online" : "offline";
-      els.authIndicator.classList.toggle("on", ok === "on");
-      els.authIndicator.classList.toggle("off", ok !== "on");
-    } catch (e) {
-      els.health.textContent = "off";
-      els.authIndicator.textContent = "offline";
-      els.authIndicator.classList.remove("on");
-      els.authIndicator.classList.add("off");
-      // não quebra a página se o /health falhar
-      console.warn("Health check failed:", e);
-    }
+  // Drawer minimal com um CTA
+  function wireDrawer(){
+    const open = () => {
+      els.drawer?.classList.add("is-open");
+      els.drawerBackdrop?.classList.add("is-open");
+      els.drawer?.setAttribute("aria-hidden","false");
+      els.drawerBackdrop?.setAttribute("aria-hidden","false");
+    };
+    const close = () => {
+      els.drawer?.classList.remove("is-open");
+      els.drawerBackdrop?.classList.remove("is-open");
+      els.drawer?.setAttribute("aria-hidden","true");
+      els.drawerBackdrop?.setAttribute("aria-hidden","true");
+    };
+    els.menuBtn?.addEventListener("click", open);
+    els.drawerClose?.addEventListener("click", close);
+    els.drawerBackdrop?.addEventListener("click", close);
+    document.addEventListener("keydown", (e)=>{ if(e.key==="Escape") close(); });
+
+    els.drawerCreate?.addEventListener("click", (e)=>{
+      e.preventDefault();
+      close();
+      openOrganizadores();
+    });
   }
 
   // --------- Vitrine ---------
@@ -295,7 +296,6 @@
   els.sheetClose?.addEventListener("click", closeSheet);
 
   function whatsappLink(ev){
-    // fallback simples; se backend fornecer deep-link, pode vir em ev.wa_link
     if (ev.wa_link) return ev.wa_link;
     const title = encodeURIComponent(ev.title || "Evento");
     return `https://wa.me/5534999992747?text=Quero%20comprar%20para%20${title}`;
@@ -306,7 +306,6 @@
     const radios = $$('input[name="org-cat"]');
     const recalc = () => {
       const cat = (radios.find(r => r.checked)?.value) || "promotor";
-      // exemplo fixo (pode ser lido do backend futuramente)
       const fee = cat === "casa" ? 0.065 : 0.08;
       const total = allEvents.reduce((acc, e) => acc + (e.price ?? e.minPrice ?? 0), 0);
       const net = total * (1 - fee);
@@ -369,10 +368,7 @@
   }
 
   function wireLogin() {
-    els.loginBtn?.addEventListener("click", (e) => {
-      e.preventDefault();
-      openLoginModal();
-    });
+    // (mantido: se quiser acionar esse modal por algum botão futuro)
     els.loginCancel?.addEventListener("click", (e) => {
       e.preventDefault();
       closeLoginModal();
@@ -411,11 +407,9 @@
       els.loginHint.textContent = "Verificando...";
       try {
         const r = await apiFetch("/auth/verify", { method: "POST", body: JSON.stringify({ phone, code }) });
-        // esperamos algo como { ok:true, token:"..." }
         if (r && r.token) {
           els.loginHint.textContent = "Ok! Redirecionando...";
           await sleep(400);
-          // dashboard vive no backend root (sem /api)
           location.href = `${BASE}/dashboard?token=${encodeURIComponent(r.token)}`;
         } else {
           els.loginHint.textContent = "Código inválido.";
@@ -428,10 +422,23 @@
   }
 
   // --------- Init ---------
+  async function checkHealth() {
+    els.api.textContent = API;
+    try {
+      const h = await apiFetch("/health");
+      const ok = (h && (h.ok === true || h.status === "ok")) ? "ok" : "off";
+      els.health.textContent = ok;
+    } catch (e) {
+      els.health.textContent = "off";
+      console.warn("Health check failed:", e);
+    }
+  }
+
   async function init() {
     try {
       setHeaderEffects();
-      wireAnchorToggles();
+      wireCTAOrganizadores();
+      wireDrawer();               // <— novo
       wireSearch();
       wireOrganizerCalc();
       await checkHealth();
@@ -443,6 +450,5 @@
     }
   }
 
-  // run
   document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", init) : init();
 })();
