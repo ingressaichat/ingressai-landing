@@ -44,15 +44,33 @@
     .subtle{color:var(--muted)}
     :where(section,[id]){scroll-margin-top:96px}
 
+    /* HEADER limpo */
     header{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid #e7eefb;transition:box-shadow var(--t-fast),border-color var(--t-fast),background-color var(--t-fast)}
     header.is-scrolled{box-shadow:var(--shadow);border-color:#e1e9fb}
-    .nav{display:flex;flex-direction:column;align-items:center;gap:var(--s1);padding:var(--s1) 0}
-    .nav-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
-    .link-like{border:1px solid #e7eefb;background:#fff;border-radius:12px;padding:.6rem .8rem;box-shadow:var(--shadow-soft);font-weight:800;min-height:40px;display:inline-grid;place-items:center}
-    .tag{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:.25rem .6rem;font:inherit;font-weight:800}
-    .tag.on{background:#e9f7ec;color:#157f3b;border:1px solid #cfe8d7}
-    .tag.off{background:#fff4f4;color:#b64848;border:1px solid #ffdede}
+    .head{display:flex;align-items:center;justify-content:space-between;padding:12px 0}
 
+    /* Botão de menu (ícone lista com 3 pinguinhos + linha) */
+    .action-btn{width:44px;height:44px;display:grid;place-items:center;border:1px solid #e7eefb;border-radius:12px;background:#fff;box-shadow:var(--shadow-soft);cursor:pointer}
+    .action-btn svg{width:22px;height:22px;display:block;color:#0b1220}
+
+    /* Gaveta lateral minimal */
+    .drawer-backdrop{position:fixed;inset:0;background:rgba(11,18,32,.38);opacity:0;pointer-events:none;transition:opacity var(--t-fast);z-index:48}
+    .drawer-backdrop.is-open{opacity:1;pointer-events:auto}
+    .drawer{position:fixed;top:0;right:0;height:100%;width:min(92vw,360px);background:#fff;border-left:1px solid #e7eefb;box-shadow:-20px 0 60px rgba(11,18,32,.12);transform:translateX(100%);transition:transform var(--t-med) cubic-bezier(.2,.7,.2,1);z-index:50;display:flex;flex-direction:column;padding:16px}
+    .drawer.is-open{transform:translateX(0)}
+    .drawer-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+    .drawer-close{border:1px solid #e7eefb;background:#fff;border-radius:10px;padding:.4rem .6rem;cursor:pointer}
+    .drawer-nav{display:grid;gap:10px}
+
+    /* Botões / UI já existentes */
+    .btn{min-height:var(--btn-h);padding:0 var(--s2);border-radius:var(--radius-pill);border:1px solid #d6e4ff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;letter-spacing:.2px;gap:10px;background:#fff;color:#0b1220;transition:transform .08s,box-shadow var(--t-fast)}
+    .btn--secondary{box-shadow:var(--shadow-soft)}
+    .btn--ghost{background:#fff;border-color:#e1e8f6;box-shadow:none;color:#2d3b50}
+    .btn--sm{min-height:40px;padding:0 .9rem;font-size:1rem}
+    .btn.is-disabled{opacity:.6;pointer-events:none;filter:grayscale(.08)}
+    .cta-inline{display:flex;justify-content:flex-start;margin-top:calc(var(--s1)*-1);margin-bottom:var(--s1)}
+
+    /* hero / features / cards / sheet / etc. — (mantidos do seu arquivo) */
     .hero{padding:var(--s4) 0;opacity:calc(1 - var(--hero-p,0));transform:translateY(calc(-6px * var(--hero-p,0)));transition:opacity var(--t-fast) linear,transform var(--t-fast) linear}
     .hero.is-hidden{opacity:0;height:0;padding:0;margin:0;overflow:hidden}
     .hero h1{font-size:clamp(calc(1.25rem*var(--phi)),6.2vw,calc(1.25rem*var(--phi)*var(--phi)));line-height:var(--lh-compact);margin:0 0 var(--s2) 0;font-weight:850;text-align:center}
@@ -60,13 +78,6 @@
     .badges{display:flex;gap:calc(var(--s1)*1.4);align-items:center;justify-content:center;flex-wrap:wrap;margin-top:6px}
     .badge{display:inline-flex;align-items:center;gap:.55rem;padding:0;background:transparent;border-radius:0;box-shadow:none;font-weight:700;cursor:default;user-select:none}
     .badge img{height:18px;width:auto;display:block}.badge span{color:#445570;font-weight:700;opacity:.95}
-
-    .btn{min-height:var(--btn-h);padding:0 var(--s2);border-radius:var(--radius-pill);border:1px solid #d6e4ff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;letter-spacing:.2px;gap:10px;background:#fff;color:#0b1220;transition:transform .08s,box-shadow var(--t-fast)}
-    .btn--secondary{box-shadow:var(--shadow-soft)}
-    .btn--ghost{background:#fff;border-color:#e1e8f6;box-shadow:none;color:#2d3b50}
-    .btn--sm{min-height:40px;padding:0 .9rem;font-size:1rem}
-    .btn.is-disabled{opacity:.6;pointer-events:none;filter:grayscale(.08)}
-    .cta-inline{display:flex;justify-content:flex-start;margin-top:calc(var(--s1)*-1);margin-bottom:var(--s1)}
 
     .proofs{padding:var(--s2) 0 var(--s3)}
     .features{display:grid;gap:var(--s0);grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -104,7 +115,7 @@
     .card-media{width:100%;aspect-ratio:1.35;border-radius:calc(var(--s1));border:1px solid #eaf1ff;background:radial-gradient(600px 280px at 20% 0%,rgba(47,125,217,.12),transparent 60%),linear-gradient(180deg,#fff,#f5f9ff);display:grid;place-items:center;color:#8fb5ff;font-weight:800}
     .card-media img{width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block}
 
-    .sheet-backdrop{position:fixed;inset:0;background:rgba(11,18,32,.36);opacity:0;pointer-events:none;transition:opacity var(--t-fast)}
+    .sheet-backdrop{position:fixed;inset:0;background:rgba(11,18,32,.36);opacity:0;pointer-events:none;transition:opacity var(--t-fast);z-index:40}
     .sheet-backdrop.is-open{opacity:1;pointer-events:auto}
     .sheet{position:fixed;left:0;right:0;bottom:0;height:72vh;max-height:760px;background:#fff;border-top-left-radius:24px;border-top-right-radius:24px;box-shadow:0 -24px 48px rgba(11,18,32,.16);transform:translateY(100%);transition:transform var(--t-med) cubic-bezier(.2,.7,.2,1);display:flex;flex-direction:column;padding:var(--s2);z-index:40}
     .sheet.is-open{transform:translateY(0)} .sheet h3{margin:0;font-weight:900;line-height:1.2}
@@ -132,7 +143,7 @@
     .legal a{text-decoration:underline;font-weight:600}
     .foot-meta{display:flex;flex-wrap:wrap;gap:10px;align-items:center;color:#667792;justify-content:center}
 
-    /* Modal simples */
+    /* Modal simples (login OTP, mantido) */
     .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(11,18,32,.48);z-index:60}
     .modal[aria-hidden="false"]{display:flex}
     .modal-card{width:min(520px,92vw);background:#fff;border-radius:16px;padding:16px;border:1px solid #e6eaf6;box-shadow:var(--shadow)}
@@ -166,19 +177,38 @@
   </script>
 </head>
 <body>
-  <!-- HEADER -->
+  <!-- HEADER (limpo) -->
   <header role="banner">
-    <div class="container nav">
-      <div class="nav-actions">
-        <a href="#vitrine" class="link-like">Vitrine</a>
-        <a href="#organizadores" class="link-like" id="nav-org">Organizadores</a>
-        <!-- Validador e Dashboard moram no backend -->
-        <a href="#" class="link-like" id="nav-validator">Validador</a>
-        <a href="#" class="link-like" id="nav-login" data-login>Entrar</a>
-        <span class="tag off" id="auth-indicator" aria-live="polite">offline</span>
-      </div>
+    <div class="container head">
+      <a href="#topo" style="display:flex;align-items:center;gap:10px;text-decoration:none">
+        <img src="./logo_ingressai.png" alt="IngressAI" width="36" height="36" />
+        <strong style="font-weight:900;letter-spacing:.2px">IngressAI</strong>
+      </a>
+      <!-- Botão de menu (ícone lista com 3 pinguinhos e linha) -->
+      <button id="menu-btn" class="action-btn" aria-label="Abrir menu">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <!-- linha -->
+          <path d="M5 6.5h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          <!-- três pinguinhos -->
+          <circle cx="8" cy="13.5" r="1.4" fill="currentColor" />
+          <circle cx="12" cy="13.5" r="1.4" fill="currentColor" />
+          <circle cx="16" cy="13.5" r="1.4" fill="currentColor" />
+        </svg>
+      </button>
     </div>
   </header>
+
+  <!-- Gaveta lateral -->
+  <div id="drawer-backdrop" class="drawer-backdrop" aria-hidden="true"></div>
+  <aside id="side-drawer" class="drawer" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="drawer-title">
+    <div class="drawer-head">
+      <h3 id="drawer-title" style="margin:0">Menu</h3>
+      <button id="drawer-close" class="drawer-close" aria-label="Fechar">✕</button>
+    </div>
+    <nav class="drawer-nav">
+      <button class="btn btn--secondary btn--sm" id="drawer-create" type="button">Criar evento</button>
+    </nav>
+  </aside>
 
   <!-- MAIN -->
   <main class="container" role="main">
