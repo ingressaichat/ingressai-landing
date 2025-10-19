@@ -74,7 +74,7 @@ function waHref(text){return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIC
 let eventos = [];
 let evIndex = {};
 let backendOnline = false;
-let loginNext = null; // "validator" | "dashboard" | null
+let loginNext = null;
 
 const lista         = $("#lista-eventos");
 const inputBusca    = $("#busca-eventos");
@@ -84,7 +84,7 @@ const sheetBody     = $("#sheet-body");
 const sheetBackdrop = $("#sheet-backdrop");
 const authTag       = $("#auth-indicator");
 
-// Drawer / CTA
+// Drawer
 const drawerToggle   = $("#drawer-toggle");
 const drawer         = $("#drawer");
 const drawerBackdrop = $("#drawer-backdrop");
@@ -127,7 +127,7 @@ function initHeader(){
   onScroll(); window.addEventListener("scroll", onScroll, { passive:true });
 }
 
-/* ================== Drawer (gaveta) ================== */
+/* ================== Drawer ================== */
 function openDrawer(){
   drawer?.classList.add("is-open");
   drawer?.setAttribute("aria-hidden","false");
@@ -161,6 +161,20 @@ function buildChips(){
     b.className="chip"; b.type="button"; b.textContent=c; b.dataset.city=c; b.setAttribute("role","tab"); b.setAttribute("aria-selected","false");
     chipsRow.appendChild(b);
   });
+}
+
+function cardMediaHTML(ev){
+  const alt = `Imagem do evento ${ev.title}`;
+  const src = ev.image || "";
+  const ph  = `<div class="card-media" data-ph="1" aria-label="Imagem indisponível">Ingresso</div>`;
+  if (!src) return ph;
+  // onerror fallback → troca por placeholder
+  return `
+    <div class="card-media">
+      <img src="${src}" alt="${alt}" loading="lazy" decoding="async"
+           onerror="this.onerror=null;const p=this.parentElement;p.innerHTML='Ingresso';p.setAttribute('data-ph','1');" />
+    </div>
+  `;
 }
 
 function renderCards(filterCity="", q=""){
@@ -199,7 +213,7 @@ function renderCards(filterCity="", q=""){
           <div class="status-line status--${statusKey}"><span class="status-dot"></span> <span class="status-label">${statusLabel||"Em breve"}</span></div>
         </div>
       </div>
-      <div class="card-media">${ev.image?`<img src="${ev.image}" alt="Imagem do evento ${ev.title}" loading="lazy" decoding="async">`:"Ingresso"}</div>
+      ${cardMediaHTML(ev)}
     `;
     lista.appendChild(card);
   });
@@ -213,6 +227,18 @@ function buildStatusChip(statusLabel){
   return `<span class="status-chip ${key}"><span class="dot" aria-hidden="true"></span>${lbl}</span>`;
 }
 
+function sheetMediaHTML(ev){
+  const alt = `Imagem do evento ${ev.title}`;
+  const src = ev.image || "";
+  if (!src) return `<div class="sheet-media" data-ph="1" aria-label="Imagem indisponível"></div>`;
+  return `
+    <div class="sheet-media">
+      <img src="${src}" alt="${alt}" loading="lazy" decoding="async"
+           onerror="this.onerror=null;this.closest('.sheet-media').setAttribute('data-ph','1');this.remove();" />
+    </div>
+  `;
+}
+
 function openSheet(ev){
   if (!sheet || !sheetBody || !sheetBackdrop) return;
   const walink = waHref(`ingressai:start ev=${ev.id}`);
@@ -221,7 +247,7 @@ function openSheet(ev){
       <h3 id="sheet-title">${ev.title} — ${ev.city||""}</h3>
       ${buildStatusChip(normalizeStatusLabel(ev.statusLabel||ev.status||""))}
     </div>
-    <div class="sheet-media">${ev.image?`<img src="${ev.image}" alt="Imagem do evento ${ev.title}" loading="lazy" decoding="async">`:""}</div>
+    ${sheetMediaHTML(ev)}
     <div class="std-card">
       <p style="margin-top:0"><strong>Local:</strong> ${ev.venue || "-"}<br/>
       <strong>Quando:</strong> ${formatDate(ev.date)}<br/>
@@ -263,7 +289,6 @@ function closeSheet(){
     std.innerHTML = "<ul class='std-list'>" + features.map(f=>`<li>${f}</li>`).join("") + "</ul>";
   }
 
-  // Calculadora (categoria + quantidade + preço)
   const FEES = {
     atl:  { pct: 0.08, fix: 1.00, label: "8% + R$ 1,00" },
     prod: { pct: 0.10, fix: 1.20, label: "10% + R$ 1,20" }
@@ -280,13 +305,11 @@ function closeSheet(){
   function currentCat(){
     return document.querySelector('input[name="org-cat"]:checked')?.value || "atl";
   }
-
   function sanitizeMoneyInput(el){
     const val = Number(String(el.value).replace(",", "."));
     if (!isFinite(val) || val < 0) return 0;
-    return Math.min(val, 1_000_000); // trava por segurança
+    return Math.min(val, 1_000_000);
   }
-
   function sanitizeQty(el){
     const v = parseInt(el.value, 10);
     if (!isFinite(v) || v < 0) return 0;
@@ -294,12 +317,10 @@ function closeSheet(){
   }
 
   function recalc(){
-    const cat = currentCat();
-    const { pct, fix, label } = FEES[cat] || FEES.atl;
+    const { pct, fix, label } = FEES[currentCat()] || FEES.atl;
     const qty = sanitizeQty(qtyIn || qtySl);
     const price = sanitizeMoneyInput(priceIn || { value: 0 });
 
-    // sincronia range <-> input numérico
     if (qtySl && String(qtySl.value) !== String(qty)) qtySl.value = String(qty);
     if (qtyIn && String(qtyIn.value) !== String(qty)) qtyIn.value = String(qty);
 
@@ -307,10 +328,10 @@ function closeSheet(){
     const fees  = (gross * pct) + (fix * qty);
     const net   = Math.max(0, gross - fees);
 
-    if (feeEl)   feeEl.textContent   = label;
-    if (grossEl) grossEl.textContent = money(gross);
-    if (feeTot)  feeTot.textContent  = money(fees);
-    if (netEl)   netEl.textContent   = money(net);
+    feeEl && (feeEl.textContent = label);
+    grossEl && (grossEl.textContent = money(gross));
+    feeTot && (feeTot.textContent = money(fees));
+    netEl && (netEl.textContent = money(net));
   }
 
   $$('input[name="org-cat"]').forEach(r=>r.addEventListener("change", recalc));
@@ -318,7 +339,6 @@ function closeSheet(){
   qtyIn?.addEventListener("input", ()=>{ qtySl.value = qtyIn.value; recalc(); });
   priceIn?.addEventListener("input", recalc);
 
-  // estado inicial
   if (qtySl && !qtySl.value) qtySl.value = "0";
   if (qtyIn && !qtyIn.value) qtyIn.value = "0";
   if (priceIn && !priceIn.value) priceIn.value = "60";
@@ -337,7 +357,7 @@ const codeInput    = $("#login-code");
 const loginHint    = $("#login-hint");
 
 function openLogin(next="dashboard"){
-  loginNext = next; // define destino pós-verificação
+  loginNext = next;
   if(!loginModal) return;
   loginHint && (loginHint.textContent="");
   codeBlock && (codeBlock.style.display="none");
@@ -414,7 +434,7 @@ const reqDate  = $("#req-date");
 
 reqSend?.addEventListener("click", async (e)=>{
   e.preventDefault();
-  openLogin("dashboard"); // criar evento → dashboard
+  openLogin("dashboard");
 
   const phone = String(reqPhone?.value||"").replace(/[^\d]/g,"");
   const title = String(reqTitle?.value||"").trim();
@@ -464,13 +484,11 @@ function openOrganizadores() {
   orgSection?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-// Gaveta → Criar evento
 drawerCreate?.addEventListener("click", () => {
   closeDrawer();
   openOrganizadores();
 });
 
-// Validador (abre modal OTP e redireciona para validator)
 orgValidatorBtn?.addEventListener("click", () => {
   openLogin("validator");
 });
@@ -499,7 +517,6 @@ sheetBackdrop?.addEventListener("click", closeSheet);
 async function initLanding(){
   initHeader();
 
-  // diagnostico
   const dApi = $("#d-api");
   dApi && (dApi.textContent = BASE_WITH_API);
 
