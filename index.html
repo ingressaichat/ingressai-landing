@@ -44,7 +44,7 @@
     .subtle{color:var(--muted)}
     :where(section,[id]){scroll-margin-top:96px}
 
-    /* Header enxuto com botão único */
+    /* Header enxuto */
     header{position:sticky;top:0;z-index:40;background:#fff;border-bottom:1px solid #e7eefb;transition:box-shadow var(--t-fast),border-color var(--t-fast),background-color var(--t-fast)}
     header.is-scrolled{box-shadow:var(--shadow);border-color:#e1e9fb}
     .head{display:flex;align-items:center;justify-content:space-between;padding:10px 0}
@@ -55,7 +55,7 @@
     .menu-btn:active{transform:scale(.98)}
     .menu-icon{width:26px;height:26px;display:block;color:#2F7DD9}
 
-    /* Drawer (gaveta lateral) */
+    /* Drawer (gaveta) */
     .drawer{position:fixed;top:0;right:-320px;width:min(320px,90vw);height:100%;background:#fff;border-left:1px solid #e7eefb;box-shadow:-20px 0 40px rgba(11,18,32,.14);transition:right var(--t-med) cubic-bezier(.2,.7,.2,1);z-index:60;padding:16px;display:flex;flex-direction:column;gap:10px}
     .drawer.is-open{right:0}
     .drawer-head{display:flex;align-items:center;justify-content:space-between}
@@ -76,11 +76,10 @@
     .badge{display:inline-flex;align-items:center;gap:.55rem;padding:0;background:transparent;border-radius:0;box-shadow:none;font-weight:700;cursor:default;user-select:none}
     .badge img{height:18px;width:auto;display:block}.badge span{color:#445570;font-weight:700;opacity:.95}
 
-    .btn{min-height:var(--btn-h);padding:0 var(--s2);border-radius:var(--radius-pill);border:1px solid #d6e4ff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;letter-spacing:.2px;gap:10px;background:#fff;color:#0b1220;transition:transform .08s,box-shadow var(--t-fast)}
+    .btn{min-height:var(--btn-h);padding:0 var(--s2);border-radius:var(--radius-pill);border:1px solid #d6e4ff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;gap:10px;background:#fff;color:#0b1220;transition:transform .08s,box-shadow var(--t-fast)}
     .btn--secondary{box-shadow:var(--shadow-soft)}
     .btn--ghost{background:#fff;border-color:#e1e8f6;box-shadow:none;color:#2d3b50}
     .btn--sm{min-height:40px;padding:0 .9rem;font-size:1rem}
-    .cta-inline{display:flex;justify-content:center;margin-top:calc(var(--s1)*-1);margin-bottom:var(--s1)}
 
     .proofs{padding:var(--s2) 0 var(--s3)}
     .features{display:grid;gap:var(--s0);grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -98,11 +97,10 @@
     .filters{display:grid;grid-template-columns:1fr;gap:var(--s1);margin:0 0 var(--s1) 0}
     @media(min-width:680px){.filters{grid-template-columns:1fr max-content}}
     .search input{width:100%;border:1px solid #e5ecff;border-radius:999px;padding:.9rem 1rem;font:inherit;box-shadow:var(--shadow-soft);font-weight:600;font-size:16px}
-    .chips{display:flex;gap:8px;align-items:center;overflow:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;scroll-snap-type:x proximity}
+    .chips{display:flex;gap:8px;align-items:center;overflow:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity}
     .chip{appearance:none;border:1px solid #e5ecff;background:#fff;border-radius:999px;padding:.6rem .95rem;font-weight:800;color:#415577;cursor:pointer;white-space:nowrap;min-height:40px;scroll-snap-align:start}
     .chip[aria-selected="true"]{background:var(--blue-2);color:#fff;border-color:rgba(27,95,179,.35);box-shadow:0 6px 14px rgba(47,125,217,.25)}
 
-    /* GRID mobile-first: 1 coluna → 2 → 3 */
     .cards{display:grid;grid-template-columns:repeat(1,minmax(0,1fr));gap:var(--s1)}
     @media(min-width:700px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(min-width:1000px){.cards{grid-template-columns:repeat(3,minmax(0,1fr))}}
@@ -117,7 +115,9 @@
     .status-dot{width:.6rem;height:.6rem;border-radius:999px;display:inline-block;flex:0 0 .6rem;border:1px solid rgba(0,0,0,.06)}
     .status--soon .status-dot{background:#cfe3ff}.status--low .status-dot{background:#ffdede}.status--sold .status-dot{background:#dcdde3}
     .status--soon{color:#1B5FB3}.status--low{color:#b64848}.status--sold{color:#6b7280}
-    .card-media{width:100%;aspect-ratio:1.35;border-radius:calc(var(--s1));border:1px solid #eaf1ff;background:radial-gradient(600px 280px at 20% 0%,rgba(47,125,217,.12),transparent 60%),linear-gradient(180deg,#fff,#f5f9ff);display:grid;place-items:center;color:#8fb5ff;font-weight:800}
+    .card-media{width:100%;aspect-ratio:var(--phi);border-radius:calc(var(--s1));border:1px solid #eaf1ff;background:
+      radial-gradient(600px 280px at 20% 0%,rgba(47,125,217,.12),transparent 60%),
+      linear-gradient(180deg,#fff,#f5f9ff);display:grid;place-items:center;color:#8fb5ff;font-weight:800;overflow:hidden}
     .card-media img{width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block}
 
     .sheet-backdrop{position:fixed;inset:0;background:rgba(11,18,32,.36);opacity:0;pointer-events:none;transition:opacity var(--t-fast);z-index:40}
@@ -125,9 +125,14 @@
     .sheet{position:fixed;left:0;right:0;bottom:0;height:72vh;max-height:760px;background:#fff;border-top-left-radius:24px;border-top-right-radius:24px;box-shadow:0 -24px 48px rgba(11,18,32,.16);transform:translateY(100%);transition:transform var(--t-med) cubic-bezier(.2,.7,.2,1);display:flex;flex-direction:column;padding:var(--s2);z-index:45}
     .sheet.is-open{transform:translateY(0)} .sheet h3{margin:0;font-weight:900;line-height:1.2}
     .sheet .sheet-body{overflow:auto;display:flex;flex-direction:column;gap:10px;padding-right:4px;padding-bottom:calc(20px + env(safe-area-inset-bottom))}
-    .sheet-media{width:100%;aspect-ratio:1.35;border:1px solid #eaf1ff;border-radius:16px;background:radial-gradient(600px 280px at 20% 0%,rgba(47,125,217,.12),transparent 60%),linear-gradient(180deg,#fff,#f5f9ff);margin-top:var(--s0);margin-bottom:var(--s1);overflow:hidden;display:block}
+    .sheet-media{width:100%;aspect-ratio:var(--phi);border:1px solid #eaf1ff;border-radius:16px;background:
+      radial-gradient(600px 280px at 20% 0%,rgba(47,125,217,.12),transparent 60%),
+      linear-gradient(180deg,#fff,#f5f9ff);margin-top:var(--s0);margin-bottom:var(--s1);overflow:hidden;display:block}
     .sheet-media img{width:100%;height:100%;object-fit:cover;display:block}
-    .sheet-head{display:flex;flex-direction:column;gap:6px;align-items:flex-start;margin-top:0}
+
+    /* Botão fechar (alvo grande, mobile-first) */
+    .sheet-close{position:fixed;top:calc(env(safe-area-inset-top) + 10px);right:12px;z-index:50;background:#fff;border:1px solid #e6eaf6;border-radius:12px;width:44px;height:44px;display:grid;place-items:center;box-shadow:var(--shadow-soft)}
+    .sheet-close:active{transform:scale(.98)}
 
     .status-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid #e6eaf6;border-radius:999px;padding:.25rem .55rem;font-weight:800;font-size:.8rem}
     .status-chip .dot{width:.5rem;height:.5rem;border-radius:50%}
@@ -148,14 +153,13 @@
     .legal a{text-decoration:underline;font-weight:600}
     .foot-meta{display:flex;flex-wrap:wrap;gap:10px;align-items:center;color:#667792;justify-content:center}
 
-    /* Modal simples (OTP) */
+    /* Modal (OTP) e overlay debug mantidos */
     .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(11,18,32,.48);z-index:70}
     .modal[aria-hidden="false"]{display:flex}
     .modal-card{width:min(520px,92vw);background:#fff;border-radius:16px;padding:16px;border:1px solid #e6eaf6;box-shadow:var(--shadow)}
     .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
     .input{width:100%;border:1px solid #e5ecff;border-radius:10px;padding:.8rem 1rem;font:inherit}
 
-    /* Overlay de erro (debug) */
     #err-overlay{position:fixed;inset:0;background:rgba(0,0,0,.66);display:none;align-items:center;justify-content:center;z-index:9999}
     #err-card{background:#0b1220;color:#fff;max-width:960px;width:96%;border-radius:12px;padding:16px;border:1px solid #2b3344}
     #err-card h4{margin:0 0 8px 0}
@@ -183,7 +187,7 @@
   </script>
 </head>
 <body>
-  <!-- HEADER ENXUTO -->
+  <!-- HEADER -->
   <header role="banner">
     <div class="container head">
       <div class="brand">
@@ -206,7 +210,7 @@
     </div>
   </header>
 
-  <!-- DRAWER + BACKDROP -->
+  <!-- DRAWER -->
   <div class="drawer-backdrop" id="drawer-backdrop" aria-hidden="true"></div>
   <aside class="drawer" id="drawer" aria-hidden="true" role="dialog" aria-modal="true">
     <div class="drawer-head">
@@ -298,7 +302,6 @@
     <section id="organizadores" class="section" aria-labelledby="orgs-title" tabindex="-1">
       <h2 id="orgs-title">Soluções para organizadores</h2>
 
-      <!-- Ações (inclui Validador) -->
       <div class="std-card" style="margin-bottom:12px">
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
           <button id="org-validator" class="btn btn--ghost btn--sm" type="button" aria-label="Abrir validador">Validador</button>
@@ -306,7 +309,7 @@
         </div>
       </div>
 
-      <!-- Calculadora (categoria + quantidade + preço) -->
+      <!-- Calculadora -->
       <div class="std-card" id="calc-card">
         <fieldset style="display:flex;gap:12px;flex-wrap:wrap;border:0;margin:0 0 .75rem 0;padding:0">
           <legend class="sr-only">Categoria</legend>
@@ -341,7 +344,7 @@
         </div>
       </div>
 
-      <!-- Proposta / Solicitação de criação -->
+      <!-- Solicitação de criação -->
       <div class="std-card" style="margin-top:12px">
         <h3 style="margin-top:0">Quero criar meu evento</h3>
         <form id="req-form">
@@ -367,7 +370,6 @@
         <p class="subtle" style="margin:.5rem 0 0">Após sua aprovação no bot, o evento sobe e seu número é liberado para o Dashboard.</p>
       </div>
 
-      <!-- Texto/benefícios -->
       <div id="std-card" class="std-card" style="margin-top:12px"></div>
     </section>
 
@@ -380,7 +382,7 @@
       <div class="sheet-body" id="sheet-body"></div>
     </aside>
 
-    <!-- Diagnóstico rápido -->
+    <!-- Diagnóstico -->
     <div class="std-card" style="margin-top:16px">
       <h3 style="margin-top:0">Diagnóstico</h3>
       <div class="diag">
@@ -392,7 +394,7 @@
     </div>
   </main>
 
-  <!-- FOOTER -->
+  <!-- FOOTER (inalterado) -->
   <footer role="contentinfo">
     <div class="foot">
       <div class="foot-block">
@@ -419,7 +421,7 @@
     </div>
   </footer>
 
-  <!-- MODAL LOGIN (OTP) -->
+  <!-- MODAL LOGIN (OTP) + overlay debug (inalterados) -->
   <div class="modal" id="login-modal" aria-hidden="true" role="dialog" aria-modal="true">
     <div class="modal-card">
       <h3>Entrar</h3>
@@ -442,19 +444,12 @@
     </div>
   </div>
 
-  <!-- Overlay de erro (debug) -->
-  <div id="err-overlay">
-    <div id="err-card">
-      <h4>Erro de execução do app.js</h4>
-      <pre id="err-pre"></pre>
-    </div>
-  </div>
+  <div id="err-overlay"><div id="err-card"><h4>Erro de execução do app.js</h4><pre id="err-pre"></pre></div></div>
 
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"Organization","name":"IngressAI","url":"https://ingressai.chat/","logo":"https://ingressai.chat/logo_ingressai.png","sameAs":["https://instagram.com/ingressai"],"contactPoint":[{"@type":"ContactPoint","contactType":"customer support","areaServed":"BR","availableLanguage":"pt-BR"}]}
   </script>
 
-  <!-- JS principal -->
   <script defer src="./app.js"></script>
 </body>
 </html>
