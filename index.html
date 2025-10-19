@@ -102,12 +102,14 @@
     .chip{appearance:none;border:1px solid #e5ecff;background:#fff;border-radius:999px;padding:.6rem .95rem;font-weight:800;color:#415577;cursor:pointer;white-space:nowrap;min-height:40px;scroll-snap-align:start}
     .chip[aria-selected="true"]{background:var(--blue-2);color:#fff;border-color:rgba(27,95,179,.35);box-shadow:0 6px 14px rgba(47,125,217,.25)}
 
+    /* GRID mobile-first: 1 coluna → 2 → 3 */
     .cards{display:grid;grid-template-columns:repeat(1,minmax(0,1fr));gap:var(--s1)}
     @media(min-width:700px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(min-width:1000px){.cards{grid-template-columns:repeat(3,minmax(0,1fr))}}
-    #lista-eventos.cards{grid-template-columns:repeat(2,minmax(0,1fr))}
-    .card{background:var(--card);border-radius:calc(var(--s2));box-shadow:var(--shadow);padding:var(--s2);border:1px solid #eaf1ff;display:flex;flex-direction:column;gap:var(--s1);transition:transform .12s,box-shadow var(--t-fast);position:relative;overflow:hidden}
+
+    .card{background:var(--card);border-radius:calc(var(--s2));box-shadow:var(--shadow);padding:var(--s2);border:1px solid #eaf1ff;display:flex;flex-direction:column;gap:var(--s1);transition:transform .12s,box-shadow var(--t-fast);position:relative;overflow:hidden;cursor:pointer}
     .card:hover{transform:translateY(-2px);box-shadow:0 14px 36px rgba(47,125,217,.16),0 3px 8px rgba(11,18,32,.12)}
+    .card:focus-visible{box-shadow:var(--ring),var(--shadow)}
     .card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--s1)}
     .card-title{font-weight:900;font-size:clamp(1rem,2.2vw,1.14rem);line-height:1.18;margin-bottom:4px}
     .card-city{color:#2F7DD9;font-weight:800;font-size:.94rem}
@@ -158,7 +160,8 @@
     #err-card{background:#0b1220;color:#fff;max-width:960px;width:96%;border-radius:12px;padding:16px;border:1px solid #2b3344}
     #err-card h4{margin:0 0 8px 0}
     #err-pre{margin:0;white-space:pre-wrap;font-size:.9rem;max-height:60vh;overflow:auto}
-    .diag{font-size:.85rem;color:#566781;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:.5rem 0}
+    .diag{font-size:.85rem;color:#566781;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:.5rem 0}
+    @media(min-width:520px){.diag{grid-template-columns:repeat(3,minmax(0,1fr))}}
     .diag div{background:#fff;border:1px solid #e7eefb;border-radius:8px;padding:6px 8px}
     .diag strong{display:block}
   </style>
@@ -189,7 +192,6 @@
       </div>
       <div class="only-action">
         <span class="tag off" id="auth-indicator" aria-live="polite">offline</span>
-        <!-- Botão único (3 pingos + linhas) -->
         <button id="drawer-toggle" class="menu-btn" aria-controls="drawer" aria-expanded="false" aria-label="Abrir funções">
           <svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true">
             <circle cx="5" cy="6" r="1.6" />
@@ -233,8 +235,6 @@
       </div>
       <h1 id="hero-title">Crie eventos com a IngressAI.</h1>
     </section>
-
-    <!-- (REMOVIDO) CTA “Soluções para organizadores” para deixar mais clean -->
 
     <!-- PROVAS -->
     <section class="proofs" aria-labelledby="proofs-title">
@@ -295,7 +295,7 @@
     </section>
 
     <!-- ORGANIZADORES -->
-    <section id="organizadores" class="section" aria-labelledby="orgs-title" tabindex="-1" hidden>
+    <section id="organizadores" class="section" aria-labelledby="orgs-title" tabindex="-1">
       <h2 id="orgs-title">Soluções para organizadores</h2>
 
       <!-- Ações (inclui Validador) -->
@@ -306,17 +306,38 @@
         </div>
       </div>
 
-      <!-- Calculadora simples por categoria -->
-      <div class="std-card">
-        <fieldset style="display:flex;gap:12px;flex-wrap:wrap;border:0;margin:0 0 .5rem 0;padding:0">
+      <!-- Calculadora (categoria + quantidade + preço) -->
+      <div class="std-card" id="calc-card">
+        <fieldset style="display:flex;gap:12px;flex-wrap:wrap;border:0;margin:0 0 .75rem 0;padding:0">
           <legend class="sr-only">Categoria</legend>
-          <label><input type="radio" name="org-cat" value="promotor" checked /> Promotor/Produtora</label>
-          <label><input type="radio" name="org-cat" value="casa" /> Casa/Estabelecimento</label>
+          <label><input type="radio" name="org-cat" value="atl" checked /> Atléticas &amp; Repúblicas — 8% + R$ 1,00</label>
+          <label><input type="radio" name="org-cat" value="prod" /> Produtoras e Locais independentes — 10% + R$ 1,20</label>
         </fieldset>
-        <div class="diag">
+
+        <div class="diag" style="margin-top:.25rem">
+          <div><strong>Taxa selecionada</strong><span id="calc-fee">8% + R$ 1,00</span></div>
           <div><strong>Total bruto</strong><span id="calc-gross">R$ 0,00</span></div>
-          <div><strong>Você recebe</strong><span id="calc-net">R$ 0,00</span></div>
-          <div><strong>Eventos carregados</strong><span id="d-ev">–</span></div>
+          <div><strong>Taxas estimadas</strong><span id="calc-fee-total">R$ 0,00</span></div>
+        </div>
+
+        <div style="margin-top:.5rem;display:grid;gap:10px">
+          <div>
+            <label for="calc-qty"><strong>Quantidade</strong></label>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input id="calc-qty" type="range" min="0" max="1000" step="1" value="0" style="flex:1" />
+              <input id="calc-qty-n" class="input" type="number" min="0" max="10000" step="1" value="0" style="width:110px" />
+            </div>
+          </div>
+          <div>
+            <label for="calc-price"><strong>Valor do ingresso</strong></label>
+            <div style="display:flex;gap:8px;align-items:center">
+              <span class="subtle">R$</span>
+              <input id="calc-price" class="input" type="number" min="0" step="0.01" value="60" inputmode="decimal" style="max-width:160px" />
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <div><strong>Você recebe (estimado)</strong> <span id="calc-net">R$ 0,00</span></div>
+          </div>
         </div>
       </div>
 
@@ -330,6 +351,13 @@
             <input id="req-city" class="input" placeholder="Cidade" />
             <input id="req-venue" class="input" placeholder="Local (opcional)" />
             <input id="req-date" class="input" type="datetime-local" placeholder="Data (opcional)" />
+
+            <fieldset style="display:flex;gap:12px;flex-wrap:wrap;border:0;margin:.25rem 0;padding:0">
+              <legend class="sr-only">Modelo de taxa</legend>
+              <label><input type="radio" name="req-cat" value="atl" checked /> Atléticas &amp; Repúblicas (8% + R$ 1,00)</label>
+              <label><input type="radio" name="req-cat" value="prod" /> Produtoras e Locais independentes (10% + R$ 1,20)</label>
+            </fieldset>
+
             <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
               <button id="req-send" class="btn btn--secondary btn--sm" type="button">Solicitar criação</button>
               <span id="req-hint" class="subtle" aria-live="polite"></span>
