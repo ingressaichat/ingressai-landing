@@ -5,27 +5,40 @@ console.log("[IngressAI] app.js boot");
 function normalizeApi(raw) {
   let s = String(raw || "").trim();
   if (!s) return "";
+  // remove barras finais em excesso
   s = s.replace(/\/+$/g, "");
+  // garante /api no final
   if (!/\/api$/i.test(s)) s += "/api";
+  // remove // duplicadas (exceto após http(s):)
   s = s.replace(/([^:])\/{2,}/g, "$1/");
   return s;
 }
 
 (function bootstrapApi() {
-  const qsApi = new URLSearchParams(location.search).get("api") || "";
+  const qsApi   = new URLSearchParams(location.search).get("api") || "";
   const metaApi = document.querySelector('meta[name="ingressai-api"]')?.getAttribute("content") || "";
-  const winApi = (typeof window !== "undefined" && window.INGRESSAI_API) ? window.INGRESSAI_API : "";
-  const pref = qsApi || metaApi || winApi || "https://ingressai-backend-production.up.railway.app/api";
+  const winApi  = (typeof window !== "undefined" && window.INGRESSAI_API) ? window.INGRESSAI_API : "";
+  const pref    = qsApi || metaApi || winApi || "https://ingressai-backend-production.up.railway.app/api";
   window.INGRESSAI_API = normalizeApi(pref);
 })();
 
-const API_PARAM = new URLSearchParams(location.search).get("api");
-const ENV_API   = (typeof window !== "undefined" && window.INGRESSAI_API) ? window.INGRESSAI_API : "";
+const API_PARAM     = new URLSearchParams(location.search).get("api");
+const ENV_API       = (typeof window !== "undefined" && window.INGRESSAI_API) ? window.INGRESSAI_API : "";
 const BASE_WITH_API = String(API_PARAM || ENV_API || "https://ingressai-backend-production.up.railway.app/api").replace(/\/$/, "");
 const BASE_ROOT     = BASE_WITH_API.replace(/\/api$/, "");
 const WHATSAPP_NUMBER = "5534999992747";
 
 /* ================== helpers ================== */
+function absUrl(u){
+  try{
+    const s = String(u || "").trim();
+    if (!s) return "";
+    if (/^https?:\/\//i.test(s)) return s;               // já é absoluta
+    if (s.startsWith("/")) return `${BASE_ROOT}${s}`;     // relativa raiz
+    return `${BASE_ROOT}/${s}`;                           // relativa simples
+  }catch{ return ""; }
+}
+
 async function tryFetch(paths, opts) {
   let lastErr;
   for (const p of paths) {
@@ -58,11 +71,11 @@ const BRL = new Intl.NumberFormat("pt-BR",{ style:"currency", currency:"BRL" });
 const money = v => BRL.format(isFinite(v)?v:0);
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => Array.from(document.querySelectorAll(s));
+
 function safePreventAnchor(e){
   const a = e.target.closest("a[href='#']");
   if (a) { e.preventDefault(); e.stopPropagation(); }
 }
-
 function formatDate(iso){
   try { const d = new Date(iso); return d.toLocaleString("pt-BR",{ dateStyle:"medium", timeStyle:"short" }); }
   catch { return iso }
@@ -142,7 +155,6 @@ function closeDrawer(){
   drawerBackdrop?.classList.remove("is-open");
   drawerBackdrop?.setAttribute("aria-hidden","true");
 }
-
 drawerToggle?.addEventListener("click", (e)=>{ e.preventDefault(); openDrawer(); });
 drawerClose?.addEventListener("click", (e)=>{ e.preventDefault(); closeDrawer(); });
 drawerBackdrop?.addEventListener("click", closeDrawer);
@@ -165,10 +177,9 @@ function buildChips(){
 
 function cardMediaHTML(ev){
   const alt = `Imagem do evento ${ev.title}`;
-  const src = ev.image || "";
+  const src = absUrl(ev.image || "");          // ✅ resolve relativa → absoluta
   const ph  = `<div class="card-media" data-ph="1" aria-label="Imagem indisponível">Ingresso</div>`;
   if (!src) return ph;
-  // onerror fallback → troca por placeholder
   return `
     <div class="card-media">
       <img src="${src}" alt="${alt}" loading="lazy" decoding="async"
@@ -229,7 +240,7 @@ function buildStatusChip(statusLabel){
 
 function sheetMediaHTML(ev){
   const alt = `Imagem do evento ${ev.title}`;
-  const src = ev.image || "";
+  const src = absUrl(ev.image || "");          // ✅ resolve relativa → absoluta
   if (!src) return `<div class="sheet-media" data-ph="1" aria-label="Imagem indisponível"></div>`;
   return `
     <div class="sheet-media">
@@ -483,15 +494,8 @@ reqSend?.addEventListener("click", async (e)=>{
 function openOrganizadores() {
   orgSection?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
-
-drawerCreate?.addEventListener("click", () => {
-  closeDrawer();
-  openOrganizadores();
-});
-
-orgValidatorBtn?.addEventListener("click", () => {
-  openLogin("validator");
-});
+drawerCreate?.addEventListener("click", () => { closeDrawer(); openOrganizadores(); });
+orgValidatorBtn?.addEventListener("click", () => { openLogin("validator"); });
 
 /* ================== navegação / sheet bindings ================== */
 document.addEventListener("click", (e)=>{
@@ -515,8 +519,8 @@ sheetBackdrop?.addEventListener("click", closeSheet);
 
 /* ================== init ================== */
 async function initLanding(){
+  // Header e meta
   initHeader();
-
   const dApi = $("#d-api");
   dApi && (dApi.textContent = BASE_WITH_API);
 
@@ -533,7 +537,7 @@ async function initLanding(){
   const dHealth = $("#d-health");
   dHealth && (dHealth.textContent = backendOnline ? "ok" : "off");
 
-  // Eventos
+  // Eventos publicados
   try{
     const r = await tryFetch([ `${BASE_WITH_API}/events`, `${BASE_ROOT}/events` ], { headers:{ Accept:"application/json" } });
     const j = await r.json().catch(()=> ({}));
@@ -548,6 +552,8 @@ async function initLanding(){
       statusLabel:"Último lote",
       image:""
     }];
+    // normaliza imagem para absoluta aqui também (evita repetir em cada render)
+    eventos = eventos.map(e => ({ ...e, image: absUrl(e.image || "") }));
     evIndex = Object.fromEntries(eventos.map(e=>[String(e.id), e]));
   }catch(e){
     console.warn("falha /events", e);
