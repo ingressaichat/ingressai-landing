@@ -24,7 +24,8 @@ function normalizeApi(raw) {
 
 const API_PARAM     = new URLSearchParams(location.search).get("api");
 const ENV_API       = (typeof window !== "undefined" && window.INGRESSAI_API) ? window.INGRESSAI_API : "";
-const BASE_WITH_API = String(API_PARAM || ENV_API || "https://ingressai-backend-production.up.railway.app/api").replace(/\/$/, "");
+// ✅ AJUSTE: sempre normalizar a base para garantir /api no final
+const BASE_WITH_API = normalizeApi(API_PARAM || ENV_API || "https://ingressai-backend-production.up.railway.app/api");
 const BASE_ROOT     = BASE_WITH_API.replace(/\/api$/, "");
 const WHATSAPP_NUMBER = "5534999992747";
 
@@ -34,7 +35,8 @@ function absUrl(u){
     const s = String(u || "").trim();
     if (!s) return "";
     if (/^https?:\/\//i.test(s)) return s;               // já é absoluta
-    if (s.startsWith("/")) return `${BASE_ROOT}${s}`;     // relativa raiz
+    // ✅ AJUSTE: evitar possível "//" se BASE_ROOT vier com /
+    if (s.startsWith("/")) return `${BASE_ROOT.replace(/\/$/, "")}${s}`;     // relativa raiz
     return `${BASE_ROOT}/${s}`;                           // relativa simples
   }catch{ return ""; }
 }
@@ -177,7 +179,7 @@ function buildChips(){
 
 function cardMediaHTML(ev){
   const alt = `Imagem do evento ${ev.title}`;
-  const src = absUrl(ev.image || "");          // ✅ resolve relativa → absoluta
+  const src = absUrl(ev.image || "");          // resolve relativa → absoluta
   const ph  = `<div class="card-media" data-ph="1" aria-label="Imagem indisponível">Ingresso</div>`;
   if (!src) return ph;
   return `
@@ -240,7 +242,7 @@ function buildStatusChip(statusLabel){
 
 function sheetMediaHTML(ev){
   const alt = `Imagem do evento ${ev.title}`;
-  const src = absUrl(ev.image || "");          // ✅ resolve relativa → absoluta
+  const src = absUrl(ev.image || "");          // resolve relativa → absoluta
   if (!src) return `<div class="sheet-media" data-ph="1" aria-label="Imagem indisponível"></div>`;
   return `
     <div class="sheet-media">
@@ -385,7 +387,7 @@ function closeLogin(){
 }
 
 loginCancel?.addEventListener("click", (e)=>{ e.preventDefault(); closeLogin(); });
-codeBack?.addEventListener("click", (e)=>{ e.preventDefault(); codeBlock.style.display="none"; loginHint.textContent=""; });
+codeBack?.addEventListener("click", (e)=>{ e.preventDefault(); codeBlock.style.display="none"); loginHint.textContent=""; });
 
 loginSendBtn?.addEventListener("click", async (e)=>{
   e.preventDefault();
@@ -480,7 +482,7 @@ reqSend?.addEventListener("click", async (e)=>{
       }
     );
     await res.clone().json().catch(()=>null);
-    reqHint && (reqHint.textContent = "Solicitação enviada! Você será avisado no WhatsApp após a aprovação.");
+    reqHint && (reqHint.textContent = "Solicitação enviado! Você será avisado no WhatsApp após a aprovação.");
   } catch (err) {
     console.warn("Falha ao registrar solicitação — fallback WhatsApp", err);
     reqHint && (reqHint.textContent = "Não consegui registrar agora. Vou abrir o WhatsApp com sua solicitação.");
@@ -552,7 +554,7 @@ async function initLanding(){
       statusLabel:"Último lote",
       image:""
     }];
-    // normaliza imagem para absoluta aqui também (evita repetir em cada render)
+    // normaliza imagem para absoluta (mantido como estava)
     eventos = eventos.map(e => ({ ...e, image: absUrl(e.image || "") }));
     evIndex = Object.fromEntries(eventos.map(e=>[String(e.id), e]));
   }catch(e){
