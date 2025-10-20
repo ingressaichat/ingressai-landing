@@ -151,6 +151,22 @@
     .legal{display:flex;flex-wrap:wrap;gap:var(--s1);justify-content:center;margin-top:calc(var(--s0)*1.2)}
     .legal a{text-decoration:underline;font-weight:600}
     .foot-meta{display:flex;flex-wrap:wrap;gap:10px;align-items:center;color:#667792;justify-content:center}
+
+    /* Modal (OTP) + debug overlay */
+    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(11,18,32,.48);z-index:70}
+    .modal[aria-hidden="false"]{display:flex}
+    .modal-card{width:min(520px,92vw);background:#fff;border-radius:16px;padding:16px;border:1px solid #e6eaf6;box-shadow:var(--shadow)}
+    .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
+    .input{width:100%;border:1px solid #e5ecff;border-radius:10px;padding:.8rem 1rem;font:inherit}
+
+    #err-overlay{position:fixed;inset:0;background:rgba(0,0,0,.66);display:none;align-items:center;justify-content:center;z-index:9999}
+    #err-card{background:#0b1220;color:#fff;max-width:960px;width:96%;border-radius:12px;padding:16px;border:1px solid #2b3344}
+    #err-card h4{margin:0 0 8px 0}
+    #err-pre{margin:0;white-space:pre-wrap;font-size:.9rem;max-height:60vh;overflow:auto}
+    .diag{font-size:.85rem;color:#566781;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:.5rem 0}
+    @media(min-width:520px){.diag{grid-template-columns:repeat(3,minmax(0,1fr))}}
+    .diag div{background:#fff;border:1px solid #e7eefb;border-radius:8px;padding:6px 8px}
+    .diag strong{display:block}
   </style>
 
   <!-- Normaliza API global (fallback) -->
@@ -159,7 +175,7 @@
       const qsApi = new URLSearchParams(location.search).get("api") || "";
       const PROD = "https://ingressai-backend-production.up.railway.app/api";
       function normalizeApi(raw){
-        let s = String(raw||"").trim().replace(/[.\s/]+$/g,"");
+        let s = String(raw||"").trim().replace(/\/+$/g,"");
         if(!/\/api$/i.test(s)) s += "/api";
         s = s.replace(/([^:])\/{2,}/g,"$1/");
         return s;
@@ -404,35 +420,12 @@
     </div>
   </footer>
 
-  <!-- MODAL LOGIN (OTP) + overlay debug -->
-  <div class="modal" id="login-modal" aria-hidden="true" role="dialog" aria-modal="true">
-    <div class="modal-card">
-      <h3>Entrar</h3>
-      <label class="sr-only" for="login-phone">Seu WhatsApp (com DDI + DDD)</label>
-      <input id="login-phone" class="input" inputmode="numeric" placeholder="ex.: 5534999999999" autocomplete="tel" />
-      <div class="modal-actions">
-        <button class="btn btn--ghost btn--sm" id="login-cancel" type="button">Cancelar</button>
-        <button class="btn btn--secondary btn--sm" id="login-send" type="button">Receber código</button>
-      </div>
-
-      <div id="code-block" style="display:none">
-        <label class="sr-only" for="login-code">Código de verificação</label>
-        <input id="login-code" class="input" inputmode="numeric" maxlength="6" placeholder="Código (4–6 dígitos)" />
-        <div class="modal-actions">
-          <button class="btn btn--ghost btn--sm" id="code-back" type="button">Voltar</button>
-          <button class="btn btn--secondary btn--sm" id="code-verify" type="button">Verificar</button>
-        </div>
-      </div>
-      <div class="hint" id="login-hint"></div>
-    </div>
-  </div>
-
-  <div id="err-overlay"><div id="err-card"><h4>Erro de execução do app.js</h4><pre id="err-pre"></pre></div></div>
-
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"Organization","name":"IngressAI","url":"https://ingressai.chat/","logo":"https://ingressai.chat/logo_ingressai.png","sameAs":["https://instagram.com/ingressai"],"contactPoint":[{"@type":"ContactPoint","contactType":"customer support","areaServed":"BR","availableLanguage":"pt-BR"}]}
   </script>
 
+  <!-- app -->
   <script defer src="./app.js"></script>
 </body>
 </html>
+
