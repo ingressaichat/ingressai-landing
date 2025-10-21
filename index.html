@@ -34,6 +34,8 @@
       --shadow:0 10px 28px rgba(47,125,217,.14),0 2px 6px rgba(11,18,32,.08);
       --shadow-soft:0 6px 18px rgba(47,125,217,.12);--ring:0 0 0 2px rgba(74,147,240,.18);
       --container-max:calc(680px*var(--phi));--btn-h:52px;--radius-pill:999px;--t-fast:.18s;--t-med:.28s;
+      --ok:#157f3b;--ok-bg:#e9f7ec;--ok-bd:#cfe8d7;
+      --warn:#b64848;--warn-bg:#fff7f7;--warn-bd:#ffdede;
     }
     *{box-sizing:border-box}
     html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font:16px/var(--lh) -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Ubuntu,Inter,system-ui,sans-serif}
@@ -65,7 +67,7 @@
     .drawer-backdrop.is-open{opacity:1;pointer-events:auto}
 
     .tag{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:.25rem .6rem;font:inherit;font-weight:800}
-    .tag.on{background:#e9f7ec;color:#157f3b;border:1px solid #cfe8d7}
+    .tag.on{background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-bd)}
     .tag.off{background:#fff4f4;color:#b64848;border:1px solid #ffdede}
 
     .hero{padding:var(--s4) 0;opacity:calc(1 - var(--hero-p,0));transform:translateY(calc(-6px * var(--hero-p,0)));transition:opacity var(--t-fast) linear,transform var(--t-fast) linear}
@@ -76,7 +78,7 @@
     .badge{display:inline-flex;align-items:center;gap:.55rem;padding:0;background:transparent;border-radius:0;box-shadow:none;font-weight:700;cursor:default;user-select:none}
     .badge img{height:18px;width:auto;display:block}.badge span{color:#445570;font-weight:700;opacity:.95}
 
-    .btn{min-height:var(--btn-h);padding:0 var(--s2);border-radius:var(--radius-pill);border:1px solid #d6e4ff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;gap:10px;background:#fff;color:#0b1220;transition:transform .08s,box-shadow var(--t-fast)}
+    .btn{min-height:var(--btn-h);padding:0 var(--s2);border-radius:var(--radius-pill);border:1px solid #d6e4ff;display:inline-flex;align-items:center;justify-content:space-between;font-weight:800;gap:10px;background:#fff;color:#0b1220;transition:transform .08s,box-shadow var(--t-fast)}
     .btn--secondary{box-shadow:var(--shadow-soft)}
     .btn--ghost{background:#fff;border-color:#e1e8f6;box-shadow:none;color:#2d3b50}
     .btn--sm{min-height:40px;padding:0 .9rem;font-size:1rem}
@@ -142,6 +144,28 @@
     .std-card{background:#fff;border:1px solid #e5ecff;border-radius:calc(var(--s2));padding:var(--s2);box-shadow:var(--shadow-soft)}
     .std-list{margin:0;padding-left:1.25rem;display:grid;gap:6px}
 
+    /* ---- Calculadora minimal ---- */
+    .plan-calc{display:grid;gap:var(--s1)}
+    .plan-pills{display:flex;gap:8px;flex-wrap:wrap}
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:.55rem .9rem;border-radius:999px;border:1px solid #e5ecff;background:#fff;
+      font-weight:800;cursor:pointer;user-select:none
+    }
+    .pill input{appearance:none;width:0;height:0;position:absolute;opacity:0}
+    .pill[aria-checked="true"]{background:var(--blue-2);color:#fff;border-color:rgba(27,95,179,.35);box-shadow:0 6px 14px rgba(47,125,217,.25)}
+    .calc-grid{display:grid;gap:var(--s1)}
+    .calc-row{display:grid;gap:8px}
+    @media(min-width:560px){.calc-row{grid-template-columns:1fr auto;align-items:end}}
+    .input{width:100%;border:1px solid #e5ecff;border-radius:10px;padding:.8rem 1rem;font:inherit}
+    .range-box{display:flex;gap:8px;align-items:center}
+    .num{font-variant-numeric:tabular-nums}
+    .kpis{display:grid;gap:8px;grid-template-columns:repeat(2,minmax(0,1fr))}
+    @media(min-width:680px){.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}}
+    .kpi{background:var(--card);border:1px solid #e5ecff;border-radius:12px;padding:10px}
+    .kpi strong{display:block;font-size:.86rem;color:#445570}
+    .kpi .val{font-weight:900;font-size:1.08rem}
+
     footer{background:#fff;border-top:1px solid #e7eefb;margin-top:var(--s4)}
     .foot{max-width:var(--container-max);margin:0 auto;padding:var(--s3) var(--s3)}
     .foot-block{display:grid;gap:var(--s2);justify-items:center;text-align:center}
@@ -152,12 +176,11 @@
     .legal a{text-decoration:underline;font-weight:600}
     .foot-meta{display:flex;flex-wrap:wrap;gap:10px;align-items:center;color:#667792;justify-content:center}
 
-    /* Modal (OTP) + debug overlay */
+    /* Modal + debug overlay */
     .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(11,18,32,.48);z-index:70}
     .modal[aria-hidden="false"]{display:flex}
     .modal-card{width:min(520px,92vw);background:#fff;border-radius:16px;padding:16px;border:1px solid #e6eaf6;box-shadow:var(--shadow)}
     .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
-    .input{width:100%;border:1px solid #e5ecff;border-radius:10px;padding:.8rem 1rem;font:inherit}
 
     #err-overlay{position:fixed;inset:0;background:rgba(0,0,0,.66);display:none;align-items:center;justify-content:center;z-index:9999}
     #err-card{background:#0b1220;color:#fff;max-width:960px;width:96%;border-radius:12px;padding:16px;border:1px solid #2b3344}
@@ -302,43 +325,69 @@
       <h2 id="orgs-title">Soluções para organizadores</h2>
 
       <div class="std-card" style="margin-bottom:12px">
-        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-          <button id="org-validator" class="btn btn--ghost btn--sm" type="button" aria-label="Abrir validador">Validador</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between">
           <span class="subtle">Entre com seu WhatsApp para acessar o validador do seu evento.</span>
+          <!-- transformado em link, com fallback de navegação -->
+          <a id="org-validator" class="btn btn--ghost btn--sm" href="#" aria-label="Abrir validador">
+            <span>Validador</span>
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
         </div>
       </div>
 
-      <!-- Calculadora -->
+      <!-- Calculadora minimal -->
       <div class="std-card" id="calc-card">
-        <fieldset style="display:flex;gap:12px;flex-wrap:wrap;border:0;margin:0 0 .75rem 0;padding:0">
-          <legend class="sr-only">Categoria</legend>
-          <label><input type="radio" name="org-cat" value="atl" checked /> Atléticas &amp; Repúblicas — 8% + R$ 1,00</label>
-          <label><input type="radio" name="org-cat" value="prod" /> Produtoras e Locais independentes — 10% + R$ 1,20</label>
-        </fieldset>
-
-        <div class="diag" style="margin-top:.25rem">
-          <div><strong>Taxa selecionada</strong><span id="calc-fee">8% + R$ 1,00</span></div>
-          <div><strong>Total bruto</strong><span id="calc-gross">R$ 0,00</span></div>
-          <div><strong>Taxas estimadas</strong><span id="calc-fee-total">R$ 0,00</span></div>
-        </div>
-
-        <div style="margin-top:.5rem;display:grid;gap:10px">
+        <div class="plan-calc">
           <div>
-            <label for="calc-qty"><strong>Quantidade</strong></label>
-            <div style="display:flex;gap:8px;align-items:center">
-              <input id="calc-qty" type="range" min="0" max="1000" step="1" value="0" style="flex:1" />
-              <input id="calc-qty-n" class="input" type="number" min="0" max="10000" step="1" value="0" style="width:110px" />
+            <div class="plan-pills" role="tablist" aria-label="Planos de taxa">
+              <label class="pill" id="pill-atl" role="tab" aria-selected="true" aria-checked="true">
+                <input type="radio" name="org-cat" value="atl" checked />
+                Atléticas &amp; Repúblicas — 8% + R$1,00
+              </label>
+              <label class="pill" id="pill-prod" role="tab" aria-selected="false" aria-checked="false">
+                <input type="radio" name="org-cat" value="prod" />
+                Produtoras & Locais — 10% + R$1,20
+              </label>
             </div>
           </div>
-          <div>
-            <label for="calc-price"><strong>Valor do ingresso</strong></label>
-            <div style="display:flex;gap:8px;align-items:center">
-              <span class="subtle">R$</span>
-              <input id="calc-price" class="input" type="number" min="0" step="0.01" value="60" inputmode="decimal" style="max-width:160px" />
+
+          <div class="calc-grid">
+            <div class="calc-row">
+              <div>
+                <label for="calc-price"><strong>Valor do ingresso</strong></label>
+                <input id="calc-price" class="input" type="number" min="0" step="0.01" value="60" inputmode="decimal" />
+              </div>
+              <div>
+                <label for="calc-qty-n"><strong>Quantidade</strong></label>
+                <div class="range-box">
+                  <input id="calc-qty-n" class="input" type="number" min="0" max="10000" step="1" value="0" style="max-width:160px" />
+                </div>
+              </div>
             </div>
-          </div>
-          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <div><strong>Você recebe (estimado)</strong> <span id="calc-net">R$ 0,00</span></div>
+
+            <div>
+              <input id="calc-qty" type="range" min="0" max="1000" step="1" value="0" aria-label="Quantidade (slider)" style="width:100%" />
+            </div>
+
+            <div class="kpis" aria-label="Resumo">
+              <div class="kpi">
+                <strong>Taxa selecionada</strong>
+                <div class="val" id="calc-fee">8% + R$ 1,00</div>
+              </div>
+              <div class="kpi">
+                <strong>Taxa por ingresso</strong>
+                <div class="val num" id="calc-fee-unit">R$ 0,00</div>
+              </div>
+              <div class="kpi">
+                <strong>Total bruto</strong>
+                <div class="val num" id="calc-gross">R$ 0,00</div>
+              </div>
+              <div class="kpi">
+                <strong>Você recebe</strong>
+                <div class="val num" id="calc-net">R$ 0,00</div>
+              </div>
+            </div>
+            <small class="subtle">Valores estimados. Repasse no mesmo dia via Pix.</small>
           </div>
         </div>
       </div>
@@ -428,4 +477,3 @@
   <script defer src="./app.js"></script>
 </body>
 </html>
-
