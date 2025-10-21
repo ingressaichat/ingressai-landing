@@ -5,11 +5,8 @@ console.log("[IngressAI] app.js boot");
 function normalizeApi(raw) {
   let s = String(raw || "").trim();
   if (!s) return "";
-  // remove barras finais em excesso
   s = s.replace(/\/+$/g, "");
-  // garante /api no final
   if (!/\/api$/i.test(s)) s += "/api";
-  // remove // duplicadas (exceto após http(s):)
   s = s.replace(/([^:])\/{2,}/g, "$1/");
   return s;
 }
@@ -22,11 +19,10 @@ function normalizeApi(raw) {
   window.INGRESSAI_API = normalizeApi(pref);
 })();
 
-const API_PARAM     = new URLSearchParams(location.search).get("api");
-const ENV_API       = (typeof window !== "undefined" && window.INGRESSAI_API) ? window.INGRESSAI_API : "";
-// ✅ base sempre normalizada
-const BASE_WITH_API = normalizeApi(API_PARAM || ENV_API || "https://ingressai-backend-production.up.railway.app/api");
-const BASE_ROOT     = BASE_WITH_API.replace(/\/api$/, "");
+const API_PARAM       = new URLSearchParams(location.search).get("api");
+const ENV_API         = (typeof window !== "undefined" && window.INGRESSAI_API) ? window.INGRESSAI_API : "";
+const BASE_WITH_API   = normalizeApi(API_PARAM || ENV_API || "https://ingressai-backend-production.up.railway.app/api");
+const BASE_ROOT       = BASE_WITH_API.replace(/\/api$/, "");
 const WHATSAPP_NUMBER = "5534999992747";
 
 /* ================== helpers ================== */
@@ -34,9 +30,9 @@ function absUrl(u){
   try{
     const s = String(u || "").trim();
     if (!s) return "";
-    if (/^https?:\/\//i.test(s)) return s; // já é absoluta
-    if (s.startsWith("/")) return `${BASE_ROOT.replace(/\/$/, "")}${s}`; // relativa à raiz do backend
-    return `${BASE_ROOT}/${s}`; // relativa simples
+    if (/^https?:\/\//i.test(s)) return s;
+    if (s.startsWith("/")) return `${BASE_ROOT.replace(/\/$/, "")}${s}`;
+    return `${BASE_ROOT}/${s}`;
   }catch{ return ""; }
 }
 
@@ -106,7 +102,7 @@ const drawerClose    = $("#drawer-close");
 const drawerCreate   = $("#drawer-create");
 
 // Organizadores
-const orgSection  = $("#organizadores");
+const orgSection      = $("#organizadores");
 const orgValidatorBtn = $("#org-validator");
 
 // diag
@@ -178,7 +174,7 @@ function buildChips(){
 
 function cardMediaHTML(ev){
   const alt = `Imagem do evento ${ev.title}`;
-  const src = absUrl(ev.image || ""); // ✅ resolve relativa → absoluta (ex.: /uploads/...)
+  const src = absUrl(ev.image || "");
   const ph  = `<div class="card-media" data-ph="1" aria-label="Imagem indisponível">Ingresso</div>`;
   if (!src) return ph;
   return `
@@ -241,7 +237,7 @@ function buildStatusChip(statusLabel){
 
 function sheetMediaHTML(ev){
   const alt = `Imagem do evento ${ev.title}`;
-  const src = absUrl(ev.image || ""); // ✅ idem
+  const src = absUrl(ev.image || "");
   if (!src) return `<div class="sheet-media" data-ph="1" aria-label="Imagem indisponível"></div>`;
   return `
     <div class="sheet-media">
@@ -306,13 +302,13 @@ function closeSheet(){
     prod: { pct: 0.10, fix: 1.20, label: "10% + R$ 1,20" }
   };
 
-  const feeEl   = $("#calc-fee");
-  const grossEl = $("#calc-gross");
-  const feeTot  = $("#calc-fee-total");
-  const netEl   = $("#calc-net");
-  const qtySl   = $("#calc-qty");
-  const qtyIn   = $("#calc-qty-n");
-  const priceIn = $("#calc-price");
+  const feeEl     = $("#calc-fee");
+  const feeUnitEl = $("#calc-fee-unit");
+  const grossEl   = $("#calc-gross");
+  const netEl     = $("#calc-net");
+  const qtySl     = $("#calc-qty");
+  const qtyIn     = $("#calc-qty-n");
+  const priceIn   = $("#calc-price");
 
   function currentCat(){
     return document.querySelector('input[name="org-cat"]:checked')?.value || "atl";
@@ -336,24 +332,41 @@ function closeSheet(){
     if (qtySl && String(qtySl.value) !== String(qty)) qtySl.value = String(qty);
     if (qtyIn && String(qtyIn.value) !== String(qty)) qtyIn.value = String(qty);
 
-    const gross = price * qty;
-    const fees  = (gross * pct) + (fix * qty);
-    const net   = Math.max(0, gross - fees);
+    const gross    = price * qty;
+    const feeUnit  = (price * pct) + fix;
+    const fees     = feeUnit * qty;
+    const net      = Math.max(0, gross - fees);
 
-    feeEl && (feeEl.textContent = label);
-    grossEl && (grossEl.textContent = money(gross));
-    feeTot && (feeTot.textContent = money(fees));
-    netEl && (netEl.textContent = money(net));
+    feeEl     && (feeEl.textContent = label);
+    feeUnitEl && (feeUnitEl.textContent = money(feeUnit));
+    grossEl   && (grossEl.textContent = money(gross));
+    netEl     && (netEl.textContent = money(net));
   }
 
-  $$('input[name="org-cat"]').forEach(r=>r.addEventListener("change", recalc));
+  // interações dos pills acessíveis
+  const pillAtl  = $("#pill-atl");
+  const pillProd = $("#pill-prod");
+  function updatePills(){
+    const cat = currentCat();
+    const a = cat === "atl";
+    pillAtl?.setAttribute("aria-checked", a ? "true" : "false");
+    pillAtl?.setAttribute("aria-selected", a ? "true" : "false");
+    pillProd?.setAttribute("aria-checked", !a ? "true" : "false");
+    pillProd?.setAttribute("aria-selected", !a ? "true" : "false");
+  }
+
+  $$('input[name="org-cat"]').forEach(r=>{
+    r.addEventListener("change", ()=>{ updatePills(); recalc(); });
+  });
   qtySl?.addEventListener("input", ()=>{ qtyIn.value = qtySl.value; recalc(); });
   qtyIn?.addEventListener("input", ()=>{ qtySl.value = qtyIn.value; recalc(); });
   priceIn?.addEventListener("input", recalc);
 
+  // defaults
   if (qtySl && !qtySl.value) qtySl.value = "0";
   if (qtyIn && !qtyIn.value) qtyIn.value = "0";
   if (priceIn && !priceIn.value) priceIn.value = "60";
+  updatePills();
   recalc();
 })();
 
@@ -424,6 +437,8 @@ codeVerify?.addEventListener("click", async (e)=>{
       credentials: "include"
     });
     loginHint.textContent="Pronto! Autenticado.";
+    // marca sessão autenticada para permitir acesso direto ao validador
+    sessionStorage.setItem("ingr_auth", "1");
     if (loginNext === "validator") {
       location.assign(`${BASE_ROOT}/app/validator.html`);
     } else {
@@ -491,12 +506,28 @@ reqSend?.addEventListener("click", async (e)=>{
   }
 });
 
-/* ================== ações pedidas ================== */
+/* ================== ações e Validador ================== */
 function openOrganizadores() {
   orgSection?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 drawerCreate?.addEventListener("click", () => { closeDrawer(); openOrganizadores(); });
-orgValidatorBtn?.addEventListener("click", () => { openLogin("validator"); });
+
+// Validador com fallback de link direto (corrige problema de navegação)
+if (orgValidatorBtn){
+  // define href absoluto para middle-click/cmd+click
+  orgValidatorBtn.setAttribute("href", `${BASE_ROOT}/app/validator.html`);
+  orgValidatorBtn.addEventListener("click", (e)=>{
+    // se já autenticado nesta sessão, vai direto
+    const authed = sessionStorage.getItem("ingr_auth") === "1";
+    if (authed) {
+      // deixa o link navegar normalmente
+      return;
+    }
+    // senão, intercepta e abre login
+    e.preventDefault();
+    openLogin("validator");
+  });
+}
 
 /* ================== navegação / sheet bindings ================== */
 document.addEventListener("click", (e)=>{
@@ -520,10 +551,10 @@ sheetBackdrop?.addEventListener("click", closeSheet);
 
 /* ================== init ================== */
 async function initLanding(){
-  // Header e meta
   initHeader();
-  const dApi = $("#d-api");
-  dApi && (dApi.textContent = BASE_WITH_API);
+
+  const dApiEl = $("#d-api");
+  dApiEl && (dApiEl.textContent = BASE_WITH_API);
 
   // Health
   try{
@@ -535,10 +566,10 @@ async function initLanding(){
     authTag.classList.toggle("off", !backendOnline);
     authTag.classList.toggle("on", !!backendOnline);
   }
-  const dHealth = $("#d-health");
-  dHealth && (dHealth.textContent = backendOnline ? "ok" : "off");
+  const dHealthEl = $("#d-health");
+  dHealthEl && (dHealthEl.textContent = backendOnline ? "ok" : "off");
 
-  // Eventos publicados
+  // Eventos
   try{
     const r = await tryFetch([ `${BASE_WITH_API}/events`, `${BASE_ROOT}/events` ], { headers:{ Accept:"application/json" } });
     const j = await r.json().catch(()=> ({}));
@@ -553,7 +584,6 @@ async function initLanding(){
       statusLabel:"Último lote",
       image:""
     }];
-    // normaliza imagem para absoluta
     eventos = eventos.map(e => ({ ...e, image: absUrl(e.image || "") }));
     evIndex = Object.fromEntries(eventos.map(e=>[String(e.id), e]));
   }catch(e){
