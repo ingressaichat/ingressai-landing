@@ -473,6 +473,24 @@
   {"@context":"https://schema.org","@type":"Organization","name":"IngressAI","url":"https://ingressai.chat/","logo":"https://ingressai.chat/logo_ingressai.png","sameAs":["https://instagram.com/ingressai"],"contactPoint":[{"@type":"ContactPoint","contactType":"customer support","areaServed":"BR","availableLanguage":"pt-BR"}]}
   </script>
 
+  <!-- Wire do Validador: aponta pro backend, evitando CORS -->
+  <script>
+    // roda no fim do body; espera um frame p/ garantir DOM pronto e 'INGRESSAI_BASE' já setado
+    requestAnimationFrame(() => {
+      try {
+        var base = (window.INGRESSAI_BASE || "").replace(/\/+$/,"");
+        if (!base) {
+          // fallback via <meta name="ingressai-api">
+          var meta = document.querySelector('meta[name="ingressai-api"]');
+          var api = (meta?.content || "").trim();
+          base = api ? api.replace(/\/api$/,"") : "";
+        }
+        var link = document.getElementById("org-validator");
+        if (link && base) link.href = base + "/app/validator.html";
+      } catch (e) { /* no-op */ }
+    });
+  </script>
+
   <!-- app -->
   <script defer src="./app.js"></script>
 </body>
