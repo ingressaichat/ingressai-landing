@@ -54,8 +54,7 @@
     const text = await r.text();
     const json = text ? JSON.parse(text) : {};
     if (!r.ok) {
-      const msg =
-        json?.error || json?.message || `HTTP ${r.status} @ ${url}`;
+      const msg = json?.error || json?.message || `HTTP ${r.status} @ ${url}`;
       const err = new Error(msg);
       err.response = json;
       err.status = r.status;
@@ -71,7 +70,7 @@
   function el(tag, attrs = {}, children = []) {
     const node = document.createElement(tag);
     Object.entries(attrs).forEach(([k, v]) => {
-      if (v === null || v === undefined) return;
+      if (v == null) return;
       if (k === "class") node.className = v;
       else if (k === "html") node.innerHTML = v;
       else node.setAttribute(k, v);
@@ -104,7 +103,6 @@
   const drawerBackdrop = $("#drawer-backdrop");
   const btnDrawerOpen = $("#drawer-toggle");
   const btnDrawerClose = $("#drawer-close");
-  const drawerValidator = $("#drawer-validator");
 
   function openDrawer() {
     if (!drawer) return;
@@ -125,17 +123,6 @@
   btnDrawerOpen?.addEventListener("click", openDrawer);
   btnDrawerClose?.addEventListener("click", closeDrawer);
   drawerBackdrop?.addEventListener("click", closeDrawer);
-
-  // atalho do validador (href já é ajustado no index; aqui só previno vazio)
-  if (drawerValidator) {
-    drawerValidator.addEventListener("click", (ev) => {
-      if (!drawerValidator.href || drawerValidator.getAttribute("href") === "#") {
-        ev.preventDefault();
-        const url = INGRESSAI_BASE.replace(/\/+$/, "") + "/app/validator.html";
-        location.href = url;
-      }
-    });
-  }
 
   /* =============== Header scroll effect =============== */
   const header = $("header");
@@ -162,58 +149,31 @@
 
   async function fetchEventsSmart() {
     // Tenta em ordem decrescente de “provável existência”
-    const endpoints = [
-      "/api/events/vitrine",
-      "/api/events/public",
-      "/api/events",
-    ];
+    const endpoints = ["/events/vitrine", "/events/public", "/events"];
     for (const p of endpoints) {
       try {
         const url = INGRESSAI_API + p;
         const json = await getJSON(url);
-        // aceito formatos:
-        // { ok:true, events:[...] } | { events:[...] } | [...]
         const events =
           json?.events || (Array.isArray(json) ? json : json?.data) || [];
-        if (Array.isArray(events) && events.length >= 0) return events;
+        if (Array.isArray(events)) return events;
       } catch (e) {
-        // segue pro próximo
-        // console.debug("events endpoint fail", p, e.message);
+        /* tenta o próximo */
       }
     }
-    // se nenhum funcionou, erro
     throw new Error("Nenhum endpoint de eventos respondeu.");
   }
 
-  function cityFrom(ev) {
-    // tenta campos comuns
-    return (
-      ev.city ||
-      ev.cidade ||
-      ev.location?.city ||
-      ev.venueCity ||
-      ev.placeCity ||
-      null
-    );
-  }
+  const cityFrom = (ev) =>
+    ev.city || ev.cidade || ev.location?.city || ev.venueCity || ev.placeCity || null;
 
-  function dateTextFrom(ev) {
-    return ev.dateText || ev.eventDateText || ev.date || ev.startsAt || "";
-  }
+  const dateTextFrom = (ev) =>
+    ev.dateText || ev.eventDateText || ev.date || ev.startsAt || "";
 
-  function mediaFrom(ev) {
-    return (
-      ev.coverUrl ||
-      ev.image ||
-      ev.banner ||
-      ev.media?.[0] ||
-      ev.thumb ||
-      null
-    );
-  }
+  const mediaFrom = (ev) =>
+    ev.coverUrl || ev.image || ev.banner || ev.media?.[0] || ev.thumb || null;
 
   function statusChip(ev) {
-    // heurística simples
     if (ev.soldOut) return ["sold", "Esgotado"];
     if (ev.lowStock) return ["low", "Últimos ingressos"];
     return ["soon", "Disponível"];
@@ -225,8 +185,7 @@
 
     const filtered = allEvents.filter((ev) => {
       const city = (cityFrom(ev) || "").toLowerCase();
-      const title =
-        (ev.title || ev.name || ev.eventTitle || "").toLowerCase();
+      const title = (ev.title || ev.name || ev.eventTitle || "").toLowerCase();
       const hitCity = !activeCity || city === activeCity.toLowerCase();
       const hitSearch =
         !q ||
@@ -249,39 +208,22 @@
 
     filtered.forEach((ev) => {
       const city = cityFrom(ev);
-      const dateText = dateTextFrom(ev);
       const img = mediaFrom(ev);
       const [k, label] = statusChip(ev);
 
-      const card = el(
-        "article",
-        { class: "card", tabindex: "0", role: "button" },
-        [
-          el("div", { class: "card-header" }, [
-            el("div", {}, [
-              el("div", { class: "card-city" }, city || "—"),
-              el(
-                "div",
-                { class: "card-title" },
-                ev.title || ev.name || ev.eventTitle || "Evento"
-              ),
-              el(
-                "div",
-                { class: `status-line status--${k}` },
-                [
-                  el("span", { class: "status-dot", "aria-hidden": "true" }),
-                  el("span", {}, label),
-                ]
-              ),
+      const card = el("article", { class: "card", tabindex: "0", role: "button" }, [
+        el("div", { class: "card-header" }, [
+          el("div", {}, [
+            el("div", { class: "card-city" }, city || "—"),
+            el("div", { class: "card-title" }, ev.title || ev.name || ev.eventTitle || "Evento"),
+            el("div", { class: `status-line status--${k}` }, [
+              el("span", { class: "status-dot", "aria-hidden": "true" }),
+              el("span", {}, label),
             ]),
           ]),
-          el(
-            "div",
-            { class: "card-media" },
-            img ? el("img", { src: img, alt: "Capa do evento" }) : "IngressAI"
-          ),
-        ]
-      );
+        ]),
+        el("div", { class: "card-media" }, img ? el("img", { src: img, alt: "Capa do evento" }) : "IngressAI"),
+      ]);
 
       card.addEventListener("click", () => openEventSheet(ev));
       card.addEventListener("keyup", (e) => {
@@ -357,11 +299,10 @@
 
     const head = el("div", {}, [
       el("h3", {}, ev.title || ev.name || ev.eventTitle || "Evento"),
-      el(
-        "div",
-        { class: "status-chip soon", style: "margin-top:6px" },
-        [el("span", { class: "dot" }), el("span", {}, city || "—")]
-      ),
+      el("div", { class: "status-chip soon", style: "margin-top:6px" }, [
+        el("span", { class: "dot" }),
+        el("span", {}, city || "—"),
+      ]),
     ]);
 
     const mediaNode = el("div", { class: "sheet-media" }, [
@@ -499,6 +440,7 @@
   async function submitOrgRequest() {
     if (!reqForm) return;
     const phone = $("#req-phone")?.value?.trim() || "";
+       .replace(/[^\d]/g, "");
     const title = $("#req-title")?.value?.trim() || "";
     const city = $("#req-city")?.value?.trim() || "";
     const venue = $("#req-venue")?.value?.trim() || "";
@@ -517,7 +459,7 @@
 
     try {
       const payload = { phone, title, city, venue, date, cat };
-      const res = await postJSON(INGRESSAI_API + "/api/org/request", payload);
+      const res = await postJSON(INGRESSAI_API + "/org/request", payload);
       if (res?.ok) {
         reqHint && (reqHint.textContent = "Solicitação enviada. Você receberá o passo a passo no WhatsApp.");
         reqForm.reset();
@@ -552,9 +494,9 @@
     // API base
     setDiag(dApi, !!INGRESSAI_API, INGRESSAI_API || "off");
 
-    // Health
+    // Health (sem /api duplicado)
     try {
-      const j = await getJSON(INGRESSAI_API + "/api/health");
+      const j = await getJSON(INGRESSAI_API + "/health");
       setDiag(dHealth, !!j?.ok, j?.ok ? "on" : "off");
       authIndicator?.classList.remove("off", "on");
       authIndicator?.classList.add(j?.ok ? "on" : "off");
@@ -575,8 +517,6 @@
     } catch (e) {
       setDiag(dEv, false, "—");
       console.error(e);
-      // mantém UI, mas mostra overlay se quiser debugar
-      // showErrorOverlay("Falha ao listar eventos", e);
     }
 
     // Validador: HEAD (ou GET) do arquivo estático
@@ -584,13 +524,10 @@
       const url = INGRESSAI_BASE.replace(/\/+$/, "") + "/app/validator.html";
       const r = await fetch(url, { method: "HEAD", cache: "no-store" });
       const ok = r.ok || r.status === 200;
-      // se o index ainda não setou, garanto aqui
       if (ok && orgValidatorBtn && (!orgValidatorBtn.href || orgValidatorBtn.getAttribute("href") === "#")) {
         orgValidatorBtn.href = url;
       }
-    } catch {
-      // silencioso — pode estar em outra origem
-    }
+    } catch {/* silencioso */}
   }
 
   /* =============== Boot =============== */
