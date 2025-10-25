@@ -20,9 +20,9 @@
   }
 
   const INGRESSAI_API = window.INGRESSAI_API || normalizeApi(QS_API || META_API);
-  const INGRESSAI_BASE = window.INGRESSAI_BASE || INGRESSAI_API.replace(/\/api$/i, "");
+  const INGRESSAI_BASE =
+    window.INGRESSAI_BASE || INGRESSAI_API.replace(/\/api$/i, "");
 
-  // Exponho global (útil p/ debug)
   window.INGRESSAI_API = INGRESSAI_API;
   window.INGRESSAI_BASE = INGRESSAI_BASE;
 
@@ -80,25 +80,12 @@
     return node;
   }
 
-  /* =============== Overlay de erro =============== */
-  function showErrorOverlay(title, error) {
-    const wrap = $("#err-overlay");
-    if (!wrap) return alert(`${title}\n\n${error?.message || error}`);
-    const pre = $("#err-pre");
-    const h4 = $("#err-card h4");
-    h4.textContent = title || "Erro";
-    pre.textContent =
-      (error && (error.stack || error.message)) ||
-      (typeof error === "string" ? error : JSON.stringify(error, null, 2));
-    wrap.style.display = "flex";
-    wrap.addEventListener("click", () => (wrap.style.display = "none"), { once: true });
-  }
-
   /* =============== Drawer =============== */
   const drawer = $("#drawer");
   const drawerBackdrop = $("#drawer-backdrop");
   const btnDrawerOpen = $("#drawer-toggle");
   const btnDrawerClose = $("#drawer-close");
+  const btnDrawerCreate = $("#drawer-create");
 
   function openDrawer() {
     if (!drawer) return;
@@ -119,6 +106,11 @@
   btnDrawerOpen?.addEventListener("click", openDrawer);
   btnDrawerClose?.addEventListener("click", closeDrawer);
   drawerBackdrop?.addEventListener("click", closeDrawer);
+  // ação do "Criar evento" → rola até a seção do formulário
+  btnDrawerCreate?.addEventListener("click", () => {
+    closeDrawer();
+    document.getElementById("organizadores")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
 
   /* =============== Header scroll effect =============== */
   const header = $("header");
@@ -130,7 +122,7 @@
   window.addEventListener("scroll", toggleScrolled, { passive: true });
   toggleScrolled();
 
-  /* =============== Vitrine =============== */
+  /* =============== Vitrine: dados e render =============== */
   const listaEl = $("#lista-eventos");
   const filtroCidadesEl = $("#filtro-cidades");
   const buscaEl = $("#busca-eventos");
@@ -144,14 +136,30 @@
   let searchTerm = "";
 
   async function fetchEventsSmart() {
-    const endpoints = ["/events/vitrine", "/events/public", "/events"];
+    // Tenta em ordem de probabilidade
+    const endpoints = [
+      "/events/vitrine",
+      "/events/public",
+      "/events",
+      "/events/seed", // fallback opcional
+    ];
     for (const p of endpoints) {
       try {
         const url = INGRESSAI_API + p;
         const json = await getJSON(url);
-        const events = json?.events || (Array.isArray(json) ? json : json?.data) || [];
+        // aceito vários formatos comuns
+        const events =
+          json?.events ||
+          (Array.isArray(json) ? json : null) ||
+          json?.data?.events ||
+          json?.data ||
+          json?.items ||
+          json?.rows ||
+          [];
         if (Array.isArray(events)) return events;
-      } catch {}
+      } catch (e) {
+        // tenta o próximo
+      }
     }
     throw new Error("Nenhum endpoint de eventos respondeu.");
   }
@@ -239,12 +247,18 @@
     // chip “todas”
     const allChip = el(
       "button",
-      { class: "chip", role: "tab", "aria-selected": activeCity ? "false" : "true" },
+      {
+        class: "chip",
+        role: "tab",
+        "aria-selected": activeCity ? "false" : "true",
+      },
       "Todas"
     );
     allChip.addEventListener("click", () => {
       activeCity = null;
-      $$('[role="tab"]', filtroCidadesEl).forEach((n) => n.setAttribute("aria-selected", "false"));
+      $$('[role="tab"]', filtroCidadesEl).forEach((n) =>
+        n.setAttribute("aria-selected", "false")
+      );
       allChip.setAttribute("aria-selected", "true");
       renderEvents();
     });
@@ -257,13 +271,17 @@
           class: "chip",
           role: "tab",
           "aria-selected":
-            activeCity && activeCity.toLowerCase() === city.toLowerCase() ? "true" : "false",
+            activeCity && activeCity.toLowerCase() === city.toLowerCase()
+              ? "true"
+              : "false",
         },
         city
       );
       chip.addEventListener("click", () => {
         activeCity = city;
-        $$('[role="tab"]', filtroCidadesEl).forEach((n) => n.setAttribute("aria-selected", "false"));
+        $$('[role="tab"]', filtroCidadesEl).forEach((n) =>
+          n.setAttribute("aria-selected", "false")
+        );
         chip.setAttribute("aria-selected", "true");
         renderEvents();
       });
@@ -291,7 +309,6 @@
       img ? el("img", { src: img, alt: "Capa do evento" }) : document.createTextNode("IngressAI"),
     ]);
 
-    // CTA
     const ctaHref =
       ev.whatsappLink ||
       ev.deepLink ||
@@ -327,10 +344,10 @@
     sheetBackdrop.classList.remove("is-open");
     sheet.setAttribute("aria-hidden", "true");
   }
-  btnSheetClose?.addEventListener("click", closeSheet);
+  $("#sheet-close")?.addEventListener("click", closeSheet);
   sheetBackdrop?.addEventListener("click", closeSheet);
 
-  buscaEl?.addEventListener("input", (e) => {
+  $("#busca-eventos")?.addEventListener("input", (e) => {
     searchTerm = e.target.value || "";
     renderEvents();
   });
@@ -346,18 +363,22 @@
   const grossEl = $("#calc-gross");
   const netEl = $("#calc-net");
 
-  let feeMode = "atl"; // atl | prod
+  let feeMode = "atl";
 
   function formatBRL(v) {
     try {
-      return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 2 });
+      return v.toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+        maximumFractionDigits: 2,
+      });
     } catch {
       return `R$ ${Number(v || 0).toFixed(2)}`;
     }
   }
 
   function feeParams(mode) {
-    return mode === "prod" ? { pct: 0.10, fixo: 1.2 } : { pct: 0.08, fixo: 1.0 };
+    return mode === "prod" ? { pct: 0.1, fixo: 1.2 } : { pct: 0.08, fixo: 1.0 };
   }
 
   function recalc() {
@@ -370,10 +391,10 @@
     const totalFees = unitFee * qty;
     const net = Math.max(0, gross - totalFees);
 
-    feeLabel && (feeLabel.textContent = feeMode === "prod" ? "10% + R$ 1,20" : "8% + R$ 1,00");
-    feeUnit && (feeUnit.textContent = formatBRL(unitFee));
-    grossEl && (grossEl.textContent = formatBRL(gross));
-    netEl && (netEl.textContent = formatBRL(net));
+    if (feeLabel) feeLabel.textContent = feeMode === "prod" ? "10% + R$ 1,20" : "8% + R$ 1,00";
+    if (feeUnit) feeUnit.textContent = formatBRL(unitFee);
+    if (grossEl) grossEl.textContent = formatBRL(gross);
+    if (netEl) netEl.textContent = formatBRL(net);
   }
 
   function selectPill(mode) {
@@ -387,7 +408,6 @@
 
   pillAtl?.addEventListener("click", () => selectPill("atl"));
   pillProd?.addEventListener("click", () => selectPill("prod"));
-
   priceEl?.addEventListener("input", recalc);
   qtyNEl?.addEventListener("input", (e) => {
     const v = Math.max(0, Math.min(10000, parseInt(e.target.value || "0", 10) || 0));
@@ -401,7 +421,6 @@
     recalc();
   });
 
-  // start
   selectPill("atl");
   recalc();
 
@@ -412,7 +431,7 @@
 
   async function submitOrgRequest() {
     if (!reqForm) return;
-    const phone = ($("#req-phone")?.value || "").replace(/[^\d]/g, "");
+    const phone = ($("#req-phone")?.value || "").replace(/\D+/g, "");
     const title = $("#req-title")?.value?.trim() || "";
     const city = $("#req-city")?.value?.trim() || "";
     const venue = $("#req-venue")?.value?.trim() || "";
@@ -421,24 +440,24 @@
       (reqForm.querySelector('input[name="req-cat"]:checked')?.value || "atl").toLowerCase();
 
     if (!phone || !title || !city) {
-      reqHint && (reqHint.textContent = "Preencha WhatsApp, nome e cidade.");
+      if (reqHint) reqHint.textContent = "Preencha WhatsApp, nome e cidade.";
       return;
     }
 
     reqBtn?.setAttribute("disabled", "true");
-    reqHint && (reqHint.textContent = "Enviando…");
+    if (reqHint) reqHint.textContent = "Enviando…";
 
     try {
       const payload = { phone, title, city, venue, date, cat };
       const res = await postJSON(INGRESSAI_API + "/org/request", payload);
       if (res?.ok) {
-        reqHint && (reqHint.textContent = "Solicitação enviada. Você receberá o passo a passo no WhatsApp.");
+        if (reqHint) reqHint.textContent = "Solicitação enviada. Você receberá o passo a passo no WhatsApp.";
         reqForm.reset();
       } else {
-        reqHint && (reqHint.textContent = "Não foi possível enviar agora.");
+        if (reqHint) reqHint.textContent = "Não foi possível enviar agora.";
       }
     } catch (e) {
-      reqHint && (reqHint.textContent = "Falha ao enviar. Tente novamente.");
+      if (reqHint) reqHint.textContent = "Falha ao enviar. Tente novamente.";
       console.error(e);
     } finally {
       reqBtn?.removeAttribute("disabled");
@@ -462,21 +481,25 @@
   }
 
   async function runDiagnostics() {
-    // API base
     setDiag(dApi, !!INGRESSAI_API, INGRESSAI_API || "off");
 
-    // Health (sem /api duplicado)
+    // Health: tente /api/health e depois /health
     try {
-      const j = await getJSON(INGRESSAI_API + "/health");
+      let j;
+      try {
+        j = await getJSON(INGRESSAI_API + "/health");
+      } catch {
+        j = await getJSON(INGRESSAI_BASE + "/health");
+      }
       setDiag(dHealth, !!j?.ok, j?.ok ? "on" : "off");
       authIndicator?.classList.remove("off", "on");
       authIndicator?.classList.add(j?.ok ? "on" : "off");
-      authIndicator && (authIndicator.textContent = j?.ok ? "online" : "offline");
-    } catch {
+      if (authIndicator) authIndicator.textContent = j?.ok ? "online" : "offline";
+    } catch (e) {
       setDiag(dHealth, false);
       authIndicator?.classList.remove("off", "on");
       authIndicator?.classList.add("off");
-      authIndicator && (authIndicator.textContent = "offline");
+      if (authIndicator) authIndicator.textContent = "offline";
     }
 
     // Eventos
@@ -490,7 +513,7 @@
       console.error(e);
     }
 
-    // Validador: HEAD do estático
+    // Validador: HEAD (ou GET) do arquivo estático
     try {
       const url = INGRESSAI_BASE.replace(/\/+$/, "") + "/app/validator.html";
       const r = await fetch(url, { method: "HEAD", cache: "no-store" });
@@ -498,10 +521,9 @@
       if (ok && orgValidatorBtn && (!orgValidatorBtn.href || orgValidatorBtn.getAttribute("href") === "#")) {
         orgValidatorBtn.href = url;
       }
-    } catch {}
+    } catch {/* noop */}
   }
 
-  /* =============== Boot =============== */
   window.addEventListener("DOMContentLoaded", () => {
     runDiagnostics().catch((e) => console.error(e));
   });
