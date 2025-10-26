@@ -144,7 +144,7 @@
     .std-card{background:#fff;border:1px solid #e5ecff;border-radius:calc(var(--s2));padding:var(--s2);box-shadow:var(--shadow-soft)}
     .std-list{margin:0;padding-left:1.25rem;display:grid;gap:6px}
 
-    /* ---- Calculadora minimal ---- */
+    /* ---- Calculadora minimal / Planos ---- */
     .plan-calc{display:grid;gap:var(--s1)}
     .plan-pills{display:flex;gap:8px;flex-wrap:wrap}
     .pill{
@@ -165,6 +165,22 @@
     .kpi{background:var(--card);border:1px solid #e5ecff;border-radius:12px;padding:10px}
     .kpi strong{display:block;font-size:.86rem;color:#445570}
     .kpi .val{font-weight:900;font-size:1.08rem}
+
+    /* Tooltip do "i" dos planos */
+    .info{
+      display:inline-grid;place-items:center;margin-left:8px;
+      width:18px;height:18px;border-radius:50%;
+      border:1px solid #e5ecff;font-weight:900;font-size:.78rem;line-height:1;
+      cursor:help;position:relative;color:#2F7DD9;background:#fff;box-shadow:var(--shadow-soft)
+    }
+    .info:focus-visible{outline:none;box-shadow:var(--ring)}
+    .info .tip{
+      position:absolute;left:50%;transform:translateX(-50%);
+      bottom:calc(100% + 8px);min-width:220px;max-width:280px;
+      background:#0b1220;color:#e9ecf1;border:1px solid #253352;border-radius:10px;
+      padding:10px;font-size:.86rem;line-height:1.35;box-shadow:var(--shadow);display:none;z-index:20
+    }
+    .info:hover .tip,.info:focus .tip{display:block}
 
     footer{background:#fff;border-top:1px solid #e7eefb;margin-top:var(--s4)}
     .foot{max-width:var(--container-max);margin:0 auto;padding:var(--s3) var(--s3)}
@@ -335,18 +351,35 @@
         </div>
       </div>
 
-      <!-- Calculadora minimal -->
+      <!-- Planos disponíveis (calculadora) -->
       <div class="std-card" id="calc-card">
         <div class="plan-calc">
           <div>
-            <div class="plan-pills" role="tablist" aria-label="Planos de taxa">
+            <div class="plan-pills" role="tablist" aria-label="Planos disponíveis">
               <label class="pill" id="pill-atl" role="tab" aria-selected="true" aria-checked="true">
                 <input type="radio" name="org-cat" value="atl" checked />
-                Atléticas &amp; Repúblicas — 8% + R$1,00
+                Atléticas &amp; Repúblicas — org 3% • comp 4%
+                <span class="info" tabindex="0" aria-label="Regra do plano Atléticas & Repúblicas">
+                  i
+                  <small class="tip">
+                    <strong>Atléticas & Repúblicas</strong><br/>
+                    • Taxa do organizador: <b>3%</b> (descontado do base).<br/>
+                    • Taxa do comprador: <b>4%</b> (acrescida no checkout).
+                  </small>
+                </span>
               </label>
+
               <label class="pill" id="pill-prod" role="tab" aria-selected="false" aria-checked="false">
                 <input type="radio" name="org-cat" value="prod" />
-                Produtoras & Locais — 10% + R$1,20
+                Produtoras &amp; Locais — org 3% • comp 5%
+                <span class="info" tabindex="0" aria-label="Regra do plano Produtoras & Locais">
+                  i
+                  <small class="tip">
+                    <strong>Produtoras & Locais</strong><br/>
+                    • Taxa do organizador: <b>3%</b> (descontado do base).<br/>
+                    • Taxa do comprador: <b>5%</b> (acrescida no checkout).
+                  </small>
+                </span>
               </label>
             </div>
           </div>
@@ -371,23 +404,38 @@
 
             <div class="kpis" aria-label="Resumo">
               <div class="kpi">
-                <strong>Taxa selecionada</strong>
-                <div class="val" id="calc-fee">8% + R$ 1,00</div>
+                <strong>Plano</strong>
+                <div class="val" id="calc-fee">Atléticas — org 3% • comp 4%</div>
               </div>
               <div class="kpi">
-                <strong>Taxa por ingresso</strong>
-                <div class="val num" id="calc-fee-unit">R$ 0,00</div>
+                <strong>Preço base</strong>
+                <div class="val num" id="calc-base">R$ 0,00</div>
               </div>
               <div class="kpi">
-                <strong>Total bruto</strong>
-                <div class="val num" id="calc-gross">R$ 0,00</div>
+                <strong>Taxa do comprador</strong>
+                <div class="val num" id="calc-buyer-fee">R$ 0,00</div>
+              </div>
+              <div class="kpi">
+                <strong>Preço ao comprador</strong>
+                <div class="val num" id="calc-buyer">R$ 0,00</div>
+              </div>
+              <div class="kpi">
+                <strong>Taxa do organizador</strong>
+                <div class="val num" id="calc-org-fee">R$ 0,00</div>
               </div>
               <div class="kpi">
                 <strong>Você recebe</strong>
                 <div class="val num" id="calc-net">R$ 0,00</div>
               </div>
+              <div class="kpi">
+                <strong>Total cobrado</strong>
+                <div class="val num" id="calc-total">R$ 0,00</div>
+              </div>
             </div>
-            <small class="subtle">Valores estimados. Repasse no mesmo dia via Pix.</small>
+            <small class="subtle">
+              Taxas do plano: <b>organizador 3%</b> (por ingresso) • <b>comprador 4%</b> (Atléticas) ou <b>5%</b> (Produtoras).
+              O valor ao comprador já inclui a taxa correspondente. Repasse Pix T+0.
+            </small>
           </div>
         </div>
       </div>
@@ -404,9 +452,9 @@
             <input id="req-date" class="input" type="datetime-local" placeholder="Data (opcional)" />
 
             <fieldset style="display:flex;gap:12px;flex-wrap:wrap;border:0;margin:.25rem 0;padding:0">
-              <legend class="sr-only">Modelo de taxa</legend>
-              <label><input type="radio" name="req-cat" value="atl" checked /> Atléticas &amp; Repúblicas (8% + R$ 1,00)</label>
-              <label><input type="radio" name="req-cat" value="prod" /> Produtoras e Locais independentes (10% + R$ 1,20)</label>
+              <legend class="sr-only">Plano</legend>
+              <label><input type="radio" name="req-cat" value="atl" checked /> Atléticas &amp; Repúblicas (org 3% • comp 4%)</label>
+              <label><input type="radio" name="req-cat" value="prod" /> Produtoras &amp; Locais (org 3% • comp 5%)</label>
             </fieldset>
 
             <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
