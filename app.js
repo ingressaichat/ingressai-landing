@@ -1,6 +1,6 @@
 /* app.js — IngressAI (frontend leve)
    - vitrine, filtros, sheet
-   - org request, planos (3% org + 4%/5% comprador) com repasse
+   - planos fixos: 3% org + 4%/5% comprador (SEM toggle de repasse)
    - máscara BRL, URL state, localStorage, skeletons
    - diagnóstico de backend
    - analytics mínimos
@@ -28,6 +28,7 @@
   window.INGRESSAI_API = INGRESSAI_API;
   window.INGRESSAI_BASE = INGRESSAI_BASE;
 
+  const BOT_NUMBER = "5534999992747";
   const PLACEHOLDER_IMG = "./logo_ingressai.png";
 
   /* =============== Utils HTTP =============== */
@@ -128,9 +129,6 @@
   const listaEl = $("#lista-eventos");
   const filtroCidadesEl = $("#filtro-cidades");
   const buscaEl = $("#busca-eventos");
-  const sheet = $("#sheet");
-  const sheetBody = $("#sheet-body");
-  const sheetBackdrop = $("#sheet-backdrop");
 
   let allEvents = [];
   let activeCity = null;
@@ -185,7 +183,6 @@
     img.alt = "Capa do evento";
     img.src = src || PLACEHOLDER_IMG;
     img.addEventListener("error", () => {
-      // fallback suave (evita “ícone quebrado”)
       if (img.dataset.fbk) { img.src = PLACEHOLDER_IMG; return; }
       img.dataset.fbk = "1";
       img.src = PLACEHOLDER_IMG;
@@ -325,11 +322,18 @@
       img ? imgNode(img) : imgNode(null),
     ]);
 
+    // Deep-link: ingressai:start ev=<id> qty=1 autopay=1
+    const makeWaDeepLink = (ev) => {
+      const id = ev.id || ev.slug || "";
+      if (!id) return `https://wa.me/${BOT_NUMBER}`;
+      const txt = encodeURIComponent(`ingressai:start ev=${id} qty=1 autopay=1`);
+      return `https://wa.me/${BOT_NUMBER}?text=${txt}`;
+    };
+
     const ctaHref =
       ev.whatsappLink ||
       ev.deepLink ||
-      (ev.slug ? `${INGRESSAI_BASE}/e/${encodeURIComponent(ev.slug)}` : "") ||
-      "https://wa.me/5534999992747";
+      makeWaDeepLink(ev);
 
     const details = el("div", { class: "std-list" }, [
       el("div", {}, `Quando: ${dateText || "—"}`),
@@ -369,7 +373,7 @@
     renderEvents();
   });
 
-  /* =============== Calculadora / Planos =============== */
+  /* =============== Calculadora / Planos (SEM toggle) =============== */
   const pillAtl = $("#pill-atl");
   const pillProd = $("#pill-prod");
   const priceEl = $("#calc-price"); // texto com máscara
@@ -379,11 +383,9 @@
   const grossEl = $("#calc-gross");
   const netEl = $("#calc-net");
   const buyerEl = $("#calc-buyer");
-  const passToggle = $("#toggle-pass");
   const feeCaption = $("#fee-caption");
 
   let plan = (localStorage.getItem("ia.plan") || qs.get("plan") || "atl").toLowerCase();
-  let repasse = (qs.get("repasse") ?? localStorage.getItem("ia.repasse") ?? "1") === "1";
   let priceCents = brlToCents(qs.get("price")) || 6000; // default R$ 60,00
   let qty = clampInt(qs.get("qty") || localStorage.getItem("ia.qty") || "100", 0, 10000);
 
@@ -406,21 +408,31 @@
     return cents;
   }
 
-  // set initial UI state
-  function syncUIFromState(){
-    priceEl.value = centsToBRL(priceCents);
-    qtyNEl.value = String(qty);
-    qtySlider.value = String(Math.min(1000, qty));
-    selectPlan(plan);
-    passToggle.checked = repasse;
-    updateFeeCaption();
-    recalc();
+  function feesForPlan(){
+    return { orgPct: 0.03, buyerPct: (plan === "prod" ? 0.05 : 0.04) };
   }
 
   function updateFeeCaption(){
     feeCaption.textContent = plan === "prod"
-      ? "Organizador paga 3% por ingresso • Comprador vê +5% (quando repasse ligado)"
-      : "Organizador paga 3% por ingresso • Comprador vê +4% (quando repasse ligado)";
+      ? "Organizador paga 3% por ingresso • Comprador vê +5% (preço exibido já inclui a taxa)"
+      : "Organizador paga 3% por ingresso • Comprador vê +4% (preço exibido já inclui a taxa)";
+  }
+
+  function recalc(){
+    const { orgPct, buyerPct } = feesForPlan();
+
+    const unitOrgFeeCents = Math.round(priceCents * orgPct); // 3% sempre
+    const buyerFeeCents = Math.round(priceCents * buyerPct); // SEM toggle → sempre aplicado ao comprador
+
+    const buyerPriceCents = priceCents + buyerFeeCents;
+    const grossCents = priceCents * qty; // base * qtd (sem taxas)
+    const totalOrgFeesCents = unitOrgFeeCents * qty;
+    const netCents = Math.max(0, (priceCents - unitOrgFeeCents) * qty);
+
+    feeOrgEl.textContent = `${centsToBRL(unitOrgFeeCents)} / ingresso`;
+    buyerEl.textContent = centsToBRL(buyerPriceCents);
+    grossEl.textContent = centsToBRL(grossCents);
+    netEl.textContent = centsToBRL(netCents);
   }
 
   function selectPlan(next){
@@ -436,53 +448,20 @@
     recalc();
   }
 
-  function feesForPlan(){
-    return { orgPct: 0.03, buyerPct: (plan === "prod" ? 0.05 : 0.04) };
-  }
-
-  function recalc(){
-    const { orgPct, buyerPct } = feesForPlan();
-
-    const unitOrgFeeCents = Math.round(priceCents * orgPct); // 3% sempre
-    const buyerFeeCents = repasse ? Math.round(priceCents * buyerPct) : 0;
-
-    const buyerPriceCents = priceCents + buyerFeeCents;
-    const grossCents = priceCents * qty;
-    const totalOrgFeesCents = unitOrgFeeCents * qty;
-
-    // se NÃO repassar, o preço ao comprador é o base; a taxa do comprador não existe
-    // e o organizador segue recebendo base - 3%
-    const netCents = Math.max(0, (priceCents - unitOrgFeeCents) * qty);
-
-    feeOrgEl.textContent = `${centsToBRL(unitOrgFeeCents)} / ingresso`;
-    buyerEl.textContent = centsToBRL(buyerPriceCents);
-    grossEl.textContent = centsToBRL(grossCents);
-    netEl.textContent = centsToBRL(netCents);
-  }
-
   // Persist + URL
   function pushState(){
     const params = new URLSearchParams(location.search);
     params.set("plan", plan);
-    params.set("repasse", repasse ? "1" : "0");
     params.set("price", (priceCents/100).toFixed(2));
     params.set("qty", String(qty));
     const newUrl = `${location.pathname}?${params.toString()}${location.hash || ""}`;
     history.replaceState(null, "", newUrl);
-    localStorage.setItem("ia.repasse", repasse ? "1" : "0");
     localStorage.setItem("ia.qty", String(qty));
   }
 
   // UI events
   pillAtl?.addEventListener("click", () => selectPlan("atl"));
   pillProd?.addEventListener("click", () => selectPlan("prod"));
-  passToggle?.addEventListener("change", () => {
-    repasse = !!passToggle.checked;
-    localStorage.setItem("ia.repasse", repasse ? "1" : "0");
-    pushState();
-    console.log("[analytics] repasse_toggle", repasse);
-    recalc();
-  });
   priceEl?.addEventListener("input", (e) => {
     priceCents = maskBRLInput(e.target);
     pushState();
@@ -499,7 +478,7 @@
     pushState();
     recalc();
   });
-  qtyNEl?.addEventListener("input", (e) => {
+  $("#calc-qty-n")?.addEventListener("input", (e) => {
     const v = clampInt(e.target.value, 0, 10000);
     e.target.value = String(v);
     qty = v;
@@ -507,7 +486,7 @@
     pushState();
     recalc();
   });
-  qtySlider?.addEventListener("input", (e) => {
+  $("#calc-qty")?.addEventListener("input", (e) => {
     const v = clampInt(e.target.value, 0, 1000);
     if (qtyNEl) qtyNEl.value = String(v);
     qty = v;
@@ -615,10 +594,13 @@
 
   window.addEventListener("DOMContentLoaded", () => {
     // estado inicial da calculadora
-    syncUIFromState();
-    // search restore
-    const priceQS = qs.get("price");
-    if (priceQS) priceEl.value = centsToBRL(brlToCents(priceQS));
+    priceEl.value = centsToBRL(priceCents);
+    $("#calc-qty-n").value = String(qty);
+    $("#calc-qty").value = String(Math.min(1000, qty));
+    selectPlan(plan);
+    updateFeeCaption();
+    recalc();
+
     // run
     runDiagnostics().catch((e) => console.error(e));
   });
