@@ -1,7 +1,9 @@
 /* app.js — IngressAI (frontend leve)
    - vitrine, filtros, sheet
-   - org request, calculadora de planos (sem "comprador/organizador")
+   - org request, planos (3% org + 4%/5% comprador) com repasse
+   - máscara BRL, URL state, localStorage, skeletons
    - diagnóstico de backend
+   - analytics mínimos
 */
 (() => {
   "use strict";
@@ -25,6 +27,8 @@
 
   window.INGRESSAI_API = INGRESSAI_API;
   window.INGRESSAI_BASE = INGRESSAI_BASE;
+
+  const PLACEHOLDER_IMG = "./logo_ingressai.png";
 
   /* =============== Utils HTTP =============== */
   async function getJSON(url, opts = {}) {
@@ -64,7 +68,6 @@
   /* =============== DOM helpers =============== */
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
-
   function el(tag, attrs = {}, children = []) {
     const node = document.createElement(tag);
     Object.entries(attrs).forEach(([k, v]) => {
@@ -124,17 +127,22 @@
   /* =============== Vitrine: dados e render =============== */
   const listaEl = $("#lista-eventos");
   const filtroCidadesEl = $("#filtro-cidades");
+  const buscaEl = $("#busca-eventos");
   const sheet = $("#sheet");
   const sheetBody = $("#sheet-body");
   const sheetBackdrop = $("#sheet-backdrop");
-  const buscaEl = $("#busca-eventos");
 
   let allEvents = [];
   let activeCity = null;
   let searchTerm = "";
 
   async function fetchEventsSmart() {
-    const endpoints = ["/events/vitrine","/events/public","/events","/events/seed"];
+    const endpoints = [
+      "/events/vitrine",
+      "/events/public",
+      "/events",
+      "/events/seed",
+    ];
     for (const p of endpoints) {
       try {
         const url = INGRESSAI_API + p;
@@ -148,22 +156,41 @@
           json?.rows ||
           [];
         if (Array.isArray(events)) return events;
-      } catch (e) {}
+      } catch (e) {
+        /* tenta próximo */
+      }
     }
     throw new Error("Nenhum endpoint de eventos respondeu.");
   }
 
   const cityFrom = (ev) =>
     ev.city || ev.cidade || ev.location?.city || ev.venueCity || ev.placeCity || null;
+
   const dateTextFrom = (ev) =>
     ev.dateText || ev.eventDateText || ev.date || ev.startsAt || "";
+
   const mediaFrom = (ev) =>
-    ev.coverUrl || ev.image || ev.banner || ev.media?.[0] || ev.thumb || null;
+    // preferir imagem normalizada pelo backend (Graph → /uploads/…)
+    ev.image || ev.coverUrl || ev.banner || ev.media?.[0] || ev.thumb || null;
 
   function statusChip(ev) {
     if (ev.soldOut) return ["sold", "Esgotado"];
     if (ev.lowStock) return ["low", "Últimos ingressos"];
     return ["soon", "Disponível"];
+  }
+
+  function imgNode(src) {
+    const img = document.createElement("img");
+    img.loading = "lazy";
+    img.alt = "Capa do evento";
+    img.src = src || PLACEHOLDER_IMG;
+    img.addEventListener("error", () => {
+      // fallback suave (evita “ícone quebrado”)
+      if (img.dataset.fbk) { img.src = PLACEHOLDER_IMG; return; }
+      img.dataset.fbk = "1";
+      img.src = PLACEHOLDER_IMG;
+    }, { once:true });
+    return img;
   }
 
   function renderEvents() {
@@ -209,7 +236,7 @@
             ]),
           ]),
         ]),
-        el("div", { class: "card-media" }, img ? el("img", { src: img, alt: "Capa do evento" }) : "IngressAI"),
+        el("div", { class: "card-media" }, img ? imgNode(img) : imgNode(null)),
       ]);
 
       card.addEventListener("click", () => openEventSheet(ev));
@@ -231,24 +258,44 @@
     const cities = Array.from(set).sort((a, b) => a.localeCompare(b, "pt-BR"));
     filtroCidadesEl.innerHTML = "";
 
-    const allChip = el("button", { class: "chip", role: "tab", "aria-selected": activeCity ? "false" : "true" }, "Todas");
+    const allChip = el(
+      "button",
+      {
+        class: "chip",
+        role: "tab",
+        "aria-selected": activeCity ? "false" : "true",
+      },
+      "Todas"
+    );
     allChip.addEventListener("click", () => {
       activeCity = null;
-      $$('[role="tab"]', filtroCidadesEl).forEach((n) => n.setAttribute("aria-selected","false"));
-      allChip.setAttribute("aria-selected","true");
+      $$('[role="tab"]', filtroCidadesEl).forEach((n) =>
+        n.setAttribute("aria-selected", "false")
+      );
+      allChip.setAttribute("aria-selected", "true");
       renderEvents();
     });
     filtroCidadesEl.appendChild(allChip);
 
     cities.forEach((city) => {
-      const chip = el("button", {
-        class: "chip", role: "tab",
-        "aria-selected": activeCity && activeCity.toLowerCase() === city.toLowerCase() ? "true" : "false",
-      }, city);
+      const chip = el(
+        "button",
+        {
+          class: "chip",
+          role: "tab",
+          "aria-selected":
+            activeCity && activeCity.toLowerCase() === city.toLowerCase()
+              ? "true"
+              : "false",
+        },
+        city
+      );
       chip.addEventListener("click", () => {
         activeCity = city;
-        $$('[role="tab"]', filtroCidadesEl).forEach((n) => n.setAttribute("aria-selected","false"));
-        chip.setAttribute("aria-selected","true");
+        $$('[role="tab"]', filtroCidadesEl).forEach((n) =>
+          n.setAttribute("aria-selected", "false")
+        );
+        chip.setAttribute("aria-selected", "true");
         renderEvents();
       });
       filtroCidadesEl.appendChild(chip);
@@ -256,6 +303,9 @@
   }
 
   function openEventSheet(ev) {
+    const sheet = $("#sheet");
+    const sheetBody = $("#sheet-body");
+    const sheetBackdrop = $("#sheet-backdrop");
     if (!sheet || !sheetBody) return;
     sheetBody.innerHTML = "";
 
@@ -272,7 +322,7 @@
     ]);
 
     const mediaNode = el("div", { class: "sheet-media" }, [
-      img ? el("img", { src: img, alt: "Capa do evento" }) : document.createTextNode("IngressAI"),
+      img ? imgNode(img) : imgNode(null),
     ]);
 
     const ctaHref =
@@ -287,7 +337,11 @@
     ]);
 
     const actions = el("div", { style: "display:flex;gap:8px;margin-top:8px" }, [
-      el("a", { class: "btn btn--secondary btn--sm", href: ctaHref, target: "_blank", rel: "noopener noreferrer" }, "Comprar no WhatsApp"),
+      el(
+        "a",
+        { class: "btn btn--secondary btn--sm", href: ctaHref, target: "_blank", rel: "noopener noreferrer" },
+        "Comprar no WhatsApp"
+      ),
     ]);
 
     sheetBody.appendChild(head);
@@ -301,202 +355,165 @@
   }
 
   function closeSheet() {
+    const sheet = $("#sheet");
+    const sheetBackdrop = $("#sheet-backdrop");
     if (!sheet) return;
     sheet.classList.remove("is-open");
     sheetBackdrop.classList.remove("is-open");
     sheet.setAttribute("aria-hidden", "true");
   }
   $("#sheet-close")?.addEventListener("click", closeSheet);
-  sheetBackdrop?.addEventListener("click", closeSheet);
-  buscaEl?.addEventListener("input", (e) => {
+  $("#sheet-backdrop")?.addEventListener("click", closeSheet);
+  $("#busca-eventos")?.addEventListener("input", (e) => {
     searchTerm = e.target.value || "";
     renderEvents();
   });
 
-  /* =============== Calculadora (Planos) =============== */
+  /* =============== Calculadora / Planos =============== */
   const pillAtl = $("#pill-atl");
   const pillProd = $("#pill-prod");
-  const priceEl = $("#calc-price");
+  const priceEl = $("#calc-price"); // texto com máscara
   const qtyNEl = $("#calc-qty-n");
   const qtySlider = $("#calc-qty");
+  const feeOrgEl = $("#calc-fee-org");
+  const grossEl = $("#calc-gross");
+  const netEl = $("#calc-net");
+  const buyerEl = $("#calc-buyer");
+  const passToggle = $("#toggle-pass");
+  const feeCaption = $("#fee-caption");
 
-  const feeInfoEl = $("#calc-fee");
-  const baseKpi = $("#calc-base");
-  const finalKpi = $("#calc-final");
-  const payoutKpi = $("#calc-payout");
+  let plan = (localStorage.getItem("ia.plan") || qs.get("plan") || "atl").toLowerCase();
+  let repasse = (qs.get("repasse") ?? localStorage.getItem("ia.repasse") ?? "1") === "1";
+  let priceCents = brlToCents(qs.get("price")) || 6000; // default R$ 60,00
+  let qty = clampInt(qs.get("qty") || localStorage.getItem("ia.qty") || "100", 0, 10000);
 
-  const receipt = $("#receipt");
-  const viewFinalBtn = $("#view-final");
-  const viewPayoutBtn = $("#view-payout");
-  const embedFeeChk = $("#embed-fee");
-  const labelPrice = $("#label-price");
-
-  // Receipt fields
-  const uBase = $("#u-base");
-  const uServFee = $("#u-serv-fee");
-  const uPlatFee = $("#u-plat-fee");
-  const uTotal = $("#u-total");
-
-  const tQty = $("#t-qty");
-  const tBase = $("#t-base");
-  const tServFee = $("#t-serv-fee");
-  const tPlatFee = $("#t-plat-fee");
-  const tTotal = $("#t-total");
-
-  const labelTotalLeft = $("#label-total-left");
-  const labelTotalRight = $("#label-total-right");
-
-  let plan = "atl";        // 'atl' | 'prod'
-  let viewMode = "final";  // 'final' | 'payout'
-  let embed = false;       // embutir serviço no preço informado?
-
-  function formatBRL(v) {
-    try {
-      return Number(v || 0).toLocaleString("pt-BR", {
-        style: "currency",
-        currency: "BRL",
-        maximumFractionDigits: 2,
-      });
-    } catch {
-      const n = Math.round((Number(v || 0) + Number.EPSILON) * 100) / 100;
-      return `R$ ${n.toFixed(2)}`;
-    }
+  function clampInt(v, min, max){
+    const n = Math.max(min, Math.min(max, parseInt(v || "0", 10) || 0));
+    return n;
   }
 
-  function planParams(kind) {
-    // Serviço = +4% ou +5% no checkout; Plataforma = -3% do base
-    if (kind === "prod") return { plat_pct: 0.03, serv_pct: 0.05, label: "Produtoras — Serviço 5% • Plataforma 3%" };
-    return { plat_pct: 0.03, serv_pct: 0.04, label: "Atléticas — Serviço 4% • Plataforma 3%" };
+  function centsToBRL(c){ return (c/100).toLocaleString("pt-BR", { style:"currency", currency:"BRL" }); }
+  function brlToCents(raw){
+    if (raw == null) return 0;
+    const s = String(raw).replace(/[^\d,.-]/g,"").replace(/\./g,"").replace(",",".");
+    const n = Number(s);
+    return isFinite(n) ? Math.round(n * 100) : 0;
+  }
+  function maskBRLInput(el){
+    const v = el.value;
+    const cents = brlToCents(v);
+    el.value = centsToBRL(cents);
+    return cents;
   }
 
-  function compute(priceInput, qty, params, embedService) {
-    const { plat_pct, serv_pct } = params;
-
-    let base;        // valor base (antes das taxas)
-    let finalPrice;  // preço exibido no checkout
-    let servUnit;    // taxa de serviço unitária
-    let platUnit;    // taxa de plataforma unitária
-    let payoutUnit;  // repasse unitário
-
-    if (!embedService) {
-      // Input é BASE
-      base = priceInput;
-      servUnit = base * serv_pct;
-      finalPrice = base + servUnit;
-    } else {
-      // Input é o PREÇO FINAL; backsolve base
-      finalPrice = priceInput;
-      base = finalPrice / (1 + serv_pct);
-      servUnit = finalPrice - base; // mantém final "redondo"
-    }
-
-    platUnit = base * plat_pct;
-    payoutUnit = Math.max(0, base - platUnit);
-
-    const totalBase = base * qty;
-    const totalServ = servUnit * qty;
-    const totalPlat = platUnit * qty;
-
-    return {
-      base, finalPrice, servUnit, platUnit, payoutUnit,
-      totalBase, totalServ, totalPlat,
-      totalFinal: finalPrice * qty,
-      totalPayout: payoutUnit * qty,
-    };
-  }
-
-  function recalc() {
-    const qPrice = Math.max(0, parseFloat((priceEl?.value || "0").replace(",", ".")) || 0);
-    const qty = Math.max(0, parseInt(qtyNEl?.value || "0", 10) || 0);
-    const params = planParams(plan);
-
-    const r = compute(qPrice, qty, params, embed);
-
-    // KPIs
-    feeInfoEl && (feeInfoEl.textContent = params.label);
-    baseKpi && (baseKpi.textContent = formatBRL(r.base));
-    finalKpi && (finalKpi.textContent = formatBRL(r.finalPrice));
-    payoutKpi && (payoutKpi.textContent = formatBRL(r.totalPayout));
-
-    // Receipt unit
-    uBase && (uBase.textContent = formatBRL(r.base));
-    uServFee && (uServFee.textContent = formatBRL(r.servUnit));
-    uPlatFee && (uPlatFee.textContent = formatBRL(r.platUnit));
-    // Título do total conforme visor
-    if (viewMode === "final") {
-      labelTotalLeft && (labelTotalLeft.textContent = "Preço final");
-      uTotal && (uTotal.textContent = formatBRL(r.finalPrice));
-    } else {
-      labelTotalLeft && (labelTotalLeft.textContent = "Repasse unitário");
-      uTotal && (uTotal.textContent = formatBRL(r.payoutUnit));
-    }
-
-    // Receipt totals
-    tQty && (tQty.textContent = String(qty));
-    tBase && (tBase.textContent = formatBRL(r.totalBase));
-    tServFee && (tServFee.textContent = formatBRL(r.totalServ));
-    tPlatFee && (tPlatFee.textContent = formatBRL(r.totalPlat));
-    if (viewMode === "final") {
-      labelTotalRight && (labelTotalRight.textContent = "Total cobrado");
-      tTotal && (tTotal.textContent = formatBRL(r.totalFinal));
-    } else {
-      labelTotalRight && (labelTotalRight.textContent = "Total do repasse");
-      tTotal && (tTotal.textContent = formatBRL(r.totalPayout));
-    }
-
-    // Ajusta label do input conforme embed
-    if (labelPrice) {
-      labelPrice.textContent = embed
-        ? "Preço do ingresso (exibido)"
-        : "Preço do ingresso (base)";
-    }
-  }
-
-  function selectPlan(kind) {
-    plan = kind;
-    pillAtl?.setAttribute("aria-checked", kind === "atl" ? "true" : "false");
-    pillAtl?.setAttribute("aria-selected", kind === "atl" ? "true" : "false");
-    pillProd?.setAttribute("aria-checked", kind === "prod" ? "true" : "false");
-    pillProd?.setAttribute("aria-selected", kind === "prod" ? "true" : "false");
+  // set initial UI state
+  function syncUIFromState(){
+    priceEl.value = centsToBRL(priceCents);
+    qtyNEl.value = String(qty);
+    qtySlider.value = String(Math.min(1000, qty));
+    selectPlan(plan);
+    passToggle.checked = repasse;
+    updateFeeCaption();
     recalc();
   }
 
-  function setView(mode) {
-    viewMode = mode;
-    viewFinalBtn?.setAttribute("aria-pressed", mode === "final" ? "true" : "false");
-    viewPayoutBtn?.setAttribute("aria-pressed", mode === "payout" ? "true" : "false");
+  function updateFeeCaption(){
+    feeCaption.textContent = plan === "prod"
+      ? "Organizador paga 3% por ingresso • Comprador vê +5% (quando repasse ligado)"
+      : "Organizador paga 3% por ingresso • Comprador vê +4% (quando repasse ligado)";
+  }
+
+  function selectPlan(next){
+    plan = next;
+    pillAtl?.setAttribute("aria-checked", next === "atl" ? "true" : "false");
+    pillAtl?.setAttribute("aria-selected", next === "atl" ? "true" : "false");
+    pillProd?.setAttribute("aria-checked", next === "prod" ? "true" : "false");
+    pillProd?.setAttribute("aria-selected", next === "prod" ? "true" : "false");
+    localStorage.setItem("ia.plan", plan);
+    pushState();
+    console.log("[analytics] plan_change", plan);
+    updateFeeCaption();
     recalc();
   }
 
+  function feesForPlan(){
+    return { orgPct: 0.03, buyerPct: (plan === "prod" ? 0.05 : 0.04) };
+  }
+
+  function recalc(){
+    const { orgPct, buyerPct } = feesForPlan();
+
+    const unitOrgFeeCents = Math.round(priceCents * orgPct); // 3% sempre
+    const buyerFeeCents = repasse ? Math.round(priceCents * buyerPct) : 0;
+
+    const buyerPriceCents = priceCents + buyerFeeCents;
+    const grossCents = priceCents * qty;
+    const totalOrgFeesCents = unitOrgFeeCents * qty;
+
+    // se NÃO repassar, o preço ao comprador é o base; a taxa do comprador não existe
+    // e o organizador segue recebendo base - 3%
+    const netCents = Math.max(0, (priceCents - unitOrgFeeCents) * qty);
+
+    feeOrgEl.textContent = `${centsToBRL(unitOrgFeeCents)} / ingresso`;
+    buyerEl.textContent = centsToBRL(buyerPriceCents);
+    grossEl.textContent = centsToBRL(grossCents);
+    netEl.textContent = centsToBRL(netCents);
+  }
+
+  // Persist + URL
+  function pushState(){
+    const params = new URLSearchParams(location.search);
+    params.set("plan", plan);
+    params.set("repasse", repasse ? "1" : "0");
+    params.set("price", (priceCents/100).toFixed(2));
+    params.set("qty", String(qty));
+    const newUrl = `${location.pathname}?${params.toString()}${location.hash || ""}`;
+    history.replaceState(null, "", newUrl);
+    localStorage.setItem("ia.repasse", repasse ? "1" : "0");
+    localStorage.setItem("ia.qty", String(qty));
+  }
+
+  // UI events
   pillAtl?.addEventListener("click", () => selectPlan("atl"));
   pillProd?.addEventListener("click", () => selectPlan("prod"));
-
-  priceEl?.addEventListener("input", recalc);
+  passToggle?.addEventListener("change", () => {
+    repasse = !!passToggle.checked;
+    localStorage.setItem("ia.repasse", repasse ? "1" : "0");
+    pushState();
+    console.log("[analytics] repasse_toggle", repasse);
+    recalc();
+  });
+  priceEl?.addEventListener("input", (e) => {
+    priceCents = maskBRLInput(e.target);
+    pushState();
+    recalc();
+  });
+  priceEl?.addEventListener("blur", (e) => {
+    // arredondamento “bonito”: se terminar em .00 → tenta .90; se > .90 → .99
+    let c = brlToCents(e.target.value);
+    const mod = c % 100;
+    if (mod === 0 && c >= 1000) c = c - 10;            // .00 → .90
+    else if (mod >= 90 && mod < 99) c = c + (99 - mod); // ~.90 → .99
+    priceCents = Math.max(0, c);
+    e.target.value = centsToBRL(priceCents);
+    pushState();
+    recalc();
+  });
   qtyNEl?.addEventListener("input", (e) => {
-    const v = Math.max(0, Math.min(10000, parseInt(e.target.value || "0", 10) || 0));
+    const v = clampInt(e.target.value, 0, 10000);
     e.target.value = String(v);
+    qty = v;
     if (qtySlider) qtySlider.value = String(Math.min(1000, v));
+    pushState();
     recalc();
   });
   qtySlider?.addEventListener("input", (e) => {
-    const v = parseInt(e.target.value || "0", 10) || 0;
+    const v = clampInt(e.target.value, 0, 1000);
     if (qtyNEl) qtyNEl.value = String(v);
+    qty = v;
+    pushState();
     recalc();
   });
-
-  viewFinalBtn?.addEventListener("click", () => setView("final"));
-  viewPayoutBtn?.addEventListener("click", () => setView("payout"));
-  embedFeeChk?.addEventListener("change", (e) => {
-    embed = !!e.target.checked;
-    recalc();
-  });
-
-  // defaults
-  selectPlan("atl");
-  setView("final");
-  embed = false;
-  embedFeeChk && (embedFeeChk.checked = false);
-  recalc();
 
   /* =============== Solicitação de criação (org) =============== */
   const reqForm = $("#req-form");
@@ -527,6 +544,7 @@
       if (res?.ok) {
         if (reqHint) reqHint.textContent = "Solicitação enviada. Você receberá o passo a passo no WhatsApp.";
         reqForm.reset();
+        console.log("[analytics] org_request_sent", payload);
       } else {
         if (reqHint) reqHint.textContent = "Não foi possível enviar agora.";
       }
@@ -559,8 +577,11 @@
 
     try {
       let j;
-      try { j = await getJSON(INGRESSAI_API + "/health"); }
-      catch { j = await getJSON(INGRESSAI_BASE + "/health"); }
+      try {
+        j = await getJSON(INGRESSAI_API + "/health");
+      } catch {
+        j = await getJSON(INGRESSAI_BASE + "/health");
+      }
       setDiag(dHealth, !!j?.ok, j?.ok ? "on" : "off");
       authIndicator?.classList.remove("off", "on");
       authIndicator?.classList.add(j?.ok ? "on" : "off");
@@ -589,10 +610,16 @@
       if (ok && orgValidatorBtn && (!orgValidatorBtn.href || orgValidatorBtn.getAttribute("href") === "#")) {
         orgValidatorBtn.href = url;
       }
-    } catch {}
+    } catch {/* noop */}
   }
 
   window.addEventListener("DOMContentLoaded", () => {
+    // estado inicial da calculadora
+    syncUIFromState();
+    // search restore
+    const priceQS = qs.get("price");
+    if (priceQS) priceEl.value = centsToBRL(brlToCents(priceQS));
+    // run
     runDiagnostics().catch((e) => console.error(e));
   });
 })();
