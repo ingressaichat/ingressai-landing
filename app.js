@@ -1,6 +1,6 @@
 /* app.js — IngressAI (frontend leve)
    - vitrine, filtros, sheet
-   - org request, calc de taxas
+   - org request, calc de taxas (Planos)
    - diagnóstico de backend
 */
 (() => {
@@ -129,7 +129,6 @@
   const sheet = $("#sheet");
   const sheetBody = $("#sheet-body");
   const sheetBackdrop = $("#sheet-backdrop");
-  const btnSheetClose = $("#sheet-close");
 
   let allEvents = [];
   let activeCity = null;
@@ -352,62 +351,80 @@
     renderEvents();
   });
 
-  /* =============== Calculadora =============== */
+  /* =============== Calculadora (Planos) =============== */
   const pillAtl = $("#pill-atl");
   const pillProd = $("#pill-prod");
   const priceEl = $("#calc-price");
   const qtyNEl = $("#calc-qty-n");
   const qtySlider = $("#calc-qty");
-  const feeLabel = $("#calc-fee");
-  const feeUnit = $("#calc-fee-unit");
-  const grossEl = $("#calc-gross");
-  const netEl = $("#calc-net");
 
-  let feeMode = "atl";
+  const feeInfoEl = $("#calc-fee");
+  const baseEl = $("#calc-base");
+  const buyerFeeEl = $("#calc-buyer-fee");
+  const buyerEl = $("#calc-buyer");
+  const orgFeeEl = $("#calc-org-fee");
+  const netEl = $("#calc-net");
+  const totalEl = $("#calc-total");
+
+  let plan = "atl"; // 'atl' | 'prod'
 
   function formatBRL(v) {
     try {
-      return v.toLocaleString("pt-BR", {
+      return Number(v || 0).toLocaleString("pt-BR", {
         style: "currency",
         currency: "BRL",
         maximumFractionDigits: 2,
       });
     } catch {
-      return `R$ ${Number(v || 0).toFixed(2)}`;
+      const n = Math.round((Number(v || 0) + Number.EPSILON) * 100) / 100;
+      return `R$ ${n.toFixed(2)}`;
     }
   }
 
-  function feeParams(mode) {
-    return mode === "prod" ? { pct: 0.1, fixo: 1.2 } : { pct: 0.08, fixo: 1.0 };
+  function planParams(kind) {
+    // organizador 3%; comprador 4% (atl) ou 5% (prod)
+    if (kind === "prod") return { org_pct: 0.03, buyer_pct: 0.05, label: "Produtoras — org 3% • comp 5%" };
+    return { org_pct: 0.03, buyer_pct: 0.04, label: "Atléticas — org 3% • comp 4%" };
   }
 
   function recalc() {
-    const price = Math.max(0, parseFloat(priceEl?.value || "0") || 0);
+    const price = Math.max(0, parseFloat((priceEl?.value || "0").replace(",", ".")) || 0);
     const qty = Math.max(0, parseInt(qtyNEl?.value || "0", 10) || 0);
-    const { pct, fixo } = feeParams(feeMode);
 
-    const unitFee = price * pct + fixo;
-    const gross = price * qty;
-    const totalFees = unitFee * qty;
-    const net = Math.max(0, gross - totalFees);
+    const { org_pct, buyer_pct, label } = planParams(plan);
 
-    if (feeLabel) feeLabel.textContent = feeMode === "prod" ? "10% + R$ 1,20" : "8% + R$ 1,00";
-    if (feeUnit) feeUnit.textContent = formatBRL(unitFee);
-    if (grossEl) grossEl.textContent = formatBRL(gross);
-    if (netEl) netEl.textContent = formatBRL(net);
+    // Por ingresso
+    const unitBuyerFee = price * buyer_pct;     // acrescida ao comprador
+    const unitOrgFee   = price * org_pct;       // descontada do organizador
+    const buyerPrice   = price + unitBuyerFee;  // checkout ao comprador
+    const orgNetUnit   = Math.max(0, price - unitOrgFee);
+
+    // Totais
+    const totalBuyer   = buyerPrice * qty;
+    const totalNet     = orgNetUnit * qty;
+
+    // UI
+    feeInfoEl && (feeInfoEl.textContent = label);
+    baseEl && (baseEl.textContent = formatBRL(price));
+    buyerFeeEl && (buyerFeeEl.textContent = formatBRL(unitBuyerFee));
+    buyerEl && (buyerEl.textContent = formatBRL(buyerPrice));
+    orgFeeEl && (orgFeeEl.textContent = formatBRL(unitOrgFee));
+    netEl && (netEl.textContent = formatBRL(totalNet));
+    totalEl && (totalEl.textContent = formatBRL(totalBuyer));
   }
 
-  function selectPill(mode) {
-    feeMode = mode;
-    pillAtl?.setAttribute("aria-checked", mode === "atl" ? "true" : "false");
-    pillAtl?.setAttribute("aria-selected", mode === "atl" ? "true" : "false");
-    pillProd?.setAttribute("aria-checked", mode === "prod" ? "true" : "false");
-    pillProd?.setAttribute("aria-selected", mode === "prod" ? "true" : "false");
+  function selectPlan(kind) {
+    plan = kind;
+    pillAtl?.setAttribute("aria-checked", kind === "atl" ? "true" : "false");
+    pillAtl?.setAttribute("aria-selected", kind === "atl" ? "true" : "false");
+    pillProd?.setAttribute("aria-checked", kind === "prod" ? "true" : "false");
+    pillProd?.setAttribute("aria-selected", kind === "prod" ? "true" : "false");
     recalc();
   }
 
-  pillAtl?.addEventListener("click", () => selectPill("atl"));
-  pillProd?.addEventListener("click", () => selectPill("prod"));
+  pillAtl?.addEventListener("click", () => selectPlan("atl"));
+  pillProd?.addEventListener("click", () => selectPlan("prod"));
+
   priceEl?.addEventListener("input", recalc);
   qtyNEl?.addEventListener("input", (e) => {
     const v = Math.max(0, Math.min(10000, parseInt(e.target.value || "0", 10) || 0));
@@ -421,7 +438,8 @@
     recalc();
   });
 
-  selectPill("atl");
+  // defaults
+  selectPlan("atl");
   recalc();
 
   /* =============== Solicitação de criação (org) =============== */
