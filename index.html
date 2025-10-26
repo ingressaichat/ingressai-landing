@@ -168,12 +168,6 @@
     .kpi strong{display:block;font-size:.86rem;color:#445570}
     .kpi .val{font-weight:900;font-size:1.08rem}
 
-    .toggle{display:inline-flex;align-items:center;gap:8px;font-weight:700}
-    .switch{appearance:none;width:44px;height:26px;border-radius:999px;position:relative;background:#e6edff;border:1px solid #dbe6ff;outline:none;cursor:pointer;transition:.15s}
-    .switch:before{content:"";position:absolute;top:2px;left:2px;width:21px;height:21px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.12);transition:.15s}
-    .switch:checked{background:#2F7DD9}
-    .switch:checked:before{left:21px}
-
     footer{background:#fff;border-top:1px solid #e7eefb;margin-top:var(--s4)}
     .foot{max-width:var(--container-max);margin:0 auto;padding:var(--s3) var(--s3)}
     .foot-block{display:grid;gap:var(--s2);justify-items:center;text-align:center}
@@ -183,17 +177,6 @@
     .legal{display:flex;flex-wrap:wrap;gap:var(--s1);justify-content:center;margin-top:calc(var(--s0)*1.2)}
     .legal a{text-decoration:underline;font-weight:600}
     .foot-meta{display:flex;flex-wrap:wrap;gap:10px;align-items:center;color:#667792;justify-content:center}
-
-    /* Modal + debug overlay */
-    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(11,18,32,.48);z-index:70}
-    .modal[aria-hidden="false"]{display:flex}
-    .modal-card{width:min(520px,92vw);background:#fff;border-radius:16px;padding:16px;border:1px solid #e6eaf6;box-shadow:var(--shadow)}
-    .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
-
-    #err-overlay{position:fixed;inset:0;background:rgba(0,0,0,.66);display:none;align-items:center;justify-content:center;z-index:9999}
-    #err-card{background:#0b1220;color:#fff;max-width:960px;width:96%;border-radius:12px;padding:16px;border:1px solid #2b3344}
-    #err-card h4{margin:0 0 8px 0}
-    #err-pre{margin:0;white-space:pre-wrap;font-size:.9rem;max-height:60vh;overflow:auto}
     .diag{font-size:.85rem;color:#566781;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:.5rem 0}
     @media(min-width:520px){.diag{grid-template-columns:repeat(3,minmax(0,1fr))}}
     .diag div{background:#fff;border:1px solid #e7eefb;border-radius:8px;padding:6px 8px}
@@ -301,7 +284,7 @@
             <rect x="3" y="14" width="7" height="7" rx="1.1" />
             <rect class="qr-fill" x="5.6" y="16.6" width="2.8" height="2.8" rx=".35" />
           </svg>
-          <div class="meta"><strong>QR Code Antifraude</strong><small>+ validador (no Dashboard)</small></div>
+          <div class="meta"><strong>QR Code Antifraude</strong><small>+ validador</small></div>
         </div>
         <div class="feature">
           <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -364,7 +347,7 @@
         </div>
       </div>
 
-      <!-- Planos / Calculadora -->
+      <!-- Planos / Calculadora (sem toggle de repasse) -->
       <div class="std-card" id="calc-card">
         <div class="plan-calc">
           <div class="plan-pills" role="tablist" aria-label="Planos">
@@ -393,14 +376,6 @@
               </div>
             </div>
 
-            <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-              <label class="toggle" for="toggle-pass">
-                <input id="toggle-pass" type="checkbox" class="switch" checked />
-                Repasse ao comprador (exibe preço com taxa)
-              </label>
-              <small class="subtle" id="fee-caption">Organizador paga 3% por ingresso • Comprador vê +4% (atléticas) / +5% (produtoras)</small>
-            </div>
-
             <div>
               <input id="calc-qty" type="range" min="0" max="1000" step="1" value="100" aria-label="Quantidade (slider)" style="width:100%" />
             </div>
@@ -423,7 +398,7 @@
                 <div class="val num" id="calc-gross">R$ 0,00</div>
               </div>
             </div>
-            <small class="subtle">Valores estimados. Repasse no mesmo dia via Pix.</small>
+            <small class="subtle" id="fee-caption">Organizador paga 3% por ingresso • Comprador vê +4% (atléticas) / +5% (produtoras). Preço exibido já inclui a taxa do comprador.</small>
           </div>
         </div>
       </div>
