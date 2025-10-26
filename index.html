@@ -144,7 +144,7 @@
     .std-card{background:#fff;border:1px solid #e5ecff;border-radius:calc(var(--s2));padding:var(--s2);box-shadow:var(--shadow-soft)}
     .std-list{margin:0;padding-left:1.25rem;display:grid;gap:6px}
 
-    /* ---- Calculadora minimal / Planos ---- */
+    /* ---- Planos + calculadora ---- */
     .plan-calc{display:grid;gap:var(--s1)}
     .plan-pills{display:flex;gap:8px;flex-wrap:wrap}
     .pill{
@@ -154,33 +154,34 @@
     }
     .pill input{appearance:none;width:0;height:0;position:absolute;opacity:0}
     .pill[aria-checked="true"]{background:var(--blue-2);color:#fff;border-color:rgba(27,95,179,.35);box-shadow:0 6px 14px rgba(47,125,217,.25)}
+    .badge-fee{display:inline-flex;gap:6px;align-items:center;margin-left:6px;padding:.2rem .55rem;border-radius:999px;border:1px solid #e5ecff;background:#fff;font-weight:900;font-size:.8rem;color:#1B5FB3}
+
     .calc-grid{display:grid;gap:var(--s1)}
     .calc-row{display:grid;gap:8px}
     @media(min-width:560px){.calc-row{grid-template-columns:1fr auto;align-items:end}}
     .input{width:100%;border:1px solid #e5ecff;border-radius:10px;padding:.8rem 1rem;font:inherit}
     .range-box{display:flex;gap:8px;align-items:center}
     .num{font-variant-numeric:tabular-nums}
+
+    .seg{display:inline-flex;background:#f0f5ff;border:1px solid #e0e9ff;border-radius:999px;padding:4px;gap:4px;align-self:flex-start}
+    .seg button{border:0;background:transparent;padding:.35rem .75rem;border-radius:999px;font-weight:800;cursor:pointer}
+    .seg button[aria-pressed="true"]{background:#fff;border:1px solid #dbe6ff;box-shadow:var(--shadow-soft)}
+
     .kpis{display:grid;gap:8px;grid-template-columns:repeat(2,minmax(0,1fr))}
-    @media(min-width:680px){.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}}
+    @media(min-width:880px){.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}}
     .kpi{background:var(--card);border:1px solid #e5ecff;border-radius:12px;padding:10px}
     .kpi strong{display:block;font-size:.86rem;color:#445570}
     .kpi .val{font-weight:900;font-size:1.08rem}
 
-    /* Tooltip do "i" dos planos */
-    .info{
-      display:inline-grid;place-items:center;margin-left:8px;
-      width:18px;height:18px;border-radius:50%;
-      border:1px solid #e5ecff;font-weight:900;font-size:.78rem;line-height:1;
-      cursor:help;position:relative;color:#2F7DD9;background:#fff;box-shadow:var(--shadow-soft)
-    }
-    .info:focus-visible{outline:none;box-shadow:var(--ring)}
-    .info .tip{
-      position:absolute;left:50%;transform:translateX(-50%);
-      bottom:calc(100% + 8px);min-width:220px;max-width:280px;
-      background:#0b1220;color:#e9ecf1;border:1px solid #253352;border-radius:10px;
-      padding:10px;font-size:.86rem;line-height:1.35;box-shadow:var(--shadow);display:none;z-index:20
-    }
-    .info:hover .tip,.info:focus .tip{display:block}
+    .receipt{border:1px dashed #d9e3fa;border-radius:12px;padding:12px;background:#fbfdff}
+    .receipt h4{margin:.2rem 0 .6rem 0;font-weight:900}
+    .receipt .cols{display:grid;gap:10px;grid-template-columns:1fr}
+    @media(min-width:680px){.receipt .cols{grid-template-columns:repeat(2,1fr)}}
+    .line{display:flex;justify-content:space-between;gap:8px;padding:6px 8px;border-radius:8px}
+    .line.add{background:#eef6ff}
+    .line.sub{background:#fff5f5}
+    .total{display:flex;justify-content:space-between;gap:8px;padding:8px 10px;border-radius:10px;background:#fff;border:1px solid #e5ecff;font-weight:900}
+    .muted{color:#64748b;font-weight:700}
 
     footer{background:#fff;border-top:1px solid #e7eefb;margin-top:var(--s4)}
     .foot{max-width:var(--container-max);margin:0 auto;padding:var(--s3) var(--s3)}
@@ -343,7 +344,6 @@
       <div class="std-card" style="margin-bottom:12px">
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between">
           <span class="subtle">Entre com seu WhatsApp para acessar o validador do seu evento.</span>
-          <!-- transformado em link, com fallback de navegação -->
           <a id="org-validator" class="btn btn--ghost btn--sm" href="#" aria-label="Abrir validador">
             <span>Validador</span>
             <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -357,29 +357,14 @@
           <div>
             <div class="plan-pills" role="tablist" aria-label="Planos disponíveis">
               <label class="pill" id="pill-atl" role="tab" aria-selected="true" aria-checked="true">
-                <input type="radio" name="org-cat" value="atl" checked />
-                Atléticas &amp; Repúblicas — org 3% • comp 4%
-                <span class="info" tabindex="0" aria-label="Regra do plano Atléticas & Repúblicas">
-                  i
-                  <small class="tip">
-                    <strong>Atléticas & Repúblicas</strong><br/>
-                    • Taxa do organizador: <b>3%</b> (descontado do base).<br/>
-                    • Taxa do comprador: <b>4%</b> (acrescida no checkout).
-                  </small>
-                </span>
+                <input type="radio" name="plan" value="atl" checked />
+                Atléticas &amp; Repúblicas
+                <span class="badge-fee">Serviço 4% • Plataforma 3%</span>
               </label>
-
               <label class="pill" id="pill-prod" role="tab" aria-selected="false" aria-checked="false">
-                <input type="radio" name="org-cat" value="prod" />
-                Produtoras &amp; Locais — org 3% • comp 5%
-                <span class="info" tabindex="0" aria-label="Regra do plano Produtoras & Locais">
-                  i
-                  <small class="tip">
-                    <strong>Produtoras & Locais</strong><br/>
-                    • Taxa do organizador: <b>3%</b> (descontado do base).<br/>
-                    • Taxa do comprador: <b>5%</b> (acrescida no checkout).
-                  </small>
-                </span>
+                <input type="radio" name="plan" value="prod" />
+                Produtoras &amp; Locais
+                <span class="badge-fee">Serviço 5% • Plataforma 3%</span>
               </label>
             </div>
           </div>
@@ -387,7 +372,7 @@
           <div class="calc-grid">
             <div class="calc-row">
               <div>
-                <label for="calc-price"><strong>Valor do ingresso</strong></label>
+                <label for="calc-price" id="label-price"><strong>Preço do ingresso (base)</strong></label>
                 <input id="calc-price" class="input" type="number" min="0" step="0.01" value="60" inputmode="decimal" />
               </div>
               <div>
@@ -402,40 +387,58 @@
               <input id="calc-qty" type="range" min="0" max="1000" step="1" value="0" aria-label="Quantidade (slider)" style="width:100%" />
             </div>
 
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <div class="seg" role="tablist" aria-label="Visor">
+                <button id="view-final" type="button" role="tab" aria-pressed="true">Preço final</button>
+                <button id="view-payout" type="button" role="tab" aria-pressed="false">Repasse</button>
+              </div>
+              <label style="display:inline-flex;gap:8px;align-items:center">
+                <input type="checkbox" id="embed-fee" />
+                <span>Preço final redondo (embutir serviço)</span>
+              </label>
+            </div>
+
+            <!-- KPIs rápidos -->
             <div class="kpis" aria-label="Resumo">
               <div class="kpi">
                 <strong>Plano</strong>
-                <div class="val" id="calc-fee">Atléticas — org 3% • comp 4%</div>
+                <div class="val" id="calc-fee">Atléticas — Serviço 4% • Plataforma 3%</div>
               </div>
               <div class="kpi">
                 <strong>Preço base</strong>
                 <div class="val num" id="calc-base">R$ 0,00</div>
               </div>
               <div class="kpi">
-                <strong>Taxa do comprador</strong>
-                <div class="val num" id="calc-buyer-fee">R$ 0,00</div>
+                <strong>Preço final</strong>
+                <div class="val num" id="calc-final">R$ 0,00</div>
               </div>
               <div class="kpi">
-                <strong>Preço ao comprador</strong>
-                <div class="val num" id="calc-buyer">R$ 0,00</div>
-              </div>
-              <div class="kpi">
-                <strong>Taxa do organizador</strong>
-                <div class="val num" id="calc-org-fee">R$ 0,00</div>
-              </div>
-              <div class="kpi">
-                <strong>Você recebe</strong>
-                <div class="val num" id="calc-net">R$ 0,00</div>
-              </div>
-              <div class="kpi">
-                <strong>Total cobrado</strong>
-                <div class="val num" id="calc-total">R$ 0,00</div>
+                <strong>Repasse</strong>
+                <div class="val num" id="calc-payout">R$ 0,00</div>
               </div>
             </div>
-            <small class="subtle">
-              Taxas do plano: <b>organizador 3%</b> (por ingresso) • <b>comprador 4%</b> (Atléticas) ou <b>5%</b> (Produtoras).
-              O valor ao comprador já inclui a taxa correspondente. Repasse Pix T+0.
-            </small>
+
+            <!-- Comprovante visual -->
+            <div class="receipt" id="receipt" aria-live="polite">
+              <div class="cols">
+                <div>
+                  <h4>Por ingresso</h4>
+                  <div class="line"><span class="muted">Base</span><span class="num" id="u-base">R$ 0,00</span></div>
+                  <div class="line add"><span class="muted">+ Serviço</span><span class="num" id="u-serv-fee">R$ 0,00</span></div>
+                  <div class="line sub"><span class="muted">– Plataforma</span><span class="num" id="u-plat-fee">R$ 0,00</span></div>
+                  <div class="total"><span id="label-total-left">Preço final</span><span class="num" id="u-total">R$ 0,00</span></div>
+                </div>
+                <div>
+                  <h4>No total</h4>
+                  <div class="line"><span class="muted">Ingressos</span><span class="num" id="t-qty">0</span></div>
+                  <div class="line"><span class="muted">Base x qtd</span><span class="num" id="t-base">R$ 0,00</span></div>
+                  <div class="line add"><span class="muted">+ Serviço (total)</span><span class="num" id="t-serv-fee">R$ 0,00</span></div>
+                  <div class="line sub"><span class="muted">– Plataforma (total)</span><span class="num" id="t-plat-fee">R$ 0,00</span></div>
+                  <div class="total"><span id="label-total-right">Total cobrado</span><span class="num" id="t-total">R$ 0,00</span></div>
+                </div>
+              </div>
+              <small class="subtle">Serviço: adicionado no checkout. Plataforma: descontado do base. Repasse Pix T+0.</small>
+            </div>
           </div>
         </div>
       </div>
@@ -453,8 +456,8 @@
 
             <fieldset style="display:flex;gap:12px;flex-wrap:wrap;border:0;margin:.25rem 0;padding:0">
               <legend class="sr-only">Plano</legend>
-              <label><input type="radio" name="req-cat" value="atl" checked /> Atléticas &amp; Repúblicas (org 3% • comp 4%)</label>
-              <label><input type="radio" name="req-cat" value="prod" /> Produtoras &amp; Locais (org 3% • comp 5%)</label>
+              <label><input type="radio" name="req-cat" value="atl" checked /> Atléticas &amp; Repúblicas (Serviço 4% • Plataforma 3%)</label>
+              <label><input type="radio" name="req-cat" value="prod" /> Produtoras &amp; Locais (Serviço 5% • Plataforma 3%)</label>
             </fieldset>
 
             <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
@@ -521,14 +524,12 @@
   {"@context":"https://schema.org","@type":"Organization","name":"IngressAI","url":"https://ingressai.chat/","logo":"https://ingressai.chat/logo_ingressai.png","sameAs":["https://instagram.com/ingressai"],"contactPoint":[{"@type":"ContactPoint","contactType":"customer support","areaServed":"BR","availableLanguage":"pt-BR"}]}
   </script>
 
-  <!-- Wire do Validador: aponta pro backend, evitando CORS -->
+  <!-- Wire do Validador -->
   <script>
-    // roda no fim do body; espera um frame p/ garantir DOM pronto e 'INGRESSAI_BASE' já setado
     requestAnimationFrame(() => {
       try {
         var base = (window.INGRESSAI_BASE || "").replace(/\/+$/,"");
         if (!base) {
-          // fallback via <meta name="ingressai-api">
           var meta = document.querySelector('meta[name="ingressai-api"]');
           var api = (meta?.content || "").trim();
           base = api ? api.replace(/\/api$/,"") : "";
