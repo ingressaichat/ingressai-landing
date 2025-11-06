@@ -343,15 +343,16 @@
         </div>
       </div>
 
-      <!-- Calculadora (sem seleção de categoria) -->
+      <!-- Calculadora (atualizada: slider de preço + resumo minimalista) -->
       <div class="std-card" id="calc-card">
         <div class="plan-calc">
           <div class="calc-grid">
+            <!-- Linha de preço: input + slider -->
             <div class="calc-row">
               <div>
                 <label for="calc-price"><strong>Preço base do ingresso</strong></label>
                 <input id="calc-price" class="input" type="text" inputmode="decimal" placeholder="R$ 60,00" value="R$ 60,00" />
-                <small class="subtle">Dica: digite números e eu formatarei (ex.: 60 → R$ 60,00)</small>
+                <small class="subtle">Dica: você pode digitar ou usar o controle abaixo.</small>
               </div>
               <div>
                 <label for="calc-qty-n"><strong>Quantidade</strong></label>
@@ -361,13 +362,21 @@
               </div>
             </div>
 
-            <div>
-              <input id="calc-qty" type="range" min="0" max="1000" step="1" value="100" aria-label="Quantidade (slider)" style="width:100%" />
+            <!-- Sliders sincronizados -->
+            <div class="calc-row" style="align-items:center">
+              <div>
+                <input id="calc-price-range" type="range" min="500" max="100000" step="100" aria-label="Preço (slider)" style="width:100%" />
+                <small class="subtle">Ajuste fino: arraste para definir o preço (R$ 5,00 a R$ 1.000,00).</small>
+              </div>
+              <div>
+                <input id="calc-qty" type="range" min="0" max="1000" step="1" value="100" aria-label="Quantidade (slider)" style="width:100%;min-width:180px" />
+              </div>
             </div>
 
+            <!-- KPIs -->
             <div class="kpis" aria-label="Resumo">
               <div class="kpi">
-                <strong>Taxa do organizador (3%)</strong>
+                <strong>Organizador (3% fixo)</strong>
                 <div class="val num" id="calc-fee-org">R$ 0,00</div>
               </div>
               <div class="kpi">
@@ -375,7 +384,7 @@
                 <div class="val num" id="calc-net">R$ 0,00</div>
               </div>
               <div class="kpi">
-                <strong>Bruto total (base × qtd)</strong>
+                <strong>Bruto total</strong>
                 <div class="val num" id="calc-gross">R$ 0,00</div>
               </div>
               <div class="kpi">
@@ -389,17 +398,18 @@
               </div>
             </div>
 
-            <div class="tip" title="Você não precisa escolher categoria. O comprador vê preço com +4% (Atléticas & Repúblicas) ou +5% (Produtoras & Locais). O organizador paga sempre 3%.">
+            <div class="tip" title="Organizador paga 3% fixo. O comprador vê o preço final com +4% (Atléticas & Repúblicas) ou +5% (Produtoras & Locais).">
               <span class="i">i</span>
-              <span>O preço exibido ao comprador já inclui a taxa (+4% ou +5%).</span>
+              <span>Organizador paga <b>3%</b>. Comprador vê o preço já com <b>+4%</b> ou <b>+5%</b> incluído.</span>
             </div>
 
             <hr style="border:none;border-top:1px solid #e6eaf6;margin:6px 0" />
 
+            <!-- Emissão manual (fora da plataforma) -->
             <div>
               <strong>Emissão manual (pagamento fora da plataforma)</strong>
               <div class="subtle" style="margin:.25rem 0 .75rem">
-                Para eventos em que você recebe por fora (PIX/caixa), a emissão do ingresso custa <b>1,5%</b> por ingresso (sem taxa para o comprador).
+                Para vendas fora do bot, a emissão custa <b>1,5%</b> por ingresso (sem taxa para o comprador).
               </div>
               <div class="kpis" aria-label="Resumo emissão manual">
                 <div class="kpi">
@@ -430,7 +440,7 @@
         <h3 style="margin-top:0">Quero criar meu evento</h3>
         <form id="req-form">
           <div style="display:grid;gap:8px;grid-template-columns:1fr">
-            <input id="req-phone" class="input" inputmode="numeric" placeholder="Seu WhatsApp (DDI+DDD+NÚMERO)" autocomplete="tel" />
+            <input id="req-phone" class="input" inputmode="tel" autocomplete="tel" pattern="^\d{12,14}$" placeholder="Seu WhatsApp (DDI+DDD+NÚMERO)" aria-describedby="req-hint" />
             <input id="req-title" class="input" placeholder="Nome do evento" />
             <input id="req-city" class="input" placeholder="Cidade" />
             <input id="req-venue" class="input" placeholder="Local (opcional)" />
