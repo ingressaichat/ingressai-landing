@@ -66,6 +66,10 @@
     .drawer-backdrop{position:fixed;inset:0;background:rgba(11,18,32,.36);opacity:0;pointer-events:none;transition:opacity var(--t-fast);z-index:55}
     .drawer-backdrop.is-open{opacity:1;pointer-events:auto}
 
+    .tag{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:.25rem .6rem;font:inherit;font-weight:800}
+    .tag.on{background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-bd)}
+    .tag.off{background:#fff4f4;color:#b64848;border:1px solid #ffdede}
+
     .hero{padding:var(--s4) 0;opacity:calc(1 - var(--hero-p,0));transform:translateY(calc(-6px * var(--hero-p,0)));transition:opacity var(--t-fast) linear,transform var(--t-fast) linear}
     .hero.is-hidden{opacity:0;height:0;padding:0;margin:0;overflow:hidden}
     .hero h1{font-size:clamp(calc(1.25rem*var(--phi)),6.2vw,calc(1.25rem*var(--phi)*var(--phi)));line-height:var(--lh-compact);margin:0 0 var(--s2) 0;font-weight:850;text-align:center}
@@ -142,7 +146,8 @@
     .std-card{background:#fff;border:1px solid #e5ecff;border-radius:calc(var(--s2));padding:var(--s2);box-shadow:var(--shadow-soft)}
     .std-list{margin:0;padding-left:1.25rem;display:grid;gap:6px}
 
-    /* ---- Calculadora nova ---- */
+    /* ---- Calculadora / Planos ---- */
+    .plan-calc{display:grid;gap:var(--s1)}
     .calc-grid{display:grid;gap:var(--s1)}
     .calc-row{display:grid;gap:8px}
     @media(min-width:560px){.calc-row{grid-template-columns:1fr auto;align-items:end}}
@@ -150,21 +155,31 @@
     .range-box{display:flex;gap:8px;align-items:center}
     .num{font-variant-numeric:tabular-nums}
     .kpis{display:grid;gap:8px;grid-template-columns:repeat(2,minmax(0,1fr))}
-    @media(min-width:780px){.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}}
+    @media(min-width:680px){.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}}
     .kpi{background:var(--card);border:1px solid #e5ecff;border-radius:12px;padding:10px}
     .kpi strong{display:block;font-size:.86rem;color:#445570}
     .kpi .val{font-weight:900;font-size:1.08rem}
 
-    .buy-grid{display:grid;gap:8px;grid-template-columns:repeat(2,minmax(0,1fr))}
-    .buy-bubble{border:1px solid #e5ecff;background:#fff;border-radius:12px;padding:10px}
-    .buy-bubble strong{display:block;font-size:.86rem;color:#445570}
-    .i-tip{display:inline-flex;align-items:center;gap:6px;background:#f2f7ff;border:1px solid #e1e9ff;color:#1b5fb3;border-radius:8px;padding:6px 10px;font-size:.92rem}
-    .i-tip svg{width:16px;height:16px;stroke:currentColor;fill:none}
-    .manual{display:grid;gap:8px;grid-template-columns:repeat(2,minmax(0,1fr))}
-    @media(min-width:680px){.manual{grid-template-columns:repeat(4,minmax(0,1fr))}}
-    .muted{opacity:.86}
+    .buyer-prices{display:grid;gap:8px;grid-template-columns:repeat(2,minmax(0,1fr))}
+    .tip{display:inline-flex;align-items:center;gap:6px;font-size:.9rem;color:#415577}
+    .tip .i{width:18px;height:18px;border-radius:50%;display:grid;place-items:center;border:1px solid #cfe3ff;color:#1B5FB3;font-weight:900}
+
+    footer{background:#fff;border-top:1px solid #e7eefb;margin-top:var(--s4)}
+    .foot{max-width:var(--container-max);margin:0 auto;padding:var(--s3) var(--s3)}
+    .foot-block{display:grid;gap:var(--s2);justify-items:center;text-align:center}
+    .link-row{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-bottom:var(--s1)}
+    .link-btn{width:44px;height:44px;display:grid;place-items:center;border:1px solid #e7eefb;background:#fff;border-radius:12px;box-shadow:var(--shadow-soft);color:#0b1220;padding:0}
+    .link-btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-linecap:round;stroke-linejoin:round}
+    .legal{display:flex;flex-wrap:wrap;gap:var(--s1);justify-content:center;margin-top:calc(var(--s0)*1.2)}
+    .legal a{text-decoration:underline;font-weight:600}
+    .foot-meta{display:flex;flex-wrap:wrap;gap:10px;align-items:center;color:#667792;justify-content:center}
+    .diag{font-size:.85rem;color:#566781;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:.5rem 0}
+    @media(min-width:520px){.diag{grid-template-columns:repeat(3,minmax(0,1fr))}}
+    .diag div{background:#fff;border:1px solid #e7eefb;border-radius:8px;padding:6px 8px}
+    .diag strong{display:block}
   </style>
 
+  <!-- Normaliza API global (fallback) -->
   <script>
     (function () {
       const qsApi = new URLSearchParams(location.search).get("api") || "";
@@ -291,8 +306,26 @@
       </div>
       <div class="cards" id="lista-eventos" aria-live="polite">
         <!-- skeletons iniciais -->
-        <article class="card"><div class="card-header"><div style="width:60%"><div class="skeleton" style="height:14px;border-radius:8px;margin:2px 0 8px"></div><div class="skeleton" style="height:22px;border-radius:8px;margin:2px 0 8px"></div><div class="skeleton" style="height:12px;border-radius:8px;width:40%"></div></div></div><div class="card-media skeleton" style="height:auto;aspect-ratio:1.618"></div></article>
-        <article class="card"><div class="card-header"><div style="width:60%"><div class="skeleton" style="height:14px;border-radius:8px;margin:2px 0 8px"></div><div class="skeleton" style="height:22px;border-radius:8px;margin:2px 0 8px"></div><div class="skeleton" style="height:12px;border-radius:8px;width:40%"></div></div></div><div class="card-media skeleton" style="height:auto;aspect-ratio:1.618"></div></article>
+        <article class="card">
+          <div class="card-header">
+            <div style="width:60%">
+              <div class="skeleton" style="height:14px;border-radius:8px;margin:2px 0 8px"></div>
+              <div class="skeleton" style="height:22px;border-radius:8px;margin:2px 0 8px"></div>
+              <div class="skeleton" style="height:12px;border-radius:8px;width:40%"></div>
+            </div>
+          </div>
+          <div class="card-media skeleton" style="height:auto;aspect-ratio:1.618"></div>
+        </article>
+        <article class="card">
+          <div class="card-header">
+            <div style="width:60%">
+              <div class="skeleton" style="height:14px;border-radius:8px;margin:2px 0 8px"></div>
+              <div class="skeleton" style="height:22px;border-radius:8px;margin:2px 0 8px"></div>
+              <div class="skeleton" style="height:12px;border-radius:8px;width:40%"></div>
+            </div>
+          </div>
+          <div class="card-media skeleton" style="height:auto;aspect-ratio:1.618"></div>
+        </article>
       </div>
     </section>
 
@@ -310,79 +343,84 @@
         </div>
       </div>
 
-      <!-- Calculadora: sem seleção de categoria; 3% fixo organizador; mostramos os dois preços do comprador -->
+      <!-- Calculadora (sem seleção de categoria) -->
       <div class="std-card" id="calc-card">
-        <div class="calc-grid">
-          <div class="i-tip" style="margin-bottom:8px">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12.01" y2="8"/><path d="M11 12h1v4h1"/></svg>
-            <span>Organizador sempre paga <strong>3%</strong>. No checkout do comprador, a taxa é <strong>+4%</strong> (Atléticas & Repúblicas) ou <strong>+5%</strong> (Produtoras & Locais). Você não precisa escolher nada aqui.</span>
-          </div>
-
-          <div class="calc-row">
-            <div>
-              <label for="calc-price"><strong>Preço base do ingresso</strong></label>
-              <input id="calc-price" class="input" type="text" inputmode="decimal" placeholder="R$ 60,00" value="R$ 60,00" />
-              <small class="subtle">Dica: digite números e eu formatarei (ex.: 60 → R$&nbsp;60,00).</small>
-            </div>
-            <div>
-              <label for="calc-qty-n"><strong>Quantidade</strong></label>
-              <div class="range-box">
-                <input id="calc-qty-n" class="input" type="number" min="0" max="10000" step="1" value="100" style="max-width:160px" />
+        <div class="plan-calc">
+          <div class="calc-grid">
+            <div class="calc-row">
+              <div>
+                <label for="calc-price"><strong>Preço base do ingresso</strong></label>
+                <input id="calc-price" class="input" type="text" inputmode="decimal" placeholder="R$ 60,00" value="R$ 60,00" />
+                <small class="subtle">Dica: digite números e eu formatarei (ex.: 60 → R$ 60,00)</small>
               </div>
-            </div>
-          </div>
-
-          <div>
-            <input id="calc-qty" type="range" min="0" max="1000" step="1" value="100" aria-label="Quantidade (slider)" style="width:100%" />
-          </div>
-
-          <div class="kpis" aria-label="Resumo">
-            <div class="kpi">
-              <strong>Taxa do organizador</strong>
-              <div class="val num" id="calc-fee-org">R$ 0,00</div>
-            </div>
-            <div class="kpi">
-              <strong>Receita do organizador</strong>
-              <div class="val num" id="calc-net">R$ 0,00</div>
-            </div>
-            <div class="kpi">
-              <strong>Bruto total (base × qtd)</strong>
-              <div class="val num" id="calc-gross">R$ 0,00</div>
-            </div>
-            <div class="kpi">
-              <strong>Preço p/ comprador (exibido)</strong>
-              <div class="val">
-                <div class="buy-grid">
-                  <div class="buy-bubble"><strong>Atléticas (+4%)</strong><div class="num" id="calc-buyer4">R$ 0,00</div></div>
-                  <div class="buy-bubble"><strong>Produtoras (+5%)</strong><div class="num" id="calc-buyer5">R$ 0,00</div></div>
+              <div>
+                <label for="calc-qty-n"><strong>Quantidade</strong></label>
+                <div class="range-box">
+                  <input id="calc-qty-n" class="input" type="number" min="0" max="10000" step="1" value="100" style="max-width:160px" />
                 </div>
               </div>
             </div>
-          </div>
 
-          <small class="subtle muted">O preço exibido ao comprador já inclui a taxa respectiva (+4% ou +5%).</small>
+            <div>
+              <input id="calc-qty" type="range" min="0" max="1000" step="1" value="100" aria-label="Quantidade (slider)" style="width:100%" />
+            </div>
 
-          <div class="std-card" style="border-style:dashed">
-            <strong style="display:block;margin-bottom:6px">Emissão manual (pagamento fora da plataforma)</strong>
-            <p class="subtle" style="margin-top:0">Para eventos onde você recebe por fora (PIX/caixa), a emissão de ingresso custa <strong>1,5%</strong> por ingresso (sem taxa para o comprador).</p>
-            <div class="manual">
+            <div class="kpis" aria-label="Resumo">
               <div class="kpi">
-                <strong>Taxa por ingresso (1,5%)</strong>
-                <div class="val num" id="manual-fee-unit">R$ 0,00</div>
+                <strong>Taxa do organizador (3%)</strong>
+                <div class="val num" id="calc-fee-org">R$ 0,00</div>
               </div>
               <div class="kpi">
-                <strong>Taxa total</strong>
-                <div class="val num" id="manual-fee-total">R$ 0,00</div>
+                <strong>Receita do organizador</strong>
+                <div class="val num" id="calc-net">R$ 0,00</div>
               </div>
               <div class="kpi">
-                <strong>Líquido total (após 1,5%)</strong>
-                <div class="val num" id="manual-net-total">R$ 0,00</div>
+                <strong>Bruto total (base × qtd)</strong>
+                <div class="val num" id="calc-gross">R$ 0,00</div>
               </div>
               <div class="kpi">
-                <strong>Líquido por ingresso</strong>
-                <div class="val num" id="manual-net-unit">R$ 0,00</div>
+                <strong>Preço p/ comprador</strong>
+                <div class="val num">
+                  <div class="buyer-prices">
+                    <span>Atléticas (+4%): <b id="calc-buyer-4">R$ 0,00</b></span>
+                    <span>Produtoras (+5%): <b id="calc-buyer-5">R$ 0,00</b></span>
+                  </div>
+                </div>
               </div>
             </div>
+
+            <div class="tip" title="Você não precisa escolher categoria. O comprador vê preço com +4% (Atléticas & Repúblicas) ou +5% (Produtoras & Locais). O organizador paga sempre 3%.">
+              <span class="i">i</span>
+              <span>O preço exibido ao comprador já inclui a taxa (+4% ou +5%).</span>
+            </div>
+
+            <hr style="border:none;border-top:1px solid #e6eaf6;margin:6px 0" />
+
+            <div>
+              <strong>Emissão manual (pagamento fora da plataforma)</strong>
+              <div class="subtle" style="margin:.25rem 0 .75rem">
+                Para eventos em que você recebe por fora (PIX/caixa), a emissão do ingresso custa <b>1,5%</b> por ingresso (sem taxa para o comprador).
+              </div>
+              <div class="kpis" aria-label="Resumo emissão manual">
+                <div class="kpi">
+                  <strong>Taxa por ingresso (1,5%)</strong>
+                  <div class="val num" id="manual-fee-unit">R$ 0,00</div>
+                </div>
+                <div class="kpi">
+                  <strong>Taxa total</strong>
+                  <div class="val num" id="manual-fee-total">R$ 0,00</div>
+                </div>
+                <div class="kpi">
+                  <strong>Líquido total (após 1,5%)</strong>
+                  <div class="val num" id="manual-net-total">R$ 0,00</div>
+                </div>
+                <div class="kpi">
+                  <strong>Líquido por ingresso</strong>
+                  <div class="val num" id="manual-net-unit">R$ 0,00</div>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
@@ -461,7 +499,7 @@
   {"@context":"https://schema.org","@type":"Organization","name":"IngressAI","url":"https://ingressai.chat/","logo":"https://ingressai.chat/logo_ingressai.png","sameAs":["https://instagram.com/ingressai"],"contactPoint":[{"@type":"ContactPoint","contactType":"customer support","areaServed":"BR","availableLanguage":"pt-BR"}]}
   </script>
 
-  <!-- Wire do Validador -->
+  <!-- Wire do Validador: aponta pro backend, evitando CORS -->
   <script>
     requestAnimationFrame(() => {
       try {
@@ -477,8 +515,7 @@
     });
   </script>
 
+  <!-- app -->
   <script defer src="./app.js"></script>
 </body>
 </html>
-
-
