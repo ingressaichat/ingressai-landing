@@ -1,9 +1,7 @@
 /* app.js — IngressAI (frontend leve)
    - vitrine, filtros, sheet
-   - planos fixos: 3% org + 4%/5% comprador (SEM toggle de repasse)
-   - máscara BRL, URL state, localStorage, skeletons
-   - diagnóstico de backend
-   - analytics mínimos
+   - calculadora UX sem seleção de categoria: 3% fixo (organizador), comprador +4% e +5% (ambos mostrados)
+   - bloco de Emissão Manual (1,5%) com comparação
 */
 (() => {
   "use strict";
@@ -135,41 +133,21 @@
   let searchTerm = "";
 
   async function fetchEventsSmart() {
-    const endpoints = [
-      "/events/vitrine",
-      "/events/public",
-      "/events",
-      "/events/seed",
-    ];
+    const endpoints = ["/events/vitrine","/events/public","/events","/events/seed"];
     for (const p of endpoints) {
       try {
         const url = INGRESSAI_API + p;
         const json = await getJSON(url);
-        const events =
-          json?.events ||
-          (Array.isArray(json) ? json : null) ||
-          json?.data?.events ||
-          json?.data ||
-          json?.items ||
-          json?.rows ||
-          [];
+        const events = json?.events || (Array.isArray(json) ? json : null) || json?.data?.events || json?.data || json?.items || json?.rows || [];
         if (Array.isArray(events)) return events;
-      } catch (e) {
-        /* tenta próximo */
-      }
+      } catch (e) {}
     }
     throw new Error("Nenhum endpoint de eventos respondeu.");
   }
 
-  const cityFrom = (ev) =>
-    ev.city || ev.cidade || ev.location?.city || ev.venueCity || ev.placeCity || null;
-
-  const dateTextFrom = (ev) =>
-    ev.dateText || ev.eventDateText || ev.date || ev.startsAt || "";
-
-  const mediaFrom = (ev) =>
-    // preferir imagem normalizada pelo backend (Graph → /uploads/…)
-    ev.image || ev.coverUrl || ev.banner || ev.media?.[0] || ev.thumb || null;
+  const cityFrom = (ev) => ev.city || ev.cidade || ev.location?.city || ev.venueCity || ev.placeCity || null;
+  const dateTextFrom = (ev) => ev.dateText || ev.eventDateText || ev.date || ev.startsAt || "";
+  const mediaFrom = (ev) => ev.image || ev.coverUrl || ev.banner || ev.media?.[0] || ev.thumb || null;
 
   function statusChip(ev) {
     if (ev.soldOut) return ["sold", "Esgotado"];
@@ -255,43 +233,23 @@
     const cities = Array.from(set).sort((a, b) => a.localeCompare(b, "pt-BR"));
     filtroCidadesEl.innerHTML = "";
 
-    const allChip = el(
-      "button",
-      {
-        class: "chip",
-        role: "tab",
-        "aria-selected": activeCity ? "false" : "true",
-      },
-      "Todas"
-    );
+    const allChip = el("button", { class: "chip", role: "tab", "aria-selected": activeCity ? "false" : "true" }, "Todas");
     allChip.addEventListener("click", () => {
       activeCity = null;
-      $$('[role="tab"]', filtroCidadesEl).forEach((n) =>
-        n.setAttribute("aria-selected", "false")
-      );
+      $$('[role="tab"]', filtroCidadesEl).forEach((n) => n.setAttribute("aria-selected", "false"));
       allChip.setAttribute("aria-selected", "true");
       renderEvents();
     });
     filtroCidadesEl.appendChild(allChip);
 
     cities.forEach((city) => {
-      const chip = el(
-        "button",
-        {
-          class: "chip",
-          role: "tab",
-          "aria-selected":
-            activeCity && activeCity.toLowerCase() === city.toLowerCase()
-              ? "true"
-              : "false",
-        },
-        city
-      );
+      const chip = el("button", {
+          class: "chip", role: "tab",
+          "aria-selected": activeCity && activeCity.toLowerCase() === city.toLowerCase() ? "true" : "false",
+        }, city);
       chip.addEventListener("click", () => {
         activeCity = city;
-        $$('[role="tab"]', filtroCidadesEl).forEach((n) =>
-          n.setAttribute("aria-selected", "false")
-        );
+        $$('[role="tab"]', filtroCidadesEl).forEach((n) => n.setAttribute("aria-selected", "false"));
         chip.setAttribute("aria-selected", "true");
         renderEvents();
       });
@@ -318,34 +276,22 @@
       ]),
     ]);
 
-    const mediaNode = el("div", { class: "sheet-media" }, [
-      img ? imgNode(img) : imgNode(null),
-    ]);
+    const mediaNode = el("div", { class: "sheet-media" }, [ img ? imgNode(img) : imgNode(null) ]);
 
-    // Deep-link: ingressai:start ev=<id> qty=1 autopay=1
     const makeWaDeepLink = (ev) => {
       const id = ev.id || ev.slug || "";
       if (!id) return `https://wa.me/${BOT_NUMBER}`;
       const txt = encodeURIComponent(`ingressai:start ev=${id} qty=1 autopay=1`);
       return `https://wa.me/${BOT_NUMBER}?text=${txt}`;
     };
-
-    const ctaHref =
-      ev.whatsappLink ||
-      ev.deepLink ||
-      makeWaDeepLink(ev);
+    const ctaHref = ev.whatsappLink || ev.deepLink || makeWaDeepLink(ev);
 
     const details = el("div", { class: "std-list" }, [
       el("div", {}, `Quando: ${dateText || "—"}`),
       el("div", {}, `Local: ${ev.venue || ev.local || city || "—"}`),
     ]);
-
     const actions = el("div", { style: "display:flex;gap:8px;margin-top:8px" }, [
-      el(
-        "a",
-        { class: "btn btn--secondary btn--sm", href: ctaHref, target: "_blank", rel: "noopener noreferrer" },
-        "Comprar no WhatsApp"
-      ),
+      el("a", { class: "btn btn--secondary btn--sm", href: ctaHref, target: "_blank", rel: "noopener noreferrer" }, "Comprar no WhatsApp"),
     ]);
 
     sheetBody.appendChild(head);
@@ -373,19 +319,24 @@
     renderEvents();
   });
 
-  /* =============== Calculadora / Planos (SEM toggle) =============== */
-  const pillAtl = $("#pill-atl");
-  const pillProd = $("#pill-prod");
+  /* =============== Calculadora nova =============== */
   const priceEl = $("#calc-price"); // texto com máscara
   const qtyNEl = $("#calc-qty-n");
   const qtySlider = $("#calc-qty");
+
   const feeOrgEl = $("#calc-fee-org");
   const grossEl = $("#calc-gross");
   const netEl = $("#calc-net");
-  const buyerEl = $("#calc-buyer");
-  const feeCaption = $("#fee-caption");
+  const buyer4El = $("#calc-buyer4");
+  const buyer5El = $("#calc-buyer5");
 
-  let plan = (localStorage.getItem("ia.plan") || qs.get("plan") || "atl").toLowerCase();
+  // Emissão manual
+  const manualFeeUnitEl = $("#manual-fee-unit");
+  const manualFeeTotalEl = $("#manual-fee-total");
+  const manualNetTotalEl = $("#manual-net-total");
+  const manualNetUnitEl = $("#manual-net-unit");
+
+  // estado
   let priceCents = brlToCents(qs.get("price")) || 6000; // default R$ 60,00
   let qty = clampInt(qs.get("qty") || localStorage.getItem("ia.qty") || "100", 0, 10000);
 
@@ -393,7 +344,6 @@
     const n = Math.max(min, Math.min(max, parseInt(v || "0", 10) || 0));
     return n;
   }
-
   function centsToBRL(c){ return (c/100).toLocaleString("pt-BR", { style:"currency", currency:"BRL" }); }
   function brlToCents(raw){
     if (raw == null) return 0;
@@ -408,50 +358,42 @@
     return cents;
   }
 
-  function feesForPlan(){
-    return { orgPct: 0.03, buyerPct: (plan === "prod" ? 0.05 : 0.04) };
-  }
-
-  function updateFeeCaption(){
-    feeCaption.textContent = plan === "prod"
-      ? "Organizador paga 3% por ingresso • Comprador vê +5% (preço exibido já inclui a taxa)"
-      : "Organizador paga 3% por ingresso • Comprador vê +4% (preço exibido já inclui a taxa)";
-  }
+  const ORG_PCT = 0.03;   // 3% fixo
+  const BUYER_4 = 0.04;   // +4%
+  const BUYER_5 = 0.05;   // +5%
+  const MANUAL_PCT = 0.015; // 1,5% emissão manual
 
   function recalc(){
-    const { orgPct, buyerPct } = feesForPlan();
-
-    const unitOrgFeeCents = Math.round(priceCents * orgPct); // 3% sempre
-    const buyerFeeCents = Math.round(priceCents * buyerPct); // SEM toggle → sempre aplicado ao comprador
-
-    const buyerPriceCents = priceCents + buyerFeeCents;
-    const grossCents = priceCents * qty; // base * qtd (sem taxas)
+    // taxas organizador
+    const unitOrgFeeCents = Math.round(priceCents * ORG_PCT);
+    const grossCents = priceCents * qty;
     const totalOrgFeesCents = unitOrgFeeCents * qty;
     const netCents = Math.max(0, (priceCents - unitOrgFeeCents) * qty);
 
     feeOrgEl.textContent = `${centsToBRL(unitOrgFeeCents)} / ingresso`;
-    buyerEl.textContent = centsToBRL(buyerPriceCents);
     grossEl.textContent = centsToBRL(grossCents);
     netEl.textContent = centsToBRL(netCents);
+
+    // preços que o comprador vê (dois cenários)
+    const buyer4 = priceCents + Math.round(priceCents * BUYER_4);
+    const buyer5 = priceCents + Math.round(priceCents * BUYER_5);
+    buyer4El.textContent = centsToBRL(buyer4);
+    buyer5El.textContent = centsToBRL(buyer5);
+
+    // Emissão manual (1,5%)
+    const manualUnitFee = Math.round(priceCents * MANUAL_PCT);
+    const manualFeeTotal = manualUnitFee * qty;
+    const manualNetTotal = Math.max(0, (priceCents * qty) - manualFeeTotal);
+    const manualNetUnit = Math.max(0, priceCents - manualUnitFee);
+
+    manualFeeUnitEl.textContent = centsToBRL(manualUnitFee);
+    manualFeeTotalEl.textContent = centsToBRL(manualFeeTotal);
+    manualNetTotalEl.textContent = centsToBRL(manualNetTotal);
+    manualNetUnitEl.textContent = centsToBRL(manualNetUnit);
   }
 
-  function selectPlan(next){
-    plan = next;
-    pillAtl?.setAttribute("aria-checked", next === "atl" ? "true" : "false");
-    pillAtl?.setAttribute("aria-selected", next === "atl" ? "true" : "false");
-    pillProd?.setAttribute("aria-checked", next === "prod" ? "true" : "false");
-    pillProd?.setAttribute("aria-selected", next === "prod" ? "true" : "false");
-    localStorage.setItem("ia.plan", plan);
-    pushState();
-    console.log("[analytics] plan_change", plan);
-    updateFeeCaption();
-    recalc();
-  }
-
-  // Persist + URL
   function pushState(){
     const params = new URLSearchParams(location.search);
-    params.set("plan", plan);
     params.set("price", (priceCents/100).toFixed(2));
     params.set("qty", String(qty));
     const newUrl = `${location.pathname}?${params.toString()}${location.hash || ""}`;
@@ -460,15 +402,13 @@
   }
 
   // UI events
-  pillAtl?.addEventListener("click", () => selectPlan("atl"));
-  pillProd?.addEventListener("click", () => selectPlan("prod"));
   priceEl?.addEventListener("input", (e) => {
     priceCents = maskBRLInput(e.target);
     pushState();
     recalc();
   });
   priceEl?.addEventListener("blur", (e) => {
-    // arredondamento “bonito”: se terminar em .00 → tenta .90; se > .90 → .99
+    // arredondamento “bonito”
     let c = brlToCents(e.target.value);
     const mod = c % 100;
     if (mod === 0 && c >= 1000) c = c - 10;            // .00 → .90
@@ -506,8 +446,6 @@
     const city = $("#req-city")?.value?.trim() || "";
     const venue = $("#req-venue")?.value?.trim() || "";
     const date = $("#req-date")?.value?.trim() || "";
-    const cat =
-      (reqForm.querySelector('input[name="req-cat"]:checked')?.value || "atl").toLowerCase();
 
     if (!phone || !title || !city) {
       if (reqHint) reqHint.textContent = "Preencha WhatsApp, nome e cidade.";
@@ -518,7 +456,7 @@
     if (reqHint) reqHint.textContent = "Enviando…";
 
     try {
-      const payload = { phone, title, city, venue, date, cat };
+      const payload = { phone, title, city, venue, date };
       const res = await postJSON(INGRESSAI_API + "/org/request", payload);
       if (res?.ok) {
         if (reqHint) reqHint.textContent = "Solicitação enviada. Você receberá o passo a passo no WhatsApp.";
@@ -535,7 +473,6 @@
       setTimeout(() => reqHint && (reqHint.textContent = ""), 4500);
     }
   }
-
   reqBtn?.addEventListener("click", submitOrgRequest);
 
   /* =============== Diagnóstico =============== */
@@ -597,8 +534,6 @@
     priceEl.value = centsToBRL(priceCents);
     $("#calc-qty-n").value = String(qty);
     $("#calc-qty").value = String(Math.min(1000, qty));
-    selectPlan(plan);
-    updateFeeCaption();
     recalc();
 
     // run
