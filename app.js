@@ -1,10 +1,9 @@
 /* app.js — IngressAI (frontend leve)
    - vitrine, filtros, sheet
-   - calculadora: 3% fixo organizador; comprador vê +4% e +5% lado a lado
-   - emissão manual: 1,5% (pagamento fora)
-   - sliders para preço e quantidade
-   - animação suave nos números
-   - formulário de criação com categoria
+   - calculadora (mobile-first): 3% organizador; emissão manual 1,5%
+   - preço com máscara + slider; quantidade com número + slider
+   - formulário "Quero criar meu evento" com categoria (chips)
+   - máscara BRL, URL state, localStorage, skeletons
    - diagnóstico de backend
 */
 (() => {
@@ -369,31 +368,35 @@
   }
   $("#sheet-close")?.addEventListener("click", closeSheet);
   $("#sheet-backdrop")?.addEventListener("click", closeSheet);
-  buscaEl?.addEventListener("input", (e) => {
+  $("#busca-eventos")?.addEventListener("input", (e) => {
     searchTerm = e.target.value || "";
     renderEvents();
   });
 
-  /* =============== Helpers calculadora =============== */
-  const priceEl = $("#calc-price");
+  /* =============== Calculadora (3% + manual 1,5%) =============== */
+  const priceEl = $("#calc-price"); // texto com máscara
   const priceRangeEl = $("#calc-price-range");
   const qtyNEl = $("#calc-qty-n");
   const qtySlider = $("#calc-qty");
+
+  const baseUnitEl = $("#calc-base-unit");
   const feeOrgEl = $("#calc-fee-org");
   const grossEl = $("#calc-gross");
   const netEl = $("#calc-net");
-  const buyer4El = $("#calc-buyer-4");
-  const buyer5El = $("#calc-buyer-5");
 
   const manualFeeUnitEl = $("#manual-fee-unit");
   const manualFeeTotalEl = $("#manual-fee-total");
   const manualNetTotalEl = $("#manual-net-total");
   const manualNetUnitEl = $("#manual-net-unit");
 
+  let priceCents = brlToCents(qs.get("price")) || 6000; // default R$ 60,00
+  let qty = clampInt(qs.get("qty") || localStorage.getItem("ia.qty") || "100", 0, 10000);
+
   function clampInt(v, min, max){
     const n = Math.max(min, Math.min(max, parseInt(v || "0", 10) || 0));
     return n;
   }
+
   function centsToBRL(c){ return (c/100).toLocaleString("pt-BR", { style:"currency", currency:"BRL" }); }
   function brlToCents(raw){
     if (raw == null) return 0;
@@ -408,28 +411,6 @@
     return cents;
   }
 
-  // animação simples pros números (pra ficar “vivo”)
-  function animateNumber(el, from, to){
-    if (!el) return;
-    const start = performance.now();
-    const dur = 160; // curto pra parecer instantâneo
-    const diff = to - from;
-    function frame(now){
-      const t = Math.min(1, (now - start)/dur);
-      const eased = t < 0.5 ? 2*t*t : -1 + (4 - 2*t)*t;
-      const val = from + diff*eased;
-      el.textContent = centsToBRL(Math.round(val));
-      el.style.transform = "translateY(-1px)";
-      if (t < 1) requestAnimationFrame(frame);
-      else el.style.transform = "translateY(0)";
-    }
-    requestAnimationFrame(frame);
-  }
-
-  // estado inicial
-  let priceCents = brlToCents(qs.get("price")) || 6000; // default R$ 60,00
-  let qty = clampInt(qs.get("qty") || localStorage.getItem("ia.qty") || "100", 0, 10000);
-
   function pushState(){
     const params = new URLSearchParams(location.search);
     params.set("price", (priceCents/100).toFixed(2));
@@ -440,32 +421,18 @@
   }
 
   function recalc(){
+    // Exibe base unitária
+    baseUnitEl.textContent = centsToBRL(priceCents);
+
     // Organizadores: 3%
     const orgPct = 0.03;
     const feeOrgUnit = Math.round(priceCents * orgPct);
     const gross = priceCents * qty;
     const net = Math.max(0, (priceCents - feeOrgUnit) * qty);
 
-    // Comprador vê +4% ou +5% (exibimos os dois)
-    const buyer4 = priceCents + Math.round(priceCents * 0.04);
-    const buyer5 = priceCents + Math.round(priceCents * 0.05);
-
-    // ler valores antigos pra animar
-    const oldFee = brlToCents(feeOrgEl?.textContent);
-    const oldGross = brlToCents(grossEl?.textContent);
-    const oldNet = brlToCents(netEl?.textContent);
-    const oldManualFeeUnit = brlToCents(manualFeeUnitEl?.textContent);
-    const oldManualFeeTotal = brlToCents(manualFeeTotalEl?.textContent);
-    const oldManualNetTotal = brlToCents(manualNetTotalEl?.textContent);
-    const oldManualNetUnit = brlToCents(manualNetUnitEl?.textContent);
-
-    // escreve com animação
-    animateNumber(feeOrgEl, isNaN(oldFee)?feeOrgUnit:oldFee, feeOrgUnit);
-    animateNumber(grossEl, isNaN(oldGross)?gross:oldGross, gross);
-    animateNumber(netEl, isNaN(oldNet)?net:oldNet, net);
-
-    buyer4El.textContent = centsToBRL(buyer4);
-    buyer5El.textContent = centsToBRL(buyer5);
+    feeOrgEl.textContent = `${centsToBRL(feeOrgUnit)} / ingresso`;
+    grossEl.textContent = centsToBRL(gross);
+    netEl.textContent = centsToBRL(net);
 
     // Emissão manual: 1,5% do valor base
     const manualPct = 0.015;
@@ -474,48 +441,46 @@
     const manualNetTotal = Math.max(0, (priceCents - manualFeeUnit) * qty);
     const manualNetUnit = Math.max(0, priceCents - manualFeeUnit);
 
-    animateNumber(manualFeeUnitEl, isNaN(oldManualFeeUnit)?manualFeeUnit:oldManualFeeUnit, manualFeeUnit);
-    animateNumber(manualFeeTotalEl, isNaN(oldManualFeeTotal)?manualFeeTotal:oldManualFeeTotal, manualFeeTotal);
-    animateNumber(manualNetTotalEl, isNaN(oldManualNetTotal)?manualNetTotal:oldManualNetTotal, manualNetTotal);
-    animateNumber(manualNetUnitEl, isNaN(oldManualNetUnit)?manualNetUnit:oldManualNetUnit, manualNetUnit);
+    manualFeeUnitEl.textContent = `${centsToBRL(manualFeeUnit)} / ingresso`;
+    manualFeeTotalEl.textContent = centsToBRL(manualFeeTotal);
+    manualNetTotalEl.textContent = centsToBRL(manualNetTotal);
+    manualNetUnitEl.textContent = centsToBRL(manualNetUnit);
   }
 
-  // UI events - preço (input)
+  // UI events
   priceEl?.addEventListener("input", (e) => {
     priceCents = maskBRLInput(e.target);
-    if (priceRangeEl) {
-      const clamped = Math.min(Math.max(priceCents, Number(priceRangeEl.min)), Number(priceRangeEl.max));
-      priceRangeEl.value = String(clamped);
-    }
+    // sincroniza slider (intervalo 5..500)
+    const v = Math.max(5, Math.min(500, Math.round(priceCents/100)));
+    if (priceRangeEl) priceRangeEl.value = String(v);
     pushState();
     recalc();
   });
+
   priceEl?.addEventListener("blur", (e) => {
+    // arredondamento “bonito”: se terminar em .00 → tenta .90; se > .90 → .99
     let c = brlToCents(e.target.value);
     const mod = c % 100;
-    if (mod === 0 && c >= 1000) c = c - 10;
-    else if (mod >= 90 && mod < 99) c = c + (99 - mod);
+    if (mod === 0 && c >= 1000) c = c - 10;            // .00 → .90
+    else if (mod >= 90 && mod < 99) c = c + (99 - mod); // ~.90 → .99
     priceCents = Math.max(0, c);
     e.target.value = centsToBRL(priceCents);
-    if (priceRangeEl) {
-      const clamped = Math.min(Math.max(priceCents, Number(priceRangeEl.min)), Number(priceRangeEl.max));
-      priceRangeEl.value = String(clamped);
-    }
+    // reflete no slider
+    const v = Math.max(5, Math.min(500, Math.round(priceCents/100)));
+    if (priceRangeEl) priceRangeEl.value = String(v);
     pushState();
     recalc();
   });
 
-  // UI events - preço (slider)
   priceRangeEl?.addEventListener("input", (e) => {
-    const v = Number(e.target.value || "0");
-    priceCents = v;
-    if (priceEl) priceEl.value = centsToBRL(v);
+    const reais = clampInt(e.target.value, 5, 500);
+    priceCents = reais * 100;
+    if (priceEl) priceEl.value = centsToBRL(priceCents);
     pushState();
     recalc();
   });
 
-  // quantidade (input)
-  qtyNEl?.addEventListener("input", (e) => {
+  $("#calc-qty-n")?.addEventListener("input", (e) => {
     const v = clampInt(e.target.value, 0, 10000);
     e.target.value = String(v);
     qty = v;
@@ -523,9 +488,7 @@
     pushState();
     recalc();
   });
-
-  // quantidade (slider)
-  qtySlider?.addEventListener("input", (e) => {
+  $("#calc-qty")?.addEventListener("input", (e) => {
     const v = clampInt(e.target.value, 0, 1000);
     if (qtyNEl) qtyNEl.value = String(v);
     qty = v;
@@ -538,16 +501,27 @@
   const reqBtn = $("#req-send");
   const reqHint = $("#req-hint");
 
+  // categoria chips
+  const catAth = $("#cat-ath");
+  const catProd = $("#cat-prod");
+  let reqCategory = "atleticas";
+  function setCat(which){
+    reqCategory = which;
+    catAth?.setAttribute("aria-checked", which === "atleticas" ? "true" : "false");
+    catProd?.setAttribute("aria-checked", which === "produtoras" ? "true" : "false");
+  }
+  catAth?.addEventListener("click", () => setCat("atleticas"));
+  catProd?.addEventListener("click", () => setCat("produtoras"));
+
   async function submitOrgRequest() {
     if (!reqForm) return;
     const phone = ($("#req-phone")?.value || "").replace(/\D+/g, "");
     const title = $("#req-title")?.value?.trim() || "";
-    const personName = $("#req-name")?.value?.trim() || "";
+    const name = $("#req-name")?.value?.trim() || "";
     const city = $("#req-city")?.value?.trim() || "";
-    const category = $("#req-category")?.value?.trim() || "";
 
-    if (!phone || !title || !personName || !city) {
-      if (reqHint) reqHint.textContent = "Preencha WhatsApp, nome do evento, seu nome e cidade.";
+    if (!phone || !title || !name || !city) {
+      if (reqHint) reqHint.textContent = "Preencha WhatsApp, evento, seu nome e cidade.";
       return;
     }
 
@@ -555,17 +529,13 @@
     if (reqHint) reqHint.textContent = "Enviando…";
 
     try {
-      const payload = {
-        phone,
-        title,
-        contactName: personName,
-        city,
-        category
-      };
+      const payload = { phone, title, name, city, category: reqCategory };
       const res = await postJSON(INGRESSAI_API + "/org/request", payload);
       if (res?.ok) {
         if (reqHint) reqHint.textContent = "Solicitação enviada. Você receberá o passo a passo no WhatsApp.";
         reqForm.reset();
+        setCat("atleticas"); // default
+        console.log("[analytics] org_request_sent", payload);
       } else {
         if (reqHint) reqHint.textContent = "Não foi possível enviar agora.";
       }
@@ -577,7 +547,6 @@
       setTimeout(() => reqHint && (reqHint.textContent = ""), 4500);
     }
   }
-
   reqBtn?.addEventListener("click", submitOrgRequest);
 
   /* =============== Diagnóstico =============== */
@@ -636,13 +605,16 @@
 
   window.addEventListener("DOMContentLoaded", () => {
     // estado inicial da calculadora
-    if (priceEl) priceEl.value = centsToBRL(priceCents);
-    if (priceRangeEl) priceRangeEl.value = String(Math.min(Math.max(priceCents, Number(priceRangeEl.min)), Number(priceRangeEl.max)));
-    if (qtyNEl) qtyNEl.value = String(qty);
-    if (qtySlider) qtySlider.value = String(Math.min(1000, qty));
+    priceEl.value = centsToBRL(priceCents);
+    baseUnitEl.textContent = centsToBRL(priceCents);
+    const priceRangeDefault = Math.max(5, Math.min(500, Math.round(priceCents/100)));
+    if (priceRangeEl) priceRangeEl.value = String(priceRangeDefault);
+
+    $("#calc-qty-n").value = String(qty);
+    $("#calc-qty").value = String(Math.min(1000, qty));
     recalc();
 
-    // roda diag
+    // run
     runDiagnostics().catch((e) => console.error(e));
   });
 })();
