@@ -1,7 +1,9 @@
 /* app.js — IngressAI (frontend leve)
    - vitrine, filtros, sheet
-   - calculadora UX sem seleção de categoria: 3% fixo (organizador), comprador +4% e +5% (ambos mostrados)
-   - bloco de Emissão Manual (1,5%) com comparação
+   - calculadora: 3% fixo organizador; comprador vê +4% e +5% lado a lado
+   - emissão manual: 1,5% (pagamento fora)
+   - máscara BRL, URL state, localStorage, skeletons
+   - diagnóstico de backend
 */
 (() => {
   "use strict";
@@ -133,21 +135,40 @@
   let searchTerm = "";
 
   async function fetchEventsSmart() {
-    const endpoints = ["/events/vitrine","/events/public","/events","/events/seed"];
+    const endpoints = [
+      "/events/vitrine",
+      "/events/public",
+      "/events",
+      "/events/seed",
+    ];
     for (const p of endpoints) {
       try {
         const url = INGRESSAI_API + p;
         const json = await getJSON(url);
-        const events = json?.events || (Array.isArray(json) ? json : null) || json?.data?.events || json?.data || json?.items || json?.rows || [];
+        const events =
+          json?.events ||
+          (Array.isArray(json) ? json : null) ||
+          json?.data?.events ||
+          json?.data ||
+          json?.items ||
+          json?.rows ||
+          [];
         if (Array.isArray(events)) return events;
-      } catch (e) {}
+      } catch (e) {
+        /* tenta próximo */
+      }
     }
     throw new Error("Nenhum endpoint de eventos respondeu.");
   }
 
-  const cityFrom = (ev) => ev.city || ev.cidade || ev.location?.city || ev.venueCity || ev.placeCity || null;
-  const dateTextFrom = (ev) => ev.dateText || ev.eventDateText || ev.date || ev.startsAt || "";
-  const mediaFrom = (ev) => ev.image || ev.coverUrl || ev.banner || ev.media?.[0] || ev.thumb || null;
+  const cityFrom = (ev) =>
+    ev.city || ev.cidade || ev.location?.city || ev.venueCity || ev.placeCity || null;
+
+  const dateTextFrom = (ev) =>
+    ev.dateText || ev.eventDateText || ev.date || ev.startsAt || "";
+
+  const mediaFrom = (ev) =>
+    ev.image || ev.coverUrl || ev.banner || ev.media?.[0] || ev.thumb || null;
 
   function statusChip(ev) {
     if (ev.soldOut) return ["sold", "Esgotado"];
@@ -233,23 +254,43 @@
     const cities = Array.from(set).sort((a, b) => a.localeCompare(b, "pt-BR"));
     filtroCidadesEl.innerHTML = "";
 
-    const allChip = el("button", { class: "chip", role: "tab", "aria-selected": activeCity ? "false" : "true" }, "Todas");
+    const allChip = el(
+      "button",
+      {
+        class: "chip",
+        role: "tab",
+        "aria-selected": activeCity ? "false" : "true",
+      },
+      "Todas"
+    );
     allChip.addEventListener("click", () => {
       activeCity = null;
-      $$('[role="tab"]', filtroCidadesEl).forEach((n) => n.setAttribute("aria-selected", "false"));
+      $$('[role="tab"]', filtroCidadesEl).forEach((n) =>
+        n.setAttribute("aria-selected", "false")
+      );
       allChip.setAttribute("aria-selected", "true");
       renderEvents();
     });
     filtroCidadesEl.appendChild(allChip);
 
     cities.forEach((city) => {
-      const chip = el("button", {
-          class: "chip", role: "tab",
-          "aria-selected": activeCity && activeCity.toLowerCase() === city.toLowerCase() ? "true" : "false",
-        }, city);
+      const chip = el(
+        "button",
+        {
+          class: "chip",
+          role: "tab",
+          "aria-selected":
+            activeCity && activeCity.toLowerCase() === city.toLowerCase()
+              ? "true"
+              : "false",
+        },
+        city
+      );
       chip.addEventListener("click", () => {
         activeCity = city;
-        $$('[role="tab"]', filtroCidadesEl).forEach((n) => n.setAttribute("aria-selected", "false"));
+        $$('[role="tab"]', filtroCidadesEl).forEach((n) =>
+          n.setAttribute("aria-selected", "false")
+        );
         chip.setAttribute("aria-selected", "true");
         renderEvents();
       });
@@ -276,22 +317,34 @@
       ]),
     ]);
 
-    const mediaNode = el("div", { class: "sheet-media" }, [ img ? imgNode(img) : imgNode(null) ]);
+    const mediaNode = el("div", { class: "sheet-media" }, [
+      img ? imgNode(img) : imgNode(null),
+    ]);
 
+    // Deep-link: ingressai:start ev=<id> qty=1 autopay=1
     const makeWaDeepLink = (ev) => {
       const id = ev.id || ev.slug || "";
       if (!id) return `https://wa.me/${BOT_NUMBER}`;
       const txt = encodeURIComponent(`ingressai:start ev=${id} qty=1 autopay=1`);
       return `https://wa.me/${BOT_NUMBER}?text=${txt}`;
     };
-    const ctaHref = ev.whatsappLink || ev.deepLink || makeWaDeepLink(ev);
+
+    const ctaHref =
+      ev.whatsappLink ||
+      ev.deepLink ||
+      makeWaDeepLink(ev);
 
     const details = el("div", { class: "std-list" }, [
       el("div", {}, `Quando: ${dateText || "—"}`),
       el("div", {}, `Local: ${ev.venue || ev.local || city || "—"}`),
     ]);
+
     const actions = el("div", { style: "display:flex;gap:8px;margin-top:8px" }, [
-      el("a", { class: "btn btn--secondary btn--sm", href: ctaHref, target: "_blank", rel: "noopener noreferrer" }, "Comprar no WhatsApp"),
+      el(
+        "a",
+        { class: "btn btn--secondary btn--sm", href: ctaHref, target: "_blank", rel: "noopener noreferrer" },
+        "Comprar no WhatsApp"
+      ),
     ]);
 
     sheetBody.appendChild(head);
@@ -319,24 +372,21 @@
     renderEvents();
   });
 
-  /* =============== Calculadora nova =============== */
+  /* =============== Calculadora (3% fixo + comprador 4/5 + manual 1,5%) =============== */
   const priceEl = $("#calc-price"); // texto com máscara
   const qtyNEl = $("#calc-qty-n");
   const qtySlider = $("#calc-qty");
-
   const feeOrgEl = $("#calc-fee-org");
   const grossEl = $("#calc-gross");
   const netEl = $("#calc-net");
-  const buyer4El = $("#calc-buyer4");
-  const buyer5El = $("#calc-buyer5");
+  const buyer4El = $("#calc-buyer-4");
+  const buyer5El = $("#calc-buyer-5");
 
-  // Emissão manual
   const manualFeeUnitEl = $("#manual-fee-unit");
   const manualFeeTotalEl = $("#manual-fee-total");
   const manualNetTotalEl = $("#manual-net-total");
   const manualNetUnitEl = $("#manual-net-unit");
 
-  // estado
   let priceCents = brlToCents(qs.get("price")) || 6000; // default R$ 60,00
   let qty = clampInt(qs.get("qty") || localStorage.getItem("ia.qty") || "100", 0, 10000);
 
@@ -344,6 +394,7 @@
     const n = Math.max(min, Math.min(max, parseInt(v || "0", 10) || 0));
     return n;
   }
+
   function centsToBRL(c){ return (c/100).toLocaleString("pt-BR", { style:"currency", currency:"BRL" }); }
   function brlToCents(raw){
     if (raw == null) return 0;
@@ -358,40 +409,6 @@
     return cents;
   }
 
-  const ORG_PCT = 0.03;   // 3% fixo
-  const BUYER_4 = 0.04;   // +4%
-  const BUYER_5 = 0.05;   // +5%
-  const MANUAL_PCT = 0.015; // 1,5% emissão manual
-
-  function recalc(){
-    // taxas organizador
-    const unitOrgFeeCents = Math.round(priceCents * ORG_PCT);
-    const grossCents = priceCents * qty;
-    const totalOrgFeesCents = unitOrgFeeCents * qty;
-    const netCents = Math.max(0, (priceCents - unitOrgFeeCents) * qty);
-
-    feeOrgEl.textContent = `${centsToBRL(unitOrgFeeCents)} / ingresso`;
-    grossEl.textContent = centsToBRL(grossCents);
-    netEl.textContent = centsToBRL(netCents);
-
-    // preços que o comprador vê (dois cenários)
-    const buyer4 = priceCents + Math.round(priceCents * BUYER_4);
-    const buyer5 = priceCents + Math.round(priceCents * BUYER_5);
-    buyer4El.textContent = centsToBRL(buyer4);
-    buyer5El.textContent = centsToBRL(buyer5);
-
-    // Emissão manual (1,5%)
-    const manualUnitFee = Math.round(priceCents * MANUAL_PCT);
-    const manualFeeTotal = manualUnitFee * qty;
-    const manualNetTotal = Math.max(0, (priceCents * qty) - manualFeeTotal);
-    const manualNetUnit = Math.max(0, priceCents - manualUnitFee);
-
-    manualFeeUnitEl.textContent = centsToBRL(manualUnitFee);
-    manualFeeTotalEl.textContent = centsToBRL(manualFeeTotal);
-    manualNetTotalEl.textContent = centsToBRL(manualNetTotal);
-    manualNetUnitEl.textContent = centsToBRL(manualNetUnit);
-  }
-
   function pushState(){
     const params = new URLSearchParams(location.search);
     params.set("price", (priceCents/100).toFixed(2));
@@ -401,6 +418,36 @@
     localStorage.setItem("ia.qty", String(qty));
   }
 
+  function recalc(){
+    // Organizadores: 3%
+    const orgPct = 0.03;
+    const feeOrgUnit = Math.round(priceCents * orgPct);
+    const gross = priceCents * qty;
+    const net = Math.max(0, (priceCents - feeOrgUnit) * qty);
+
+    // Comprador vê +4% ou +5% (exibimos os dois)
+    const buyer4 = priceCents + Math.round(priceCents * 0.04);
+    const buyer5 = priceCents + Math.round(priceCents * 0.05);
+
+    feeOrgEl.textContent = `${centsToBRL(feeOrgUnit)} / ingresso`;
+    grossEl.textContent = centsToBRL(gross);
+    netEl.textContent = centsToBRL(net);
+    buyer4El.textContent = centsToBRL(buyer4);
+    buyer5El.textContent = centsToBRL(buyer5);
+
+    // Emissão manual: 1,5% do valor base
+    const manualPct = 0.015;
+    const manualFeeUnit = Math.round(priceCents * manualPct);
+    const manualFeeTotal = manualFeeUnit * qty;
+    const manualNetTotal = Math.max(0, (priceCents - manualFeeUnit) * qty);
+    const manualNetUnit = Math.max(0, priceCents - manualFeeUnit);
+
+    manualFeeUnitEl.textContent = `${centsToBRL(manualFeeUnit)} / ingresso`;
+    manualFeeTotalEl.textContent = centsToBRL(manualFeeTotal);
+    manualNetTotalEl.textContent = centsToBRL(manualNetTotal);
+    manualNetUnitEl.textContent = centsToBRL(manualNetUnit);
+  }
+
   // UI events
   priceEl?.addEventListener("input", (e) => {
     priceCents = maskBRLInput(e.target);
@@ -408,7 +455,7 @@
     recalc();
   });
   priceEl?.addEventListener("blur", (e) => {
-    // arredondamento “bonito”
+    // arredondamento “bonito”: se terminar em .00 → tenta .90; se > .90 → .99
     let c = brlToCents(e.target.value);
     const mod = c % 100;
     if (mod === 0 && c >= 1000) c = c - 10;            // .00 → .90
@@ -473,6 +520,7 @@
       setTimeout(() => reqHint && (reqHint.textContent = ""), 4500);
     }
   }
+
   reqBtn?.addEventListener("click", submitOrgRequest);
 
   /* =============== Diagnóstico =============== */
