@@ -21,7 +21,7 @@
   <meta name="twitter:card" content="summary_large_image" />
 
   <meta name="theme-color" content="#2F7DD9" />
-  <meta name="color-scheme" content="light dark" />
+  <meta name="color-scheme" content="light" />
   <link rel="icon" href="./favicon.png" type="image/png" />
   <link rel="preload" as="image" href="./logo_ingressai.png" />
 
@@ -34,13 +34,8 @@
       --shadow:0 10px 28px rgba(47,125,217,.14),0 2px 6px rgba(11,18,32,.08);
       --shadow-soft:0 6px 18px rgba(47,125,217,.12);--ring:0 0 0 2px rgba(74,147,240,.18);
       --container-max:calc(680px*var(--phi));--btn-h:52px;--radius-pill:999px;--t-fast:.18s;--t-med:.28s;
-      --ok:#157f3b;--ok-bg:#e9f7ec;--ok-bd:#cfe8d7;--bd:#e7eefb;
-    }
-    @media (prefers-color-scheme: dark){
-      :root{--ink:#eaf0ff;--muted:#9fb0cc;--bg:#0b1220;--card:#111a2e;--blue-soft:#0c2244;--bd:#1b2a4a;--shadow:none;--shadow-soft:none}
-      header{background:#0b1220;border-color:#1b2a4a}
-      .menu-btn,.drawer,.feature,.card,.chip,.btn,.drawer-btn{background:#111a2e;border-color:#1b2a4a}
-      .search input{background:#111a2e;border-color:#1b2a4a;color:var(--ink)}
+      --ok:#157f3b;--ok-bg:#e9f7ec;--ok-bd:#cfe8d7;
+      --warn:#b64848;--warn-bg:#fff7f7;--warn-bd:#ffdede;
     }
     *{box-sizing:border-box}
     html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font:16px/var(--lh) -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Ubuntu,Inter,system-ui,sans-serif}
@@ -52,24 +47,22 @@
     :where(section,[id]){scroll-margin-top:96px}
 
     /* Header */
-    header{position:sticky;top:0;z-index:40;background:#fff;border-bottom:1px solid var(--bd);transition:box-shadow var(--t-fast),border-color var(--t-fast),background-color var(--t-fast)}
+    header{position:sticky;top:0;z-index:40;background:#fff;border-bottom:1px solid #e7eefb;transition:box-shadow var(--t-fast),border-color var(--t-fast),background-color var(--t-fast)}
     header.is-scrolled{box-shadow:var(--shadow);border-color:#e1e9fb}
     .head{display:flex;align-items:center;justify-content:space-between;padding:10px 0}
-    .brand{display:flex;align-items:center;gap:10px;font-weight:900;margin:0 auto}
-    .brand img{width:36px;height:36px}
-    .brand span{font-weight:900;letter-spacing:.2px}
-
+    .brand{display:flex;align-items:center;gap:10px;font-weight:900}
+    .brand img{width:28px;height:28px}
     .only-action{display:flex;align-items:center;gap:8px}
-    .menu-btn{appearance:none;border:1px solid var(--bd);background:#fff;border-radius:12px;padding:.55rem .7rem;box-shadow:var(--shadow-soft);display:inline-grid;place-items:center;cursor:pointer}
+    .menu-btn{appearance:none;border:1px solid #e7eefb;background:#fff;border-radius:12px;padding:.55rem .7rem;box-shadow:var(--shadow-soft);display:inline-grid;place-items:center;cursor:pointer}
     .menu-btn:active{transform:scale(.98)}
     .menu-icon{width:26px;height:26px;display:block;color:#2F7DD9}
 
     /* Drawer */
-    .drawer{position:fixed;top:0;right:-320px;width:min(320px,90vw);height:100%;background:#fff;border-left:1px solid var(--bd);box-shadow:-20px 0 40px rgba(11,18,32,.14);transition:right var(--t-med) cubic-bezier(.2,.7,.2,1);z-index:60;padding:16px;display:flex;flex-direction:column;gap:10px}
+    .drawer{position:fixed;top:0;right:-320px;width:min(320px,90vw);height:100%;background:#fff;border-left:1px solid #e7eefb;box-shadow:-20px 0 40px rgba(11,18,32,.14);transition:right var(--t-med) cubic-bezier(.2,.7,.2,1);z-index:60;padding:16px;display:flex;flex-direction:column;gap:10px}
     .drawer.is-open{right:0}
     .drawer-head{display:flex;align-items:center;justify-content:space-between}
     .drawer-title{font-weight:900;margin:0}
-    .drawer-btn{min-height:44px;padding:0 14px;border-radius:12px;border:1px solid var(--bd);background:#fff;box-shadow:var(--shadow-soft);font-weight:800;display:inline-flex;align-items:center;gap:8px}
+    .drawer-btn{min-height:44px;padding:0 14px;border-radius:12px;border:1px solid #e7eefb;background:#fff;box-shadow:var(--shadow-soft);font-weight:800;display:inline-flex;align-items:center;gap:8px}
     .drawer-backdrop{position:fixed;inset:0;background:rgba(11,18,32,.36);opacity:0;pointer-events:none;transition:opacity var(--t-fast);z-index:55}
     .drawer-backdrop.is-open{opacity:1;pointer-events:auto}
 
@@ -77,8 +70,9 @@
     .tag.on{background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-bd)}
     .tag.off{background:#fff4f4;color:#b64848;border:1px solid #ffdede}
 
-    .hero{padding:var(--s4) 0}
-    .hero h1{font-size:clamp(calc(1.25rem*var(--phi)),6.2vw,calc(1.25rem*var(--phi)*var(--phi)));line-height:var(--lh-compact);margin:var(--s1) 0 var(--s2) 0;font-weight:850;text-align:center}
+    .hero{padding:var(--s4) 0;opacity:calc(1 - var(--hero-p,0));transform:translateY(calc(-6px * var(--hero-p,0)));transition:opacity var(--t-fast) linear,transform var(--t-fast) linear}
+    .hero.is-hidden{opacity:0;height:0;padding:0;margin:0;overflow:hidden}
+    .hero h1{font-size:clamp(calc(1.25rem*var(--phi)),6.2vw,calc(1.25rem*var(--phi)*var(--phi)));line-height:var(--lh-compact);margin:0 0 var(--s2) 0;font-weight:850;text-align:center}
     .hero-brand{display:grid;gap:var(--s1);place-items:center;margin-bottom:var(--s2)}
     .badges{display:flex;gap:calc(var(--s1)*1.4);align-items:center;justify-content:center;flex-wrap:wrap;margin-top:6px}
     .badge{display:inline-flex;align-items:center;gap:.55rem;padding:0;background:transparent;border-radius:0;box-shadow:none;font-weight:700;cursor:default;user-select:none}
@@ -88,6 +82,16 @@
     .btn--secondary{box-shadow:var(--shadow-soft)}
     .btn--ghost{background:#fff;border-color:#e1e8f6;box-shadow:none;color:#2d3b50}
     .btn--sm{min-height:40px;padding:0 .9rem;font-size:1rem}
+
+    .proofs{padding:var(--s2) 0 var(--s3)}
+    .features{display:grid;gap:var(--s0);grid-template-columns:repeat(2,minmax(0,1fr))}
+    @media(min-width:900px){.features{grid-template-columns:repeat(4,minmax(0,1fr))}}
+    .feature{background:#fff;border:1px solid #e5ecff;border-radius:12px;padding:calc(var(--s0)*1.25);display:flex;flex-direction:column;align-items:center;gap:var(--s0)}
+    .feature svg{stroke:currentColor;stroke-width:1.1;fill:none;stroke-linecap:round;stroke-linejoin:round;width:clamp(28px,8vw,36px);height:clamp(28px,8vw,36px)}
+    .feature .bolt{fill:currentColor;stroke:none}.feature .cut{fill:var(--card);stroke:none}.feature .qr-fill{fill:currentColor;stroke:none}
+    .feature .meta{display:flex;flex-direction:column;gap:calc(var(--s0)/var(--phi));align-items:center}
+    .feature strong{font-weight:800;font-size:calc(var(--fs-0)*1.02);line-height:1.2;text-align:center}
+    .feature small{color:var(--muted);font-size:calc(var(--fs--1));line-height:1.4;text-align:center}
 
     .section{padding:calc(var(--s4)*1.1) 0;content-visibility:auto}
     .section h2{font-size:clamp(calc(1rem*var(--phi)),3.8vw,calc(1.1rem*var(--phi)*var(--phi)));margin:0 0 var(--s2) 0;font-weight:800}
@@ -104,138 +108,400 @@
     @media(min-width:1000px){.cards{grid-template-columns:repeat(3,minmax(0,1fr))}}
 
     .card{background:var(--card);border-radius:calc(var(--s2));box-shadow:var(--shadow);padding:var(--s2);border:1px solid #eaf1ff;display:flex;flex-direction:column;gap:var(--s1);transition:transform .12s,box-shadow var(--t-fast);position:relative;overflow:hidden;cursor:pointer}
-    .card:hover{transform:translateY(-2px)}
-    .card .media{aspect-ratio:1.618/1;border-radius:12px;overflow:hidden;background:var(--blue-soft);display:grid;place-items:center;border:1px solid #dfe9ff}
-    .card .media img{width:100%;height:100%;object-fit:cover;display:block}
-    .card .title{font-weight:900}
-    .card .meta{display:flex;gap:8px;align-items:center;color:var(--muted);font-weight:700}
-    .card .price{font-weight:900}
-    .card .buy{display:flex;gap:8px;align-items:center}
-    .skeleton{animation:pulse 1.2s ease-in-out infinite;background:linear-gradient(90deg,rgba(200,215,240,.28),rgba(200,215,240,.6),rgba(200,215,240,.28));background-size:200% 100%}
-    @keyframes pulse{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    .card:hover{transform:translateY(-2px);box-shadow:0 14px 36px rgba(47,125,217,.16),0 3px 8px rgba(11,18,32,.12)}
+    .card:focus-visible{box-shadow:var(--ring),var(--shadow)}
+    .card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--s1)}
+    .card-title{font-weight:900;font-size:clamp(1rem,2.2vw,1.14rem);line-height:1.18;margin-bottom:4px}
+    .card-city{color:#2F7DD9;font-weight:800;font-size:.94rem}
+    .status-line{display:flex;align-items:center;gap:8px;margin-top:4px;font-weight:800;font-size:.86rem}
+    .status-dot{width:.6rem;height:.6rem;border-radius:999px;display:inline-block;flex:0 0 .6rem;border:1px solid rgba(0,0,0,.06)}
+    .status--soon .status-dot{background:#cfe3ff}.status--low .status-dot{background:#ffdede}.status--sold .status-dot{background:#dcdde3}
+    .status--soon{color:#1B5FB3}.status--low{color:#b64848}.status--sold{color:#6b7280}
+    .card-media{width:100%;aspect-ratio:var(--phi);border-radius:calc(var(--s1));border:1px solid #eaf1ff;background:
+      radial-gradient(600px 280px at 20% 0%,rgba(47,125,217,.12),transparent 60%),
+      linear-gradient(180deg,#fff,#f5f9ff);display:grid;place-items:center;color:#8fb5ff;font-weight:800;overflow:hidden;position:relative}
+    .card-media img{width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block}
+    .skeleton{position:relative;overflow:hidden;background:linear-gradient(90deg,#eef3ff 0%,#f6f8ff 40%,#eef3ff 80%);background-size:200% 100%;animation:s 1.4s infinite ease}
+    @keyframes s{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
-    /* Bottom sheet */
-    .sheet{position:fixed;inset:0;display:none;z-index:80}
-    .sheet.is-open{display:block}
-    .sheet .backdrop{position:absolute;inset:0;background:rgba(0,0,0,.4)}
-    .sheet .panel{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:16px 16px 0 0;box-shadow:0 -18px 40px rgba(0,0,0,.18);padding:var(--s2);max-height:min(85vh,100%);overflow:auto}
-    @media (prefers-color-scheme: dark){.sheet .panel{background:#0f172a}}
-    .sheet .media{aspect-ratio:1.618/1;border-radius:12px;overflow:hidden;background:var(--blue-soft);border:1px solid #dfe9ff;margin-bottom:var(--s1)}
-    .sheet .media img{width:100%;height:100%;object-fit:cover}
-    .sheet .close{position:sticky;top:-8px;display:inline-flex;align-items:center;gap:8px;border:1px solid var(--bd);border-radius:999px;background:#fff;padding:.5rem .8rem;font-weight:800;margin-bottom:var(--s1)}
-    @media (prefers-color-scheme: dark){.sheet .close{background:#111a2e}}
-    .sheet .h{display:flex;align-items:center;justify-content:space-between;gap:var(--s1)}
-    .sheet .h h3{margin:.25rem 0;font-size:1.2rem;font-weight:900}
-    .sheet .meta{color:var(--muted);font-weight:700}
-    .sheet .actions{display:grid;grid-template-columns:1fr;gap:8px;margin-top:var(--s1)}
-    .sheet .actions .btn{width:100%}
+    .sheet-backdrop{position:fixed;inset:0;background:rgba(11,18,32,.36);opacity:0;pointer-events:none;transition:opacity var(--t-fast);z-index:40}
+    .sheet-backdrop.is-open{opacity:1;pointer-events:auto}
+    .sheet{position:fixed;left:0;right:0;bottom:0;height:72vh;max-height:760px;background:#fff;border-top-left-radius:24px;border-top-right-radius:24px;box-shadow:0 -24px 48px rgba(11,18,32,.16);transform:translateY(100%);transition:transform var(--t-med) cubic-bezier(.2,.7,.2,1);display:flex;flex-direction:column;padding:var(--s2);z-index:45}
+    .sheet.is-open{transform:translateY(0)} .sheet h3{margin:0;font-weight:900;line-height:1.2}
+    .sheet .sheet-body{overflow:auto;display:flex;flex-direction:column;gap:10px;padding-right:4px;padding-bottom:calc(20px + env(safe-area-inset-bottom))}
+    .sheet-media{width:100%;aspect-ratio:var(--phi);border:1px solid #eaf1ff;border-radius:16px;background:
+      radial-gradient(600px 280px at 20% 0%,rgba(47,125,217,.12),transparent 60%),
+      linear-gradient(180deg,#fff,#f5f9ff);margin-top:var(--s0);margin-bottom:var(--s1);overflow:hidden;display:block}
+    .sheet-media img{width:100%;height:100%;object-fit:cover;display:block}
 
-    /* Organizadores */
-    .org{display:grid;gap:var(--s2)}
-    .calc{display:grid;gap:var(--s1)}
-    .calc-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .calc input{width:100%;border:1px solid var(--bd);border-radius:12px;padding:.7rem 1rem;background:#fff;font:inherit}
-    @media (prefers-color-scheme: dark){.calc input{background:#111a2e;color:var(--ink)}}
-    .kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-    .kpi{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:.9rem}
-    .kpi strong{display:block;font-weight:900}
+    .sheet-close{position:fixed;top:calc(env(safe-area-inset-top) + 10px);right:12px;z-index:50;background:#fff;border:1px solid #e6eaf6;border-radius:12px;width:44px;height:44px;display:grid;place-items:center;box-shadow:var(--shadow-soft)}
+    .sheet-close:active{transform:scale(.98)}
+
+    .status-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid #e6eaf6;border-radius:999px;padding:.25rem .55rem;font-weight:800;font-size:.8rem}
+    .status-chip .dot{width:.5rem;height:.5rem;border-radius:50%}
+    .status-chip.low{color:#b64848;border-color:#ffdede;background:#fff7f7}
+    .status-chip.soon{color:#1B5FB3;border-color:#cfe3ff;background:#f3f8ff}
+    .status-chip.sold{color:#6b7280;border-color:#e3e4ea;background:#fafbfc}
+
+    .std-card{background:#fff;border:1px solid #e5ecff;border-radius:calc(var(--s2));padding:var(--s2);box-shadow:var(--shadow-soft)}
+    .std-list{margin:0;padding-left:1.25rem;display:grid;gap:6px}
+
+    /* ---- Calculadora / Planos ---- */
+    .plan-calc{display:grid;gap:var(--s1)}
+    .plan-pills{display:flex;gap:8px;flex-wrap:wrap}
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:.55rem .9rem;border-radius:999px;border:1px solid #e5ecff;background:#fff;
+      font-weight:800;cursor:pointer;user-select:none
+    }
+    .pill input{appearance:none;width:0;height:0;position:absolute;opacity:0}
+    .pill[aria-checked="true"]{background:var(--blue-2);color:#fff;border-color:rgba(27,95,179,.35);box-shadow:0 6px 14px rgba(47,125,217,.25)}
+    .calc-grid{display:grid;gap:var(--s1)}
+    .calc-row{display:grid;gap:8px}
+    @media(min-width:560px){.calc-row{grid-template-columns:1fr auto;align-items:end}}
+    .input{width:100%;border:1px solid #e5ecff;border-radius:10px;padding:.8rem 1rem;font:inherit}
+    .range-box{display:flex;gap:8px;align-items:center}
+    .num{font-variant-numeric:tabular-nums}
+    .kpis{display:grid;gap:8px;grid-template-columns:repeat(2,minmax(0,1fr))}
+    @media(min-width:680px){.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}}
+    .kpi{background:var(--card);border:1px solid #e5ecff;border-radius:12px;padding:10px}
+    .kpi strong{display:block;font-size:.86rem;color:#445570}
+    .kpi .val{font-weight:900;font-size:1.08rem}
+
+    footer{background:#fff;border-top:1px solid #e7eefb;margin-top:var(--s4)}
+    .foot{max-width:var(--container-max);margin:0 auto;padding:var(--s3) var(--s3)}
+    .foot-block{display:grid;gap:var(--s2);justify-items:center;text-align:center}
+    .link-row{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-bottom:var(--s1)}
+    .link-btn{width:44px;height:44px;display:grid;place-items:center;border:1px solid #e7eefb;background:#fff;border-radius:12px;box-shadow:var(--shadow-soft);color:#0b1220;padding:0}
+    .link-btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-linecap:round;stroke-linejoin:round}
+    .legal{display:flex;flex-wrap:wrap;gap:var(--s1);justify-content:center;margin-top:calc(var(--s0)*1.2)}
+    .legal a{text-decoration:underline;font-weight:600}
+    .foot-meta{display:flex;flex-wrap:wrap;gap:10px;align-items:center;color:#667792;justify-content:center}
+    .diag{font-size:.85rem;color:#566781;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:.5rem 0}
+    @media(min-width:520px){.diag{grid-template-columns:repeat(3,minmax(0,1fr))}}
+    .diag div{background:#fff;border:1px solid #e7eefb;border-radius:8px;padding:6px 8px}
+    .diag strong{display:block}
   </style>
+
+  <!-- Normaliza API global (fallback) -->
+  <script>
+    (function () {
+      const qsApi = new URLSearchParams(location.search).get("api") || "";
+      const PROD = "https://ingressai-backend-production.up.railway.app/api";
+      function normalizeApi(raw){
+        let s = String(raw||"").trim().replace(/\/+$/g,"");
+        if(!/\/api$/i.test(s)) s += "/api";
+        s = s.replace(/([^:])\/{2,}/g,"$1/");
+        return s;
+      }
+      window.INGRESSAI_API = normalizeApi(qsApi || PROD);
+      window.INGRESSAI_BASE = window.INGRESSAI_API.replace(/\/api$/,'');
+    })();
+  </script>
 </head>
 <body>
-  <header id="hdr">
+  <!-- HEADER -->
+  <header role="banner">
     <div class="container head">
-      <button id="openMenu" class="menu-btn" aria-label="Abrir menu" style="visibility:hidden">
-        <svg class="menu-icon" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2"/></svg>
-      </button>
-      <div class="brand" id="brand">
-        <img src="./logo_ingressai.png" alt="IngressAI" width="36" height="36" />
+      <div class="brand">
+        <img src="./logo_ingressai.png" alt="IngressAI" width="28" height="28" />
         <span>IngressAI</span>
       </div>
-      <div class="only-action" style="visibility:hidden;"></div>
+      <div class="only-action">
+        <span class="tag off" id="auth-indicator" aria-live="polite">offline</span>
+        <button id="drawer-toggle" class="menu-btn" aria-controls="drawer" aria-expanded="false" aria-label="Abrir funções">
+          <svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="5" cy="6" r="1.6" />
+            <rect x="8.2" y="5.2" width="11" height="1.6" rx=".8" />
+            <circle cx="5" cy="12" r="1.6" />
+            <rect x="8.2" y="11.2" width="11" height="1.6" rx=".8" />
+            <circle cx="5" cy="18" r="1.6" />
+            <rect x="8.2" y="17.2" width="11" height="1.6" rx=".8" />
+          </svg>
+        </button>
+      </div>
     </div>
   </header>
 
-  <main>
-    <section class="hero container" id="hero">
+  <!-- DRAWER -->
+  <div class="drawer-backdrop" id="drawer-backdrop" aria-hidden="true"></div>
+  <aside class="drawer" id="drawer" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="drawer-head">
+      <h3 class="drawer-title">Funções</h3>
+      <button class="drawer-btn" id="drawer-close" type="button" aria-label="Fechar">Fechar</button>
+    </div>
+    <button class="drawer-btn" id="drawer-create" type="button">Criar evento</button>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="container" role="main">
+    <!-- HERO -->
+    <section class="hero" aria-labelledby="hero-title">
       <div class="hero-brand">
-        <img src="./logo_ingressai.png" alt="IngressAI" width="84" height="84" style="filter: drop-shadow(0 6px 18px rgba(47,125,217,.25)); border-radius:20px;" />
-        <div class="badges">
-          <div class="badge"><span>Ingressos no WhatsApp</span></div>
-          <div class="badge"><span>QR Code antifraude</span></div>
-          <div class="badge"><span>Repasse T+0</span></div>
+        <img src="./logo_ingressai.png" alt="IngressAI" width="160" height="160" />
+        <div class="badges" aria-label="Selos">
+          <span class="badge" aria-label="Powered by Meta Business Platform">
+            <img src="./meta.png" alt="Meta" width="24" height="24" />
+            <span>Powered by Meta Business Platform</span>
+          </span>
+          <span class="badge" aria-label="WhatsApp Business API">
+            <img src="./whatsapp_business.png" alt="WhatsApp Business" width="24" height="24" />
+            <span>WhatsApp Business API</span>
+          </span>
         </div>
       </div>
-      <h1>Compre em minutos. Receba o QR. <br/> Pronto pro rolê.</h1>
-      <div style="display:flex;justify-content:center">
-        <a id="openWhatsapp" class="btn btn--secondary" href="https://wa.me/5534999992747" target="_blank" rel="noopener">Abrir WhatsApp</a>
+      <h1 id="hero-title">Crie eventos com a IngressAI.</h1>
+    </section>
+
+    <!-- PROVAS -->
+    <section class="proofs" aria-labelledby="proofs-title">
+      <h2 id="proofs-title" class="sr-only">Provas de valor</h2>
+      <div class="features" aria-label="Provas">
+        <div class="feature">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3.6" y="6.6" width="16.8" height="10.8" rx="2.4" />
+            <circle class="cut" cx="3.6" cy="12" r="1" />
+            <circle class="cut" cx="20.4" cy="12" r="1" />
+            <path class="bolt" d="M12 9.4 L10.2 12 h1.55 l-.75 3.0 L14 11.2 h-1.6 z" />
+          </svg>
+          <div class="meta"><strong>Venda automatizada</strong><small>via WhatsApp</small></div>
+        </div>
+        <div class="feature">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 10a 8 8 0 0 1 14-2" />
+            <path d="M4 6v4h4" />
+            <path d="M20 14a 8 8 0 0 1-14 2" />
+            <path d="M20 18v-4h-4" />
+          </svg>
+          <div class="meta"><strong>Repasse imediato</strong><small>via Pix</small></div>
+        </div>
+        <div class="feature">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3" y="3" width="7" height="7" rx="1.1" />
+            <rect class="qr-fill" x="5.6" y="5.6" width="2.8" height="2.8" rx=".35" />
+            <rect x="14" y="3" width="7" height="7" rx="1.1" />
+            <rect class="qr-fill" x="16.6" y="5.6" width="2.8" height="2.8" rx=".35" />
+            <rect x="3" y="14" width="7" height="7" rx="1.1" />
+            <rect class="qr-fill" x="5.6" y="16.6" width="2.8" height="2.8" rx=".35" />
+          </svg>
+          <div class="meta"><strong>QR Code Antifraude</strong><small>+ validador</small></div>
+        </div>
+        <div class="feature">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9 7h11M9 12h11M9 17h11" />
+            <rect x="4" y="6" width="2.2" height="2.2" rx=".35" />
+            <rect x="4" y="11" width="2.2" height="2.2" rx=".35" />
+            <rect x="4" y="16" width="2.2" height="2.2" rx=".35" />
+          </svg>
+          <div class="meta"><strong>Dashboard</strong><small>Ingressos & acesso</small></div>
+        </div>
       </div>
     </section>
 
-    <section class="section container">
-      <h2>Vitrine</h2>
-      <div class="filters">
-        <label class="search">
-          <span class="sr-only">Buscar</span>
-          <input id="q" type="search" placeholder="Buscar evento, cidade ou local…" />
-        </label>
-        <div class="tag on" id="backendStatus">Backend: ok</div>
+    <!-- VITRINE -->
+    <section id="vitrine" class="section" aria-labelledby="vitrine-title" tabindex="-1">
+      <h2 id="vitrine-title">Eventos em destaque</h2>
+      <div class="filters" aria-label="Filtros">
+        <div class="search">
+          <label for="busca-eventos" class="sr-only">Buscar evento</label>
+          <input type="search" id="busca-eventos" placeholder="Buscar evento" inputmode="search" autocomplete="off" aria-describedby="vitrine-title" />
+        </div>
+        <div id="filtro-cidades" class="chips" role="tablist" aria-label="Filtrar por cidade"></div>
       </div>
-      <div class="chips" id="chips"></div>
-      <div class="cards" id="cards"></div>
+      <div class="cards" id="lista-eventos" aria-live="polite">
+        <!-- skeletons iniciais -->
+        <article class="card">
+          <div class="card-header">
+            <div style="width:60%">
+              <div class="skeleton" style="height:14px;border-radius:8px;margin:2px 0 8px"></div>
+              <div class="skeleton" style="height:22px;border-radius:8px;margin:2px 0 8px"></div>
+              <div class="skeleton" style="height:12px;border-radius:8px;width:40%"></div>
+            </div>
+          </div>
+          <div class="card-media skeleton" style="height:auto;aspect-ratio:1.618"></div>
+        </article>
+        <article class="card">
+          <div class="card-header">
+            <div style="width:60%">
+              <div class="skeleton" style="height:14px;border-radius:8px;margin:2px 0 8px"></div>
+              <div class="skeleton" style="height:22px;border-radius:8px;margin:2px 0 8px"></div>
+              <div class="skeleton" style="height:12px;border-radius:8px;width:40%"></div>
+            </div>
+          </div>
+          <div class="card-media skeleton" style="height:auto;aspect-ratio:1.618"></div>
+        </article>
+      </div>
     </section>
 
-    <section class="section container" id="organizadores">
-      <h2>Organizadores</h2>
-      <div class="org">
-        <div class="calc">
-          <div class="calc-row">
-            <label>
-              <span class="subtle">Preço do ingresso (R$)</span>
-              <input id="inPrice" type="number" min="0" step="0.01" value="60" />
-            </label>
-            <label>
-              <span class="subtle">Qtd. ingressos</span>
-              <input id="inQty" type="number" min="1" step="1" value="100" />
-            </label>
-          </div>
-          <div class="calc-row">
-            <button class="chip" id="planAtl">Atléticas &amp; Repúblicas (4%)</button>
-            <button class="chip" id="planProd">Produtoras &amp; Locais (5%)</button>
-          </div>
-          <div class="kpis">
-            <div class="kpi"><strong>Taxa Organizador</strong><div id="kOrg">3% por ingresso</div></div>
-            <div class="kpi"><strong>Taxa Comprador</strong><div id="kBuyer">4% ou 5%</div></div>
-            <div class="kpi"><strong>Bruto total</strong><div id="kBruto">—</div></div>
-            <div class="kpi"><strong>Líquido organizador</strong><div id="kLiquido">—</div></div>
-          </div>
-        </div>
-        <div>
-          <a id="ctaOrganizador" class="btn btn--ghost btn--sm" href="#organizadores">Quero criar meu evento</a>
-          <small class="subtle" style="display:block;margin-top:6px">Fluxo de criação e publicação pelo WhatsApp, sem digitar — só listas.</small>
+    <!-- ORGANIZADORES -->
+    <section id="organizadores" class="section" aria-labelledby="orgs-title" tabindex="-1">
+      <h2 id="orgs-title">Soluções para organizadores</h2>
+
+      <div class="std-card" style="margin-bottom:12px">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between">
+          <span class="subtle">Entre com seu WhatsApp para acessar o validador do seu evento.</span>
+          <a id="org-validator" class="btn btn--ghost btn--sm" href="#" aria-label="Abrir validador">
+            <span>Validador</span>
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
         </div>
       </div>
+
+      <!-- Planos / Calculadora (sem toggle de repasse) -->
+      <div class="std-card" id="calc-card">
+        <div class="plan-calc">
+          <div class="plan-pills" role="tablist" aria-label="Planos">
+            <label class="pill" id="pill-atl" role="tab" aria-selected="true" aria-checked="true">
+              <input type="radio" name="org-plan" value="atl" checked />
+              Atléticas &amp; Repúblicas • 3% org + 4% comprador
+            </label>
+            <label class="pill" id="pill-prod" role="tab" aria-selected="false" aria-checked="false">
+              <input type="radio" name="org-plan" value="prod" />
+              Produtoras & Locais • 3% org + 5% comprador
+            </label>
+          </div>
+
+          <div class="calc-grid">
+            <div class="calc-row">
+              <div>
+                <label for="calc-price"><strong>Preço base do ingresso</strong></label>
+                <input id="calc-price" class="input" type="text" inputmode="decimal" placeholder="R$ 60,00" value="R$ 60,00" />
+                <small class="subtle">Dica: digite números e eu formatarei (ex.: 60 → R$ 60,00)</small>
+              </div>
+              <div>
+                <label for="calc-qty-n"><strong>Quantidade</strong></label>
+                <div class="range-box">
+                  <input id="calc-qty-n" class="input" type="number" min="0" max="10000" step="1" value="100" style="max-width:160px" />
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <input id="calc-qty" type="range" min="0" max="1000" step="1" value="100" aria-label="Quantidade (slider)" style="width:100%" />
+            </div>
+
+            <div class="kpis" aria-label="Resumo">
+              <div class="kpi">
+                <strong>Taxa do organizador</strong>
+                <div class="val num" id="calc-fee-org">R$ 0,00</div>
+              </div>
+              <div class="kpi">
+                <strong>Receita do organizador</strong>
+                <div class="val num" id="calc-net">R$ 0,00</div>
+              </div>
+              <div class="kpi">
+                <strong>Preço que o comprador paga</strong>
+                <div class="val num" id="calc-buyer">R$ 0,00</div>
+              </div>
+              <div class="kpi">
+                <strong>Bruto total (base × qtd)</strong>
+                <div class="val num" id="calc-gross">R$ 0,00</div>
+              </div>
+            </div>
+            <small class="subtle" id="fee-caption">Organizador paga 3% por ingresso • Comprador vê +4% (atléticas) / +5% (produtoras). Preço exibido já inclui a taxa do comprador.</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Solicitação de criação -->
+      <div class="std-card" style="margin-top:12px">
+        <h3 style="margin-top:0">Quero criar meu evento</h3>
+        <form id="req-form">
+          <div style="display:grid;gap:8px;grid-template-columns:1fr">
+            <input id="req-phone" class="input" inputmode="numeric" placeholder="Seu WhatsApp (DDI+DDD+NÚMERO)" autocomplete="tel" />
+            <input id="req-title" class="input" placeholder="Nome do evento" />
+            <input id="req-city" class="input" placeholder="Cidade" />
+            <input id="req-venue" class="input" placeholder="Local (opcional)" />
+            <input id="req-date" class="input" type="datetime-local" placeholder="Data (opcional)" />
+
+            <fieldset style="display:flex;gap:12px;flex-wrap:wrap;border:0;margin:.25rem 0;padding:0">
+              <legend class="sr-only">Plano</legend>
+              <label><input type="radio" name="req-cat" value="atl" checked /> Atléticas &amp; Repúblicas</label>
+              <label><input type="radio" name="req-cat" value="prod" /> Produtoras e Locais independentes</label>
+            </fieldset>
+
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+              <button id="req-send" class="btn btn--secondary btn--sm" type="button">Solicitar criação</button>
+              <span id="req-hint" class="subtle" aria-live="polite"></span>
+            </div>
+          </div>
+        </form>
+        <p class="subtle" style="margin:.5rem 0 0">Após sua aprovação no bot, o evento sobe e seu número é liberado para o Dashboard.</p>
+      </div>
+
+      <div id="std-card" class="std-card" style="margin-top:12px"></div>
     </section>
+
+    <!-- SHEET -->
+    <div class="sheet-backdrop" id="sheet-backdrop" aria-hidden="true"></div>
+    <aside class="sheet" id="sheet" aria-hidden="true" role="dialog" aria-modal="true">
+      <button type="button" class="sheet-close" id="sheet-close" data-close="sheet" aria-label="Fechar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6L18 18M18 6L6 18"/></svg>
+      </button>
+      <div class="sheet-body" id="sheet-body"></div>
+    </aside>
+
+    <!-- Diagnóstico -->
+    <div class="std-card" style="margin-top:16px">
+      <h3 style="margin-top:0">Diagnóstico</h3>
+      <div class="diag">
+        <div><strong>API</strong><span id="d-api">–</span></div>
+        <div><strong>Health</strong><span id="d-health">–</span></div>
+        <div><strong>Eventos</strong><span id="d-ev2">–</span></div>
+      </div>
+      <p class="subtle" style="margin:0">Se “API” ou “Health” ficarem off, confirme CORS no backend e o caminho do <code>app.js</code>.</p>
+    </div>
   </main>
 
-  <!-- Bottom Sheet -->
-  <div class="sheet" id="sheet">
-    <div class="backdrop" data-close></div>
-    <div class="panel">
-      <button class="close" data-close>✕ Fechar</button>
-
-      <div class="media"><img id="sImg" alt="" /></div>
-      <div class="h">
-        <h3 id="sTitle">Evento</h3>
-        <div class="price" id="sPrice">R$ —</div>
-      </div>
-      <div class="meta" id="sMeta">Cidade • Data • Local</div>
-      <div class="actions">
-        <a id="sBuy" class="btn btn--secondary" target="_blank" rel="noopener">Comprar no WhatsApp</a>
-        <a id="sView" class="btn btn--ghost" target="_blank" rel="noopener">Ver validador</a>
+  <!-- FOOTER -->
+  <footer role="contentinfo">
+    <div class="foot">
+      <div class="foot-block">
+        <div class="link-row" aria-label="Canais">
+          <a class="link-btn" href="mailto:contato@ingressai.chat" aria-label="Enviar e-mail">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M4 6l8 6 8-6"></path></svg>
+          </a>
+          <a class="link-btn" href="https://instagram.com/ingressai" target="_blank" rel="noopener noreferrer" aria-label="Abrir Instagram">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"></rect><circle cx="12" cy="12" r="5"></circle><circle cx="17" cy="7" r="1.2" fill="currentColor" stroke="none"></circle></svg>
+          </a>
+          <a class="link-btn" href="https://wa.me/5534999992747" target="_blank" rel="noopener noreferrer" aria-label="Falar no WhatsApp">
+            <svg viewBox="0 0 90 90" aria-hidden="true" focusable="false"><path d="M0.576 44.596C0.573 52.456 2.626 60.129 6.53 66.892L0.201 90l23.65-6.201c6.516 3.553 13.852 5.426 21.318 5.429h0.019c24.586 0 44.601-20.009 44.612-44.597 0.004 11.917-4.633-23.122-13.055-31.552C68.321 4.65 57.121 0.005 45.188 0 20.597 0 0.585 20.005 0.575 44.595m14.083 21.132l-0.883-1.402c-3.712-5.902-5.671-12.723-5.669-19.726C8.115 24.161 24.748 7.532 45.201 7.532c9.905 0.004 19.213 3.865 26.215 10.871 7.001 7.006 10.854 16.32 10.851 26.224-0.009 20.439-16.643 37.068-37.08 37.068h-0.015c-6.655-0.004-13.181-1.79-18.872-5.168l-1.355-0.803-14.035 3.68 4.956-13.937z" fill="currentColor"/><path d="M34.038 25.95c-0.835-1.856-1.714-1.894-2.508-1.926-0.65-0.028-1.394-0.026-2.136-0.026-0.744 0-1.951 0.279-2.972 1.394-1.022 1.116-3.902 3.812-3.902 9.296 0 5.485 3.995 10.784 4.551 11.529 0.558 0.743 7.712 12.357 19.041 16.825 9.416 3.713 11.333 2.975 13.376 2.789 2.044-0.186 6.595-2.696 7.524-5.299 0.929-2.603 0.929-4.834 0.651-5.299-0.279-0.465-1.022-0.744-2.137-1.301-1.115-0.558-6.595-3.254-7.617-3.626-1.022-0.372-1.765-0.557-2.509 0.559-0.743 1.115-2.878 3.625-3.528 4.368-0.65 0.745-1.301 0.838-2.415 0.28-1.115-0.559-4.705-1.735-8.964-5.532-3.314-2.955-5.551-6.603-6.201-7.719-0.65-1.115-0.069-1.718 0.489-2.274 0.501-0.499 1.115-1.301 1.673-1.952 0.556-0.651 0.742-1.116 1.113-1.859 0.372-0.744 0.186-1.395-0.093-1.953-0.805-1.58-2.971-7.092-3.962-9.296" fill="currentColor"/></svg>
+          </a>
+        </div>
+        <div class="legal" aria-label="Links">
+          <a href="./politica.html">Política de privacidade</a>
+          <a href="./termos.html">Termos de uso</a>
+          <a href="./excluir.html">Excluir meus dados</a>
+        </div>
+        <div class="foot-meta" aria-label="Informações">
+          <strong>IngressAI</strong><span>•</span><span>CNPJ 42.948.399/0001-87</span>
+        </div>
       </div>
     </div>
-  </div>
+  </footer>
 
-  <script src="./app.js" type="module"></script>
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"Organization","name":"IngressAI","url":"https://ingressai.chat/","logo":"https://ingressai.chat/logo_ingressai.png","sameAs":["https://instagram.com/ingressai"],"contactPoint":[{"@type":"ContactPoint","contactType":"customer support","areaServed":"BR","availableLanguage":"pt-BR"}]}
+  </script>
+
+  <!-- Wire do Validador: aponta pro backend, evitando CORS -->
+  <script>
+    requestAnimationFrame(() => {
+      try {
+        var base = (window.INGRESSAI_BASE || "").replace(/\/+$/,"");
+        if (!base) {
+          var meta = document.querySelector('meta[name="ingressai-api"]');
+          var api = (meta?.content || "").trim();
+          base = api ? api.replace(/\/api$/,"") : "";
+        }
+        var link = document.getElementById("org-validator");
+        if (link && base) link.href = base + "/app/validator.html";
+      } catch (e) {}
+    });
+  </script>
+
+  <!-- app -->
+  <script defer src="./app.js"></script>
 </body>
 </html>
+
