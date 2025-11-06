@@ -1,607 +1,402 @@
-/* app.js — IngressAI (frontend leve)
-   - vitrine, filtros, sheet
-   - planos fixos: 3% org + 4%/5% comprador (SEM toggle de repasse)
-   - máscara BRL, URL state, localStorage, skeletons
-   - diagnóstico de backend
-   - analytics mínimos
+/* app.js — IngressAI (landing)
+   - Vitrine com /api/events
+   - Sheet com mídia primeiro e deep-link WhatsApp (ingressai:start ev=<id>)
+   - Calculadora: 3% org + 4%/5% comprador, KPIs por ingresso e totais
+   - Fluxo “Criar evento” com stepper (POST /api/events se possível, fallback WhatsApp)
 */
 (() => {
   "use strict";
 
-  /* ================= Base / Config ================= */
+  /* ================= Base / Descoberta de API ================= */
   const qs = new URLSearchParams(location.search);
   const QS_API = (qs.get("api") || "").trim();
-  const META_API =
-    document.querySelector('meta[name="ingressai-api"]')?.content?.trim() || "";
+  const META_API = document.querySelector('meta[name="ingressai-api"]')?.content?.trim() || "";
+  const PUBLIC_WABA = "5534999992747"; // número público
+  const DEFAULT_LOGO = "https://ingressai.chat/logo_ingressai.png";
+  const PLACEHOLDER = "data:image/svg+xml;utf8," + encodeURIComponent(
+    `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 744'>
+      <defs>
+        <linearGradient id='g' x1='0' x2='0' y1='0' y2='1'>
+          <stop offset='0%' stop-color='#0e141a'/><stop offset='100%' stop-color='#0b0e12'/>
+        </linearGradient>
+      </defs>
+      <rect fill='url(#g)' width='1200' height='744'/>
+      <g fill='#2F7DD9' opacity='.55'>
+        <circle cx='150' cy='120' r='3'/><circle cx='300' cy='240' r='3'/><circle cx='900' cy='180' r='3'/>
+        <circle cx='1050' cy='360' r='3'/><circle cx='700' cy='520' r='3'/>
+      </g>
+    </svg>`
+  );
 
-  function normalizeApi(raw) {
+  function normalizeApi(raw){
     let s = String(raw || "").trim().replace(/\/+$/g, "");
     if (!/\/api$/i.test(s)) s += "/api";
     s = s.replace(/([^:])\/{2,}/g, "$1/");
     return s;
   }
+  const INGRESSAI_API = normalizeApi(QS_API || META_API || location.origin);
 
-  const INGRESSAI_API = window.INGRESSAI_API || normalizeApi(QS_API || META_API);
-  const INGRESSAI_BASE =
-    window.INGRESSAI_BASE || INGRESSAI_API.replace(/\/api$/i, "");
+  /* ================= Helpers ================= */
+  const $ = (sel, p=document) => p.querySelector(sel);
+  const $$ = (sel, p=document) => Array.from(p.querySelectorAll(sel));
+  const fmtBRL = (n) => (isFinite(n) ? n : 0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+  const money = (s) => Number(String(s||"").replace(/[^\d,.-]/g,"").replace(".","").replace(",",".")) || 0;
+  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+  const on = (el,ev,fn) => el && el.addEventListener(ev,fn);
 
-  window.INGRESSAI_API = INGRESSAI_API;
-  window.INGRESSAI_BASE = INGRESSAI_BASE;
-
-  const BOT_NUMBER = "5534999992747";
-  const PLACEHOLDER_IMG = "./logo_ingressai.png";
-
-  /* =============== Utils HTTP =============== */
-  async function getJSON(url, opts = {}) {
-    const r = await fetch(url, {
-      method: "GET",
-      credentials: "omit",
-      mode: "cors",
-      cache: "no-store",
-      ...opts,
-    });
-    if (!r.ok) throw new Error(`HTTP ${r.status} @ ${url}`);
-    const text = await r.text();
-    return text ? JSON.parse(text) : {};
+  function waHref(text){
+    const url = new URL(`https://wa.me/${PUBLIC_WABA}`);
+    url.searchParams.set("text", text);
+    return url.toString();
+  }
+  function waBuyDeep(evId, nameOpt){
+    // suporta “ingressai:start ev=<id> [name=...]”
+    const parts = [`ingressai:start`, `ev=${encodeURIComponent(evId)}`];
+    if (nameOpt) parts.push(`name=${encodeURIComponent(nameOpt)}`);
+    return waHref(parts.join(" "));
   }
 
-  async function postJSON(url, body = {}, opts = {}) {
-    const r = await fetch(url, {
-      method: "POST",
-      credentials: "omit",
-      mode: "cors",
-      headers: { "Content-Type": "application/json", ...(opts.headers || {}) },
-      body: JSON.stringify(body),
-      ...opts,
-    });
-    const text = await r.text();
-    const json = text ? JSON.parse(text) : {};
-    if (!r.ok) {
-      const msg = json?.error || json?.message || `HTTP ${r.status} @ ${url}`;
-      const err = new Error(msg);
-      err.response = json;
-      err.status = r.status;
-      throw err;
+  /* ================= Status / Healthcheck ================= */
+  async function health(){
+    const el = $("#status");
+    try{
+      const r = await fetch(`${INGRESSAI_API}/health`, { cache: "no-store" });
+      const j = await r.json();
+      el.textContent = j?.ok ? "online • " + (j?.brand || "IngressAI") : "offline";
+      const logo = j?.logo || DEFAULT_LOGO;
+      $("#logo").src = logo;
+    }catch{
+      el.textContent = "offline";
+      $("#logo").src = DEFAULT_LOGO;
     }
-    return json;
   }
 
-  /* =============== DOM helpers =============== */
-  const $ = (sel, root = document) => root.querySelector(sel);
-  const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
-  function el(tag, attrs = {}, children = []) {
-    const node = document.createElement(tag);
-    Object.entries(attrs).forEach(([k, v]) => {
-      if (v == null) return;
-      if (k === "class") node.className = v;
-      else if (k === "html") node.innerHTML = v;
-      else node.setAttribute(k, v);
-    });
-    (Array.isArray(children) ? children : [children]).forEach((c) => {
-      if (c == null) return;
-      node.appendChild(typeof c === "string" ? document.createTextNode(c) : c);
-    });
-    return node;
-  }
-
-  /* =============== Drawer =============== */
-  const drawer = $("#drawer");
-  const drawerBackdrop = $("#drawer-backdrop");
-  const btnDrawerOpen = $("#drawer-toggle");
-  const btnDrawerClose = $("#drawer-close");
-  const btnDrawerCreate = $("#drawer-create");
-
-  function openDrawer() {
-    if (!drawer) return;
-    drawer.classList.add("is-open");
-    drawerBackdrop.classList.add("is-open");
-    btnDrawerOpen?.setAttribute("aria-expanded", "true");
-    drawer.setAttribute("aria-hidden", "false");
-    drawerBackdrop.setAttribute("aria-hidden", "false");
-  }
-  function closeDrawer() {
-    if (!drawer) return;
-    drawer.classList.remove("is-open");
-    drawerBackdrop.classList.remove("is-open");
-    btnDrawerOpen?.setAttribute("aria-expanded", "false");
-    drawer.setAttribute("aria-hidden", "true");
-    drawerBackdrop.setAttribute("aria-hidden", "true");
-  }
-  btnDrawerOpen?.addEventListener("click", openDrawer);
-  btnDrawerClose?.addEventListener("click", closeDrawer);
-  drawerBackdrop?.addEventListener("click", closeDrawer);
-  btnDrawerCreate?.addEventListener("click", () => {
-    closeDrawer();
-    document.getElementById("organizadores")?.scrollIntoView({ behavior: "smooth", block: "start" });
-  });
-
-  /* =============== Header scroll effect =============== */
-  const header = $("header");
-  const toggleScrolled = () => {
-    if (!header) return;
-    if (window.scrollY > 4) header.classList.add("is-scrolled");
-    else header.classList.remove("is-scrolled");
-  };
-  window.addEventListener("scroll", toggleScrolled, { passive: true });
-  toggleScrolled();
-
-  /* =============== Vitrine: dados e render =============== */
-  const listaEl = $("#lista-eventos");
-  const filtroCidadesEl = $("#filtro-cidades");
-  const buscaEl = $("#busca-eventos");
-
-  let allEvents = [];
-  let activeCity = null;
-  let searchTerm = "";
-
-  async function fetchEventsSmart() {
-    const endpoints = [
-      "/events/vitrine",
-      "/events/public",
-      "/events",
-      "/events/seed",
-    ];
-    for (const p of endpoints) {
-      try {
-        const url = INGRESSAI_API + p;
-        const json = await getJSON(url);
-        const events =
-          json?.events ||
-          (Array.isArray(json) ? json : null) ||
-          json?.data?.events ||
-          json?.data ||
-          json?.items ||
-          json?.rows ||
-          [];
-        if (Array.isArray(events)) return events;
-      } catch (e) {
-        /* tenta próximo */
-      }
-    }
-    throw new Error("Nenhum endpoint de eventos respondeu.");
-  }
-
-  const cityFrom = (ev) =>
-    ev.city || ev.cidade || ev.location?.city || ev.venueCity || ev.placeCity || null;
-
-  const dateTextFrom = (ev) =>
-    ev.dateText || ev.eventDateText || ev.date || ev.startsAt || "";
-
-  const mediaFrom = (ev) =>
-    // preferir imagem normalizada pelo backend (Graph → /uploads/…)
-    ev.image || ev.coverUrl || ev.banner || ev.media?.[0] || ev.thumb || null;
-
-  function statusChip(ev) {
-    if (ev.soldOut) return ["sold", "Esgotado"];
-    if (ev.lowStock) return ["low", "Últimos ingressos"];
-    return ["soon", "Disponível"];
-  }
-
-  function imgNode(src) {
-    const img = document.createElement("img");
-    img.loading = "lazy";
-    img.alt = "Capa do evento";
-    img.src = src || PLACEHOLDER_IMG;
-    img.addEventListener("error", () => {
-      if (img.dataset.fbk) { img.src = PLACEHOLDER_IMG; return; }
-      img.dataset.fbk = "1";
-      img.src = PLACEHOLDER_IMG;
-    }, { once:true });
-    return img;
-  }
-
-  function renderEvents() {
-    if (!listaEl) return;
-    const q = (searchTerm || "").trim().toLowerCase();
-
-    const filtered = allEvents.filter((ev) => {
-      const city = (cityFrom(ev) || "").toLowerCase();
-      const title = (ev.title || ev.name || ev.eventTitle || "").toLowerCase();
-      const hitCity = !activeCity || city === activeCity.toLowerCase();
-      const hitSearch =
-        !q ||
-        title.includes(q) ||
-        city.includes(q) ||
-        (ev.venue || ev.local || "").toLowerCase().includes(q);
-      return hitCity && hitSearch;
-    });
-
-    listaEl.innerHTML = "";
-    if (!filtered.length) {
-      listaEl.appendChild(
-        el("div", { class: "std-card" }, [
-          el("strong", {}, "Nenhum evento encontrado"),
-          el("p", { class: "subtle" }, "Tente limpar filtros ou buscar outro termo."),
-        ])
-      );
-      return;
-    }
-
-    filtered.forEach((ev) => {
-      const city = cityFrom(ev);
-      const img = mediaFrom(ev);
-      const [k, label] = statusChip(ev);
-
-      const card = el("article", { class: "card", tabindex: "0", role: "button" }, [
-        el("div", { class: "card-header" }, [
-          el("div", {}, [
-            el("div", { class: "card-city" }, city || "—"),
-            el("div", { class: "card-title" }, ev.title || ev.name || ev.eventTitle || "Evento"),
-            el("div", { class: `status-line status--${k}` }, [
-              el("span", { class: "status-dot", "aria-hidden": "true" }),
-              el("span", {}, label),
-            ]),
-          ]),
-        ]),
-        el("div", { class: "card-media" }, img ? imgNode(img) : imgNode(null)),
-      ]);
-
-      card.addEventListener("click", () => openEventSheet(ev));
-      card.addEventListener("keyup", (e) => {
-        if (e.key === "Enter" || e.key === " ") openEventSheet(ev);
-      });
-      listaEl.appendChild(card);
-    });
-  }
-
-  function buildCityChips() {
-    if (!filtroCidadesEl) return;
-    const set = new Set();
-    allEvents.forEach((ev) => {
-      const c = cityFrom(ev);
-      if (c) set.add(String(c));
-    });
-
-    const cities = Array.from(set).sort((a, b) => a.localeCompare(b, "pt-BR"));
-    filtroCidadesEl.innerHTML = "";
-
-    const allChip = el(
-      "button",
-      {
-        class: "chip",
-        role: "tab",
-        "aria-selected": activeCity ? "false" : "true",
-      },
-      "Todas"
-    );
-    allChip.addEventListener("click", () => {
-      activeCity = null;
-      $$('[role="tab"]', filtroCidadesEl).forEach((n) =>
-        n.setAttribute("aria-selected", "false")
-      );
-      allChip.setAttribute("aria-selected", "true");
-      renderEvents();
-    });
-    filtroCidadesEl.appendChild(allChip);
-
-    cities.forEach((city) => {
-      const chip = el(
-        "button",
-        {
-          class: "chip",
-          role: "tab",
-          "aria-selected":
-            activeCity && activeCity.toLowerCase() === city.toLowerCase()
-              ? "true"
-              : "false",
-        },
-        city
-      );
-      chip.addEventListener("click", () => {
-        activeCity = city;
-        $$('[role="tab"]', filtroCidadesEl).forEach((n) =>
-          n.setAttribute("aria-selected", "false")
-        );
-        chip.setAttribute("aria-selected", "true");
-        renderEvents();
-      });
-      filtroCidadesEl.appendChild(chip);
-    });
-  }
-
-  function openEventSheet(ev) {
-    const sheet = $("#sheet");
-    const sheetBody = $("#sheet-body");
-    const sheetBackdrop = $("#sheet-backdrop");
-    if (!sheet || !sheetBody) return;
-    sheetBody.innerHTML = "";
-
-    const city = cityFrom(ev);
-    const dateText = dateTextFrom(ev);
-    const img = mediaFrom(ev);
-
-    const head = el("div", {}, [
-      el("h3", {}, ev.title || ev.name || ev.eventTitle || "Evento"),
-      el("div", { class: "status-chip soon", style: "margin-top:6px" }, [
-        el("span", { class: "dot" }),
-        el("span", {}, city || "—"),
-      ]),
-    ]);
-
-    const mediaNode = el("div", { class: "sheet-media" }, [
-      img ? imgNode(img) : imgNode(null),
-    ]);
-
-    // Deep-link: ingressai:start ev=<id> qty=1 autopay=1
-    const makeWaDeepLink = (ev) => {
-      const id = ev.id || ev.slug || "";
-      if (!id) return `https://wa.me/${BOT_NUMBER}`;
-      const txt = encodeURIComponent(`ingressai:start ev=${id} qty=1 autopay=1`);
-      return `https://wa.me/${BOT_NUMBER}?text=${txt}`;
-    };
-
-    const ctaHref =
-      ev.whatsappLink ||
-      ev.deepLink ||
-      makeWaDeepLink(ev);
-
-    const details = el("div", { class: "std-list" }, [
-      el("div", {}, `Quando: ${dateText || "—"}`),
-      el("div", {}, `Local: ${ev.venue || ev.local || city || "—"}`),
-    ]);
-
-    const actions = el("div", { style: "display:flex;gap:8px;margin-top:8px" }, [
-      el(
-        "a",
-        { class: "btn btn--secondary btn--sm", href: ctaHref, target: "_blank", rel: "noopener noreferrer" },
-        "Comprar no WhatsApp"
-      ),
-    ]);
-
-    sheetBody.appendChild(head);
-    sheetBody.appendChild(mediaNode);
-    sheetBody.appendChild(details);
-    sheetBody.appendChild(actions);
-
-    sheet.setAttribute("aria-hidden", "false");
-    sheet.classList.add("is-open");
-    sheetBackdrop.classList.add("is-open");
-  }
-
-  function closeSheet() {
-    const sheet = $("#sheet");
-    const sheetBackdrop = $("#sheet-backdrop");
-    if (!sheet) return;
-    sheet.classList.remove("is-open");
-    sheetBackdrop.classList.remove("is-open");
-    sheet.setAttribute("aria-hidden", "true");
-  }
-  $("#sheet-close")?.addEventListener("click", closeSheet);
-  $("#sheet-backdrop")?.addEventListener("click", closeSheet);
-  $("#busca-eventos")?.addEventListener("input", (e) => {
-    searchTerm = e.target.value || "";
+  /* ================= Vitrine ================= */
+  let events = [];
+  async function loadEvents(){
+    const grid = $("#grid");
+    grid.innerHTML = "";
+    const sk = (i)=>`
+      <div class="card" data-skel="1">
+        <div class="media"><img src="${PLACEHOLDER}" alt=""></div>
+        <div class="body">
+          <div class="title" style="opacity:.3">•••••• ••••••</div>
+          <div class="meta" style="opacity:.25">—</div>
+        </div>
+      </div>`;
+    grid.innerHTML = sk()+sk()+sk()+sk()+sk()+sk();
+    try{
+      const r = await fetch(`${INGRESSAI_API}/events`);
+      const j = await r.json();
+      events = Array.isArray(j?.items) ? j.items : (Array.isArray(j)? j : []);
+    }catch{ events = []; }
     renderEvents();
-  });
-
-  /* =============== Calculadora / Planos (SEM toggle) =============== */
-  const pillAtl = $("#pill-atl");
-  const pillProd = $("#pill-prod");
-  const priceEl = $("#calc-price"); // texto com máscara
-  const qtyNEl = $("#calc-qty-n");
-  const qtySlider = $("#calc-qty");
-  const feeOrgEl = $("#calc-fee-org");
-  const grossEl = $("#calc-gross");
-  const netEl = $("#calc-net");
-  const buyerEl = $("#calc-buyer");
-  const feeCaption = $("#fee-caption");
-
-  let plan = (localStorage.getItem("ia.plan") || qs.get("plan") || "atl").toLowerCase();
-  let priceCents = brlToCents(qs.get("price")) || 6000; // default R$ 60,00
-  let qty = clampInt(qs.get("qty") || localStorage.getItem("ia.qty") || "100", 0, 10000);
-
-  function clampInt(v, min, max){
-    const n = Math.max(min, Math.min(max, parseInt(v || "0", 10) || 0));
-    return n;
   }
 
-  function centsToBRL(c){ return (c/100).toLocaleString("pt-BR", { style:"currency", currency:"BRL" }); }
-  function brlToCents(raw){
-    if (raw == null) return 0;
-    const s = String(raw).replace(/[^\d,.-]/g,"").replace(/\./g,"").replace(",",".");
-    const n = Number(s);
-    return isFinite(n) ? Math.round(n * 100) : 0;
+  function matchCityTag(ev, tag){
+    if (!tag) return true;
+    if (tag === "Outra") return !["Uberaba","Uberlândia","Belo Horizonte"].includes(ev.city||"");
+    return (ev.city||"").toLowerCase() === tag.toLowerCase();
   }
-  function maskBRLInput(el){
-    const v = el.value;
-    const cents = brlToCents(v);
-    el.value = centsToBRL(cents);
-    return cents;
-  }
+  function renderEvents(){
+    const grid = $("#grid");
+    const q = $("#q").value.trim().toLowerCase();
+    const tag = $(".chip.active")?.getAttribute("data-city") || "";
+    const list = events.filter(ev => {
+      const txt = `${ev.title||""} ${ev.city||""} ${ev.venue||""}`.toLowerCase();
+      return matchCityTag(ev, tag) && (!q || txt.includes(q));
+    });
 
-  function feesForPlan(){
-    return { orgPct: 0.03, buyerPct: (plan === "prod" ? 0.05 : 0.04) };
-  }
-
-  function updateFeeCaption(){
-    feeCaption.textContent = plan === "prod"
-      ? "Organizador paga 3% por ingresso • Comprador vê +5% (preço exibido já inclui a taxa)"
-      : "Organizador paga 3% por ingresso • Comprador vê +4% (preço exibido já inclui a taxa)";
-  }
-
-  function recalc(){
-    const { orgPct, buyerPct } = feesForPlan();
-
-    const unitOrgFeeCents = Math.round(priceCents * orgPct); // 3% sempre
-    const buyerFeeCents = Math.round(priceCents * buyerPct); // SEM toggle → sempre aplicado ao comprador
-
-    const buyerPriceCents = priceCents + buyerFeeCents;
-    const grossCents = priceCents * qty; // base * qtd (sem taxas)
-    const totalOrgFeesCents = unitOrgFeeCents * qty;
-    const netCents = Math.max(0, (priceCents - unitOrgFeeCents) * qty);
-
-    feeOrgEl.textContent = `${centsToBRL(unitOrgFeeCents)} / ingresso`;
-    buyerEl.textContent = centsToBRL(buyerPriceCents);
-    grossEl.textContent = centsToBRL(grossCents);
-    netEl.textContent = centsToBRL(netCents);
-  }
-
-  function selectPlan(next){
-    plan = next;
-    pillAtl?.setAttribute("aria-checked", next === "atl" ? "true" : "false");
-    pillAtl?.setAttribute("aria-selected", next === "atl" ? "true" : "false");
-    pillProd?.setAttribute("aria-checked", next === "prod" ? "true" : "false");
-    pillProd?.setAttribute("aria-selected", next === "prod" ? "true" : "false");
-    localStorage.setItem("ia.plan", plan);
-    pushState();
-    console.log("[analytics] plan_change", plan);
-    updateFeeCaption();
-    recalc();
-  }
-
-  // Persist + URL
-  function pushState(){
-    const params = new URLSearchParams(location.search);
-    params.set("plan", plan);
-    params.set("price", (priceCents/100).toFixed(2));
-    params.set("qty", String(qty));
-    const newUrl = `${location.pathname}?${params.toString()}${location.hash || ""}`;
-    history.replaceState(null, "", newUrl);
-    localStorage.setItem("ia.qty", String(qty));
-  }
-
-  // UI events
-  pillAtl?.addEventListener("click", () => selectPlan("atl"));
-  pillProd?.addEventListener("click", () => selectPlan("prod"));
-  priceEl?.addEventListener("input", (e) => {
-    priceCents = maskBRLInput(e.target);
-    pushState();
-    recalc();
-  });
-  priceEl?.addEventListener("blur", (e) => {
-    // arredondamento “bonito”: se terminar em .00 → tenta .90; se > .90 → .99
-    let c = brlToCents(e.target.value);
-    const mod = c % 100;
-    if (mod === 0 && c >= 1000) c = c - 10;            // .00 → .90
-    else if (mod >= 90 && mod < 99) c = c + (99 - mod); // ~.90 → .99
-    priceCents = Math.max(0, c);
-    e.target.value = centsToBRL(priceCents);
-    pushState();
-    recalc();
-  });
-  $("#calc-qty-n")?.addEventListener("input", (e) => {
-    const v = clampInt(e.target.value, 0, 10000);
-    e.target.value = String(v);
-    qty = v;
-    if (qtySlider) qtySlider.value = String(Math.min(1000, v));
-    pushState();
-    recalc();
-  });
-  $("#calc-qty")?.addEventListener("input", (e) => {
-    const v = clampInt(e.target.value, 0, 1000);
-    if (qtyNEl) qtyNEl.value = String(v);
-    qty = v;
-    pushState();
-    recalc();
-  });
-
-  /* =============== Solicitação de criação (org) =============== */
-  const reqForm = $("#req-form");
-  const reqBtn = $("#req-send");
-  const reqHint = $("#req-hint");
-
-  async function submitOrgRequest() {
-    if (!reqForm) return;
-    const phone = ($("#req-phone")?.value || "").replace(/\D+/g, "");
-    const title = $("#req-title")?.value?.trim() || "";
-    const city = $("#req-city")?.value?.trim() || "";
-    const venue = $("#req-venue")?.value?.trim() || "";
-    const date = $("#req-date")?.value?.trim() || "";
-    const cat =
-      (reqForm.querySelector('input[name="req-cat"]:checked')?.value || "atl").toLowerCase();
-
-    if (!phone || !title || !city) {
-      if (reqHint) reqHint.textContent = "Preencha WhatsApp, nome e cidade.";
+    grid.innerHTML = "";
+    if (!list.length){
+      grid.innerHTML = `<div class="panelCard" style="grid-column:1/-1">
+        Nenhum evento encontrado. Tente limpar filtros.
+      </div>`;
       return;
     }
-
-    reqBtn?.setAttribute("disabled", "true");
-    if (reqHint) reqHint.textContent = "Enviando…";
-
-    try {
-      const payload = { phone, title, city, venue, date, cat };
-      const res = await postJSON(INGRESSAI_API + "/org/request", payload);
-      if (res?.ok) {
-        if (reqHint) reqHint.textContent = "Solicitação enviada. Você receberá o passo a passo no WhatsApp.";
-        reqForm.reset();
-        console.log("[analytics] org_request_sent", payload);
-      } else {
-        if (reqHint) reqHint.textContent = "Não foi possível enviar agora.";
-      }
-    } catch (e) {
-      if (reqHint) reqHint.textContent = "Falha ao enviar. Tente novamente.";
-      console.error(e);
-    } finally {
-      reqBtn?.removeAttribute("disabled");
-      setTimeout(() => reqHint && (reqHint.textContent = ""), 4500);
+    for (const ev of list){
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <div class="media"><img alt=""></div>
+        <div class="body">
+          <div class="title">${ev.title||"—"}</div>
+          <div class="meta">${(ev.city||"—")} • ${fmtDateTime(ev.date)}</div>
+        </div>
+      `;
+      const img = $("img", card);
+      const src = (ev.imageUrl || ev.image || ev.cover || "").trim();
+      img.src = src || PLACEHOLDER;
+      img.onerror = () => (img.src = PLACEHOLDER);
+      on(card, "click", () => openSheet(ev));
+      grid.appendChild(card);
     }
   }
 
-  reqBtn?.addEventListener("click", submitOrgRequest);
-
-  /* =============== Diagnóstico =============== */
-  const dApi = $("#d-api");
-  const dHealth = $("#d-health");
-  const dEv = $("#d-ev2");
-  const authIndicator = $("#auth-indicator");
-  const orgValidatorBtn = $("#org-validator");
-
-  function setDiag(el, ok, extra) {
-    if (!el) return;
-    el.textContent = ok ? (extra || "on") : (extra || "off");
-    el.style.color = ok ? "#157f3b" : "#b64848";
+  function fmtDateTime(v){
+    try{
+      const d = new Date(v);
+      if (!isFinite(+d)) return "data a confirmar";
+      return d.toLocaleString("pt-BR",{weekday:"short", day:"2-digit", month:"short", hour:"2-digit", minute:"2-digit"});
+    }catch{ return "data a confirmar"; }
   }
 
-  async function runDiagnostics() {
-    setDiag(dApi, !!INGRESSAI_API, INGRESSAI_API || "off");
+  /* ================= Sheet ================= */
+  const sheet = $("#sheet");
+  const sheetImg = $("#sheetImg");
+  const sheetTitle = $("#sheetTitle");
+  const sheetMeta = $("#sheetMeta");
+  const sheetClose = $("#sheetClose");
+  const buyBtn = $("#buyBtn");
+  const shareBtn = $("#shareBtn");
+  let sheetEv = null;
 
-    try {
-      let j;
-      try {
-        j = await getJSON(INGRESSAI_API + "/health");
-      } catch {
-        j = await getJSON(INGRESSAI_BASE + "/health");
-      }
-      setDiag(dHealth, !!j?.ok, j?.ok ? "on" : "off");
-      authIndicator?.classList.remove("off", "on");
-      authIndicator?.classList.add(j?.ok ? "on" : "off");
-      if (authIndicator) authIndicator.textContent = j?.ok ? "online" : "offline";
-    } catch (e) {
-      setDiag(dHealth, false);
-      authIndicator?.classList.remove("off", "on");
-      authIndicator?.classList.add("off");
-      if (authIndicator) authIndicator.textContent = "offline";
+  function openSheet(ev){
+    sheetEv = ev;
+    sheetImg.src = (ev.imageUrl || ev.image || "").trim() || PLACEHOLDER;
+    sheetImg.onerror = () => (sheetImg.src = PLACEHOLDER);
+    sheetTitle.textContent = ev.title || "—";
+    sheetMeta.textContent = `${ev.city || "—"} • ${fmtDateTime(ev.date)} • ${fmtBRL(Number(ev.price||0))}`;
+    sheet.classList.add("open");
+  }
+  on(sheetClose, "click", () => sheet.classList.remove("open"));
+  on(sheet, "click", (e) => { if (e.target === sheet) sheet.classList.remove("open"); });
+
+  on(buyBtn, "click", () => {
+    if (!sheetEv) return;
+    const url = waBuyDeep(sheetEv.id || sheetEv.slug || sheetEv.eventId || "", "");
+    window.open(url, "_blank", "noopener");
+  });
+  on(shareBtn, "click", async () => {
+    if (!sheetEv) return;
+    const text =
+      `IngressAI • ${sheetEv.title}\n${sheetEv.city||""} • ${fmtDateTime(sheetEv.date)}\n`+
+      `Comprar no WhatsApp: ${waBuyDeep(sheetEv.id||"", "")}`;
+    if (navigator.share) {
+      try { await navigator.share({ text }); } catch {}
+    } else {
+      await navigator.clipboard.writeText(text).catch(()=>{});
+      alert("Link copiado!");
     }
+  });
 
-    try {
-      allEvents = await fetchEventsSmart();
-      setDiag(dEv, true, `${allEvents.length} evt`);
-      buildCityChips();
+  /* ================= Calculadora (3% org + 4/5% comprador) ================= */
+  const $cat = $("#cat");
+  const $price = $("#price");
+  const $qty = $("#qty");
+  const kFeeBuyer = $("#k_fee_buyer");
+  const kFeeOrg = $("#k_fee_org");
+  const kNet = $("#k_net");
+  const kGross = $("#k_gross");
+
+  function calc(){
+    const isProd = $cat.value === "prod"; // 5%
+    const buyerRate = isProd ? 0.05 : 0.04;
+    const orgRate = 0.03;
+
+    const p = money($price.value);
+    const q = Math.max(1, Math.floor(Number($qty.value||1)));
+    $qty.value = String(q);
+
+    const buyerFeeUnit = p * buyerRate;
+    const orgFeeUnit = p * orgRate;
+    const netUnit = p - orgFeeUnit;            // líquido para org por ingresso
+    const grossUnit = p + buyerFeeUnit;        // total cobrado do comprador (p + taxa dele)
+
+    const buyerFeeTot = buyerFeeUnit * q;
+    const orgFeeTot = orgFeeUnit * q;
+    const netTot = netUnit * q;
+    const grossTot = grossUnit * q;
+
+    kFeeBuyer.textContent = `${fmtBRL(buyerFeeUnit)} por ingresso • ${fmtBRL(buyerFeeTot)} total`;
+    kFeeOrg.textContent = `${fmtBRL(orgFeeUnit)} por ingresso • ${fmtBRL(orgFeeTot)} total`;
+    kNet.textContent = `${fmtBRL(netUnit)} por ingresso • ${fmtBRL(netTot)} total`;
+    kGross.textContent = `${fmtBRL(grossUnit)} por ingresso • ${fmtBRL(grossTot)} total`;
+  }
+  ["input","change","blur"].forEach(ev=>{
+    on($price, ev, calc); on($qty, ev, calc); on($cat, ev, calc);
+  });
+
+  on($("#copyPlan"), "click", async () => {
+    const isProd = $cat.value === "prod";
+    const buyerRate = isProd ? "5%" : "4%";
+    const p = money($price.value);
+    const q = Math.max(1, Math.floor(Number($qty.value||1)));
+    const txt =
+`Plano IngressAI
+• Preço de capa: ${fmtBRL(p)}
+• Taxa do comprador: ${buyerRate}
+• Taxa do organizador: 3% (fixo)
+• Quantidade: ${q}
+
+KPIs:
+• Taxa do comprador (unitária/total): ${$("#k_fee_buyer").textContent}
+• Taxa do organizador (unitária/total): ${$("#k_fee_org").textContent}
+• Líquido ao organizador (unitário/total): ${$("#k_net").textContent}
+• Total cobrado ao comprador (unitário/total): ${$("#k_gross").textContent}
+`;
+    try{ await navigator.clipboard.writeText(txt); alert("Resumo copiado!"); }catch{ alert("Não consegui copiar. :/"); }
+  });
+
+  /* ================= Criar Evento (UX guiada, fallback WhatsApp) ================= */
+  const stepDots = $("#stepDots").children;
+  const stepWrap = $("#stepWrap");
+  const steps = [
+    renderStep1, renderStep2, renderStep3, renderStep4, renderStep5
+  ];
+  let st = { step:0, title:"", city:"", dateISO:"", price:0, venue:"" };
+
+  function markStep(n){
+    Array.from(stepDots).forEach((d,i)=>d.classList.toggle("on", i<=n));
+  }
+  function renderStep1(){
+    stepWrap.innerHTML = `
+      <label>Título do evento</label>
+      <input id="ev_title" maxlength="80" placeholder="Ex.: Tech Thursday" value="${st.title}"/>
+      <div class="hr"></div>
+      <div class="inline">
+        <button class="btn" id="next1">Continuar</button>
+        <span class="hint">Se preferir, você pode fazer tudo pelo WhatsApp depois.</span>
+      </div>`;
+    on($("#next1"), "click", ()=>{
+      const v = $("#ev_title").value.trim();
+      if (!v) { alert("Manda um título estiloso 🙂"); return; }
+      st.title = v; st.step=1; markStep(st.step); renderStep2();
+    });
+  }
+  function renderStep2(){
+    stepWrap.innerHTML = `
+      <label>Cidade</label>
+      <div class="row">
+        <select id="ev_city">
+          <option value="">Selecione…</option>
+          <option>Uberaba</option><option>Uberlândia</option><option>Belo Horizonte</option>
+          <option>Outra</option>
+        </select>
+        <input id="ev_city_custom" placeholder="Se ‘Outra’, escreva aqui" />
+      </div>
+      <div class="hr"></div>
+      <div class="inline">
+        <button class="btn secondary" id="back">Voltar</button>
+        <button class="btn" id="next2">Continuar</button>
+      </div>`;
+    $("#ev_city").value = st.city && ["Uberaba","Uberlândia","Belo Horizonte"].includes(st.city)? st.city : "";
+    $("#ev_city_custom").value = st.city && !["Uberaba","Uberlândia","Belo Horizonte"].includes(st.city)? st.city : "";
+    on($("#back"),"click",()=>{ st.step=0; markStep(st.step); renderStep1(); });
+    on($("#next2"),"click",()=>{
+      const sel = $("#ev_city").value.trim();
+      const custom = $("#ev_city_custom").value.trim();
+      const city = sel || custom;
+      if (!city){ alert("Qual a cidade?"); return; }
+      st.city = city; st.step=2; markStep(st.step); renderStep3();
+    });
+  }
+  function renderStep3(){
+    stepWrap.innerHTML = `
+      <label>Data e hora</label>
+      <div class="row">
+        <input id="ev_date" type="date"/>
+        <input id="ev_time" type="time"/>
+      </div>
+      <div class="hr"></div>
+      <div class="inline">
+        <button class="btn secondary" id="back">Voltar</button>
+        <button class="btn" id="next3">Continuar</button>
+      </div>`;
+    on($("#back"),"click",()=>{ st.step=1; markStep(st.step); renderStep2(); });
+    on($("#next3"),"click",()=>{
+      const d = $("#ev_date").value; const t = $("#ev_time").value || "21:00";
+      if(!d){ alert("Manda uma data 😉"); return; }
+      const iso = new Date(`${d}T${t}:00-03:00`).toISOString();
+      st.dateISO = iso; st.step=3; markStep(st.step); renderStep4();
+    });
+  }
+  function renderStep4(){
+    stepWrap.innerHTML = `
+      <label>Preço (R$)</label>
+      <input id="ev_price" inputmode="decimal" placeholder="60,00" value="${st.price? String(st.price).replace('.',',') : ''}"/>
+      <div class="hr"></div>
+      <div class="inline">
+        <button class="btn secondary" id="back">Voltar</button>
+        <button class="btn" id="next4">Continuar</button>
+      </div>`;
+    on($("#back"),"click",()=>{ st.step=2; markStep(st.step); renderStep3(); });
+    on($("#next4"),"click",()=>{
+      const p = money($("#ev_price").value);
+      if (p<0){ alert("Preço inválido"); return; }
+      st.price = p; st.step=4; markStep(st.step); renderStep5();
+    });
+  }
+  function renderStep5(){
+    stepWrap.innerHTML = `
+      <label>Local / Estabelecimento</label>
+      <input id="ev_venue" maxlength="120" placeholder="Ex.: Boiler Club, Centro" value="${st.venue}"/>
+      <div class="hr"></div>
+      <div class="inline">
+        <button class="btn secondary" id="back">Voltar</button>
+        <button class="btn" id="finish">Finalizar</button>
+        <button class="btn secondary" id="whatsapp">Fazer pelo WhatsApp</button>
+      </div>
+      <div class="hint">Tentamos criar o <b>rascunho</b> via API. Se não estiver autorizado, abrimos o WhatsApp com instruções.</div>
+    `;
+    on($("#back"),"click",()=>{ st.step=3; markStep(st.step); renderStep4(); });
+    on($("#whatsapp"),"click",()=>fallbackWhatsApp());
+    on($("#finish"),"click",()=>finishCreate());
+  }
+
+  async function finishCreate(){
+    st.venue = $("#ev_venue").value.trim();
+    if(!st.venue){ alert("Qual o local do evento?"); return; }
+    // Tenta criar via API (opcional). Mantém 100% compat: se 401/403/falhar, cai no WhatsApp.
+    try{
+      const r = await fetch(`${INGRESSAI_API}/events`,{
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({
+          title: st.title, city: st.city, date: st.dateISO, price: st.price, venue: st.venue, status:"draft"
+        })
+      });
+      if(!r.ok) throw new Error("api_denied");
+      const j = await r.json().catch(()=>null);
+      if (!j || !(j.id || j.eventId)) throw new Error("bad_payload");
+      alert("Rascunho criado! Publique pelo WhatsApp ou painel.");
+    }catch{
+      await fallbackWhatsApp();
+    }
+  }
+
+  async function fallbackWhatsApp(){
+    // Mensagem pronta para “Sou organizador” no bot
+    const summary =
+`Quero criar um evento (rascunho):
+• Título: ${st.title}
+• Cidade: ${st.city}
+• Data: ${new Date(st.dateISO).toLocaleString("pt-BR")}
+• Preço: ${fmtBRL(st.price)}
+• Local: ${st.venue}`;
+    const url = waHref(`menu\n\n${summary}`);
+    window.open(url,"_blank","noopener");
+  }
+
+  /* ================= Filtros / Busca / Reload ================= */
+  $$(".chip").forEach(ch=>{
+    on(ch, "click", ()=>{
+      $$(".chip").forEach(x=>x.classList.remove("active"));
+      ch.classList.add("active");
       renderEvents();
-    } catch (e) {
-      setDiag(dEv, false, "—");
-      console.error(e);
-    }
+    });
+  });
+  on($("#q"), "input", renderEvents);
+  on($("#reload"), "click", loadEvents);
 
-    try {
-      const url = INGRESSAI_BASE.replace(/\/+$/, "") + "/app/validator.html";
-      const r = await fetch(url, { method: "HEAD", cache: "no-store" });
-      const ok = r.ok || r.status === 200;
-      if (ok && orgValidatorBtn && (!orgValidatorBtn.href || orgValidatorBtn.getAttribute("href") === "#")) {
-        orgValidatorBtn.href = url;
-      }
-    } catch {/* noop */}
-  }
-
-  window.addEventListener("DOMContentLoaded", () => {
-    // estado inicial da calculadora
-    priceEl.value = centsToBRL(priceCents);
-    $("#calc-qty-n").value = String(qty);
-    $("#calc-qty").value = String(Math.min(1000, qty));
-    selectPlan(plan);
-    updateFeeCaption();
-    recalc();
-
-    // run
-    runDiagnostics().catch((e) => console.error(e));
+  /* ================= Boot ================= */
+  on(window, "DOMContentLoaded", async ()=>{
+    $("#year").textContent = new Date().getFullYear();
+    calc();
+    renderStep1(); markStep(0);
+    await health();
+    await loadEvents();
+    // Refresh leve de saúde a cada 60s
+    setInterval(health, 60000);
   });
 })();
