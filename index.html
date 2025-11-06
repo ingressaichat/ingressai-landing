@@ -27,43 +27,40 @@
 
   <style>
     :root{
+      /* Escala áurea */
       --phi:1.618;
-      --s0:8px;
-      --s1:calc(var(--s0)*var(--phi));
-      --s2:calc(var(--s1)*var(--phi));
-      --s3:calc(var(--s2)*var(--phi));
-      --s4:calc(var(--s3)*var(--phi));
+      --s-2:4px;
+      --s-1:8px;
+      --s0:12px;
+      --s1:calc(var(--s0)*var(--phi));      /* ~19px */
+      --s2:calc(var(--s1)*var(--phi));      /* ~31px */
+      --s3:calc(var(--s2)*var(--phi));      /* ~50px */
+      --s4:calc(var(--s3)*var(--phi));      /* ~81px */
+
       --fs-0:1rem;
       --fs--1:calc(var(--fs-0)/var(--phi));
-      --lh:1.45;
-      --lh-compact:1.22;
-      --ink:#0b1220;
-      --muted:#5b6b86;
-      --bg:#f6f8fc;
-      --card:#ffffff;
-      --blue-2:#2F7DD9;
-      --blue-soft:#eaf3ff;
+      --fs-1:calc(var(--fs-0)*var(--phi));
+      --fs-2:calc(var(--fs-1)*var(--phi));
+      --lh:1.45;--lh-compact:1.22;
+
+      --ink:#0b1220;--muted:#5b6b86;--bg:#f6f8fc;--card:#ffffff;
+      --blue-2:#2F7DD9;--blue-soft:#eaf3ff;
       --shadow:0 10px 28px rgba(47,125,217,.14),0 2px 6px rgba(11,18,32,.08);
       --shadow-soft:0 6px 18px rgba(47,125,217,.12);
       --ring:0 0 0 2px rgba(74,147,240,.18);
+
       --container-max:calc(680px*var(--phi));
-      --btn-h:52px;
-      --radius-pill:999px;
-      --t-fast:.18s;
-      --t-med:.28s;
-      --ok:#157f3b;
-      --ok-bg:#e9f7ec;
-      --ok-bd:#cfe8d7;
-      --warn:#b64848;
-      --warn-bg:#fff7f7;
-      --warn-bd:#ffdede;
-      --radius-lg:20px;
+      --btn-h:52px;--radius-pill:999px;--t-fast:.18s;--t-med:.28s;
+
+      --ok:#157f3b;--ok-bg:#e9f7ec;--ok-bd:#cfe8d7;
+      --warn:#b64848;--warn-bg:#fff7f7;--warn-bd:#ffdede;
     }
     *{box-sizing:border-box}
     html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font:16px/var(--lh) -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Ubuntu,Inter,system-ui,sans-serif}
     a{color:inherit;text-decoration:none}
     :focus-visible{outline:none;box-shadow:var(--ring)}
-    .container{max-width:var(--container-max);margin:0 auto;padding:0 var(--s3)}
+    .container{max-width:var(--container-max);margin:0 auto;padding:0 var(--s2)}
+    @media(min-width:420px){.container{padding:0 var(--s3)}}
     .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
     .subtle{color:var(--muted)}
     :where(section,[id]){scroll-margin-top:96px}
@@ -92,7 +89,8 @@
     .tag.on{background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-bd)}
     .tag.off{background:#fff4f4;color:#b64848;border:1px solid #ffdede}
 
-    .hero{padding:var(--s4) 0;transition:opacity var(--t-fast) linear,transform var(--t-fast) linear}
+    .hero{padding:var(--s4) 0;opacity:calc(1 - var(--hero-p,0));transform:translateY(calc(-6px * var(--hero-p,0)));transition:opacity var(--t-fast) linear,transform var(--t-fast) linear}
+    .hero.is-hidden{opacity:0;height:0;padding:0;margin:0;overflow:hidden}
     .hero h1{font-size:clamp(calc(1.25rem*var(--phi)),6.2vw,calc(1.25rem*var(--phi)*var(--phi)));line-height:var(--lh-compact);margin:0 0 var(--s2) 0;font-weight:850;text-align:center}
     .hero-brand{display:grid;gap:var(--s1);place-items:center;margin-bottom:var(--s2)}
     .badges{display:flex;gap:calc(var(--s1)*1.4);align-items:center;justify-content:center;flex-wrap:wrap;margin-top:6px}
@@ -166,28 +164,27 @@
 
     .std-card{background:#fff;border:1px solid #e5ecff;border-radius:calc(var(--s2));padding:var(--s2);box-shadow:var(--shadow-soft)}
 
-    /* ---- Calculadora / Planos ---- */
+    /* ---- Calculadora / Planos (Mobile First) ---- */
     .plan-calc{display:grid;gap:var(--s1)}
-    .calc-title{font-weight:800;font-size:1.02rem;margin-bottom:.25rem;display:flex;align-items:center;gap:.5rem}
-    .calc-sub{color:var(--muted);font-size:.85rem;margin-bottom:.75rem}
-    .calc-field{display:flex;flex-direction:column;gap:.4rem;margin-bottom:var(--s1)}
-    .calc-input-row{display:flex;gap:.5rem;align-items:center}
-    .calc-input-row input.input{flex:1}
-    .calc-slider{width:100%;appearance:none;height:6px;border-radius:999px;background:linear-gradient(90deg,rgba(47,125,217,.8),rgba(47,125,217,.15));outline:none}
-    .calc-slider::-webkit-slider-thumb{appearance:none;width:20px;height:20px;border-radius:50%;background:#fff;border:2px solid rgba(47,125,217,.9);box-shadow:0 8px 16px rgba(47,125,217,.34);cursor:pointer}
-    .calc-kpis{display:grid;gap:var(--s1);grid-template-columns:1fr 1fr}
-    @media(min-width:760px){
-      .calc-kpis{grid-template-columns:repeat(4,minmax(0,1fr))}
-    }
-    .kpi{background:var(--card);border:1px solid #e5ecff;border-radius:12px;padding:10px 10px 12px;min-height:85px;display:flex;flex-direction:column;gap:4px}
-    .kpi small{color:#5f6c84;font-size:.74rem}
-    .kpi .val{font-weight:900;font-size:1.04rem}
-    .kpi .num-animated{transition:transform .12s ease-out}
-    .inline-tip{display:flex;gap:6px;align-items:flex-start;font-size:.85rem;color:#415577}
-    .inline-tip .i{width:18px;height:18px;border-radius:50%;display:grid;place-items:center;border:1px solid #cfe3ff;color:#1B5FB3;font-weight:900;font-size:.66rem;flex:0 0 18px}
+    .calc-grid{display:grid;gap:var(--s1)}
+    .calc-row{display:grid;gap:8px}
+    @media(min-width:560px){.calc-row{grid-template-columns:1fr auto;align-items:end}}
+    .input{width:100%;border:1px solid #e5ecff;border-radius:10px;padding:.8rem 1rem;font:inherit}
+    .range-box{display:grid;grid-template-columns:1fr;gap:8px}
+    .num{font-variant-numeric:tabular-nums}
+    .kpis{display:grid;gap:8px;grid-template-columns:repeat(2,minmax(0,1fr))}
+    @media(min-width:680px){.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}}
+    .kpi{background:var(--card);border:1px solid #e5ecff;border-radius:12px;padding:10px}
+    .kpi strong{display:block;font-size:.86rem;color:#445570}
+    .kpi .val{font-weight:900;font-size:1.08rem}
 
-    .buyer-block{display:flex;flex-direction:column;gap:4px}
-    .buyer-pill{display:flex;justify-content:space-between;align-items:center;background:rgba(47,125,217,.05);border:1px solid rgba(47,125,217,.12);border-radius:12px;padding:4px 8px;font-size:.8rem}
+    .tip{display:inline-flex;align-items:center;gap:6px;font-size:.9rem;color:#415577}
+    .tip .i{width:18px;height:18px;border-radius:50%;display:grid;place-items:center;border:1px solid #cfe3ff;color:#1B5FB3;font-weight:900}
+
+    /* --- Form chips --- */
+    .chip-group{display:flex;gap:8px;flex-wrap:wrap}
+    .chip-opt{appearance:none;border:1px solid #e5ecff;background:#fff;border-radius:999px;padding:.6rem .95rem;font-weight:800;color:#415577;cursor:pointer}
+    .chip-opt[aria-checked="true"]{background:var(--blue-2);color:#fff;border-color:rgba(27,95,179,.35);box-shadow:0 6px 14px rgba(47,125,217,.25)}
 
     footer{background:#fff;border-top:1px solid #e7eefb;margin-top:var(--s4)}
     .foot{max-width:var(--container-max);margin:0 auto;padding:var(--s3) var(--s3)}
@@ -368,89 +365,83 @@
         </div>
       </div>
 
-      <!-- Calculadora (repaginada, mobile-first) -->
+      <!-- Calculadora (3% organizador + emissão manual 1,5%) -->
       <div class="std-card" id="calc-card">
         <div class="plan-calc">
-          <div>
-            <div class="calc-title">Simulador de receita</div>
-            <div class="calc-sub">Organizador paga <strong>3%</strong> no bot. Emissão manual custa <strong>1,5%</strong> por ingresso.</div>
-          </div>
-
-          <!-- Preço -->
-          <div class="calc-field">
-            <label for="calc-price" class="calc-title" style="margin-bottom:.2rem">Preço base do ingresso</label>
-            <div class="calc-input-row">
-              <input id="calc-price" class="input" type="text" inputmode="decimal" placeholder="R$ 60,00" value="R$ 60,00" aria-describedby="calc-price-hint" />
-            </div>
-            <input id="calc-price-range" class="calc-slider" type="range" min="1000" max="20000" step="100" value="6000" aria-label="Selecionar preço do ingresso" />
-            <small id="calc-price-hint" class="subtle">Arraste para ajustar rapidamente. Você pode digitar também.</small>
-          </div>
-
-          <!-- Quantidade -->
-          <div class="calc-field">
-            <label for="calc-qty-n" class="calc-title" style="margin-bottom:.2rem">Quantidade de ingressos</label>
-            <div class="calc-input-row">
-              <input id="calc-qty-n" class="input" type="number" min="0" max="10000" step="1" value="100" />
-            </div>
-            <input id="calc-qty" class="calc-slider" type="range" min="0" max="1000" step="1" value="100" aria-label="Selecionar quantidade de ingressos" />
-          </div>
-
-          <!-- KPIs -->
-          <div class="calc-kpis" aria-label="Resumo da simulação">
-            <div class="kpi">
-              <small>Taxa do organizador (3%)</small>
-              <div class="val num-animated" id="calc-fee-org">R$ 0,00</div>
-              <small style="color:#99a6bb">cobrada no bot</small>
-            </div>
-            <div class="kpi">
-              <small>Receita do organizador</small>
-              <div class="val num-animated" id="calc-net">R$ 0,00</div>
-              <small>já descontado 3%</small>
-            </div>
-            <div class="kpi">
-              <small>Bruto total</small>
-              <div class="val num-animated" id="calc-gross">R$ 0,00</div>
-              <small>base × qtd</small>
-            </div>
-            <div class="kpi">
-              <small>Preço para o comprador</small>
-              <div class="buyer-block">
-                <div class="buyer-pill">Atléticas (+4%) <b id="calc-buyer-4">R$ 0,00</b></div>
-                <div class="buyer-pill">Produtoras (+5%) <b id="calc-buyer-5">R$ 0,00</b></div>
+          <div class="calc-grid">
+            <!-- Linha preço + qtd (mobile-first empilhado) -->
+            <div class="calc-row">
+              <div>
+                <label for="calc-price"><strong>Preço base do ingresso</strong></label>
+                <input id="calc-price" class="input" type="text" inputmode="decimal" placeholder="R$ 60,00" value="R$ 60,00" />
+                <div class="range-box" style="margin-top:6px">
+                  <input id="calc-price-range" type="range" min="5" max="500" step="1" value="60" aria-label="Preço (slider)" />
+                  <small class="subtle">Arraste para ajustar rapidamente (R$ 5 a R$ 500)</small>
+                </div>
+              </div>
+              <div>
+                <label for="calc-qty-n"><strong>Quantidade</strong></label>
+                <div class="range-box">
+                  <input id="calc-qty-n" class="input" type="number" min="0" max="10000" step="1" value="100" />
+                  <input id="calc-qty" type="range" min="0" max="1000" step="1" value="100" aria-label="Quantidade (slider)" />
+                </div>
               </div>
             </div>
-          </div>
 
-          <div class="inline-tip" title="O comprador vê o preço com a taxa dele (4% ou 5%). Você, organizador, sempre 3%.">
-            <span class="i">i</span>
-            <span>O preço exibido ao comprador já inclui a taxa do público. Você recebe tudo no T+0 com 3% retidos.</span>
-          </div>
-
-          <hr style="border:none;border-top:1px solid #e6eaf6;margin:6px 0" />
-
-          <div>
-            <div class="calc-title" style="margin-bottom:.35rem">Emissão manual (fora da plataforma)</div>
-            <div class="calc-sub" style="margin-bottom:.85rem">Para quando você vendeu por fora (PIX direto / caixa) e só quer emitir o QR: <strong>1,5%</strong> por ingresso.</div>
-            <div class="calc-kpis" aria-label="Resumo emissão manual">
+            <!-- KPIs principais -->
+            <div class="kpis" aria-label="Resumo">
               <div class="kpi">
-                <small>Taxa por ingresso (1,5%)</small>
-                <div class="val num-animated" id="manual-fee-unit">R$ 0,00</div>
+                <strong>Preço base (unit.)</strong>
+                <div class="val num" id="calc-base-unit">R$ 0,00</div>
               </div>
               <div class="kpi">
-                <small>Taxa total</small>
-                <div class="val num-animated" id="manual-fee-total">R$ 0,00</div>
+                <strong>Taxa do organizador (3%)</strong>
+                <div class="val num" id="calc-fee-org">R$ 0,00</div>
               </div>
               <div class="kpi">
-                <small>Líquido total</small>
-                <div class="val num-animated" id="manual-net-total">R$ 0,00</div>
+                <strong>Bruto total (base × qtd)</strong>
+                <div class="val num" id="calc-gross">R$ 0,00</div>
               </div>
               <div class="kpi">
-                <small>Líquido por ingresso</small>
-                <div class="val num-animated" id="manual-net-unit">R$ 0,00</div>
+                <strong>Receita do organizador</strong>
+                <div class="val num" id="calc-net">R$ 0,00</div>
               </div>
             </div>
-          </div>
 
+            <div class="tip" title="O comprador vê o preço final no bot. Para simplificar a UX, exibimos aqui apenas os valores do organizador e a emissão manual.">
+              <span class="i">i</span>
+              <span>Organizador paga sempre <b>3%</b>. Em vendas por fora, emissão custa <b>1,5%</b>.</span>
+            </div>
+
+            <hr style="border:none;border-top:1px solid #e6eaf6;margin:6px 0" />
+
+            <!-- Emissão manual -->
+            <div>
+              <strong>Emissão manual (pagamento fora da plataforma)</strong>
+              <div class="subtle" style="margin:.25rem 0 .75rem">
+                Para eventos em que você recebe por fora (PIX/caixa), a emissão do ingresso custa <b>1,5%</b> por ingresso.
+              </div>
+              <div class="kpis" aria-label="Resumo emissão manual">
+                <div class="kpi">
+                  <strong>Taxa por ingresso (1,5%)</strong>
+                  <div class="val num" id="manual-fee-unit">R$ 0,00</div>
+                </div>
+                <div class="kpi">
+                  <strong>Taxa total</strong>
+                  <div class="val num" id="manual-fee-total">R$ 0,00</div>
+                </div>
+                <div class="kpi">
+                  <strong>Líquido total (após 1,5%)</strong>
+                  <div class="val num" id="manual-net-total">R$ 0,00</div>
+                </div>
+                <div class="kpi">
+                  <strong>Líquido por ingresso</strong>
+                  <div class="val num" id="manual-net-unit">R$ 0,00</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
         </div>
       </div>
 
@@ -463,11 +454,15 @@
             <input id="req-title" class="input" placeholder="Nome do evento" />
             <input id="req-name" class="input" placeholder="Seu nome" />
             <input id="req-city" class="input" placeholder="Cidade" />
-            <select id="req-category" class="input">
-              <option value="">Selecione o tipo de operação</option>
-              <option value="atleticas">Atléticas & Repúblicas</option>
-              <option value="produtoras">Produtoras & Locais independentes</option>
-            </select>
+
+            <div>
+              <label><strong>Categoria</strong></label>
+              <div class="chip-group" role="radiogroup" aria-label="Categoria do evento">
+                <button type="button" class="chip-opt" id="cat-ath" role="radio" aria-checked="true" data-value="atleticas">Atléticas & Repúblicas</button>
+                <button type="button" class="chip-opt" id="cat-prod" role="radio" aria-checked="false" data-value="produtoras">Produtoras & Locais</button>
+              </div>
+            </div>
+
             <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
               <button id="req-send" class="btn btn--secondary btn--sm" type="button">Solicitar criação</button>
               <span id="req-hint" class="subtle" aria-live="polite"></span>
