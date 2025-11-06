@@ -373,7 +373,8 @@
   });
 
   /* =============== Calculadora (3% fixo + comprador 4/5 + manual 1,5%) =============== */
-  const priceEl = $("#calc-price"); // texto com máscara
+  const priceEl = $("#calc-price");         // texto com máscara
+  const priceRangeEl = $("#calc-price-range"); // slider de preço (em centavos)
   const qtyNEl = $("#calc-qty-n");
   const qtySlider = $("#calc-qty");
   const feeOrgEl = $("#calc-fee-org");
@@ -390,6 +391,11 @@
   let priceCents = brlToCents(qs.get("price")) || 6000; // default R$ 60,00
   let qty = clampInt(qs.get("qty") || localStorage.getItem("ia.qty") || "100", 0, 10000);
 
+  // Limites do slider de preço (em centavos): R$5,00 a R$1.000,00
+  const PRICE_MIN = 500;
+  const PRICE_MAX = 100000;
+  const PRICE_STEP = 100; // R$1,00
+
   function clampInt(v, min, max){
     const n = Math.max(min, Math.min(max, parseInt(v || "0", 10) || 0));
     return n;
@@ -401,21 +407,37 @@
     const s = String(raw).replace(/[^\d,.-]/g,"").replace(/\./g,"").replace(",",".");
     const n = Number(s);
     return isFinite(n) ? Math.round(n * 100) : 0;
-  }
+    }
+
   function maskBRLInput(el){
-    const v = el.value;
-    const cents = brlToCents(v);
+    const cents = brlToCents(el.value);
     el.value = centsToBRL(cents);
     return cents;
   }
 
-  function pushState(){
-    const params = new URLSearchParams(location.search);
-    params.set("price", (priceCents/100).toFixed(2));
-    params.set("qty", String(qty));
-    const newUrl = `${location.pathname}?${params.toString()}${location.hash || ""}`;
-    history.replaceState(null, "", newUrl);
-    localStorage.setItem("ia.qty", String(qty));
+  // Atualiza URL/localStorage sem flood
+  let _psT = null;
+  function pushStateDebounced(){
+    clearTimeout(_psT);
+    _psT = setTimeout(() => {
+      const params = new URLSearchParams(location.search);
+      params.set("price", (priceCents/100).toFixed(2));
+      params.set("qty", String(qty));
+      const newUrl = `${location.pathname}?${params.toString()}${location.hash || ""}`;
+      history.replaceState(null, "", newUrl);
+      localStorage.setItem("ia.qty", String(qty));
+    }, 140);
+  }
+
+  function syncPriceInputs(from){
+    // Clamp preço nos limites do slider
+    priceCents = Math.max(PRICE_MIN, Math.min(PRICE_MAX, priceCents));
+    if (priceEl && from !== "text") {
+      priceEl.value = centsToBRL(priceCents);
+    }
+    if (priceRangeEl && from !== "range") {
+      priceRangeEl.value = String(priceCents);
+    }
   }
 
   function recalc(){
@@ -425,7 +447,7 @@
     const gross = priceCents * qty;
     const net = Math.max(0, (priceCents - feeOrgUnit) * qty);
 
-    // Comprador vê +4% ou +5% (exibimos os dois)
+    // Comprador vê +4% ou +5%
     const buyer4 = priceCents + Math.round(priceCents * 0.04);
     const buyer5 = priceCents + Math.round(priceCents * 0.05);
 
@@ -448,36 +470,51 @@
     manualNetUnitEl.textContent = centsToBRL(manualNetUnit);
   }
 
-  // UI events
+  // Eventos de UI — preço (input texto)
   priceEl?.addEventListener("input", (e) => {
     priceCents = maskBRLInput(e.target);
-    pushState();
+    syncPriceInputs("text");
+    pushStateDebounced();
     recalc();
   });
   priceEl?.addEventListener("blur", (e) => {
-    // arredondamento “bonito”: se terminar em .00 → tenta .90; se > .90 → .99
+    // arredondamento “bonito”: se terminar em .00 → tenta .90; se ~.90 → .99
     let c = brlToCents(e.target.value);
     const mod = c % 100;
     if (mod === 0 && c >= 1000) c = c - 10;            // .00 → .90
     else if (mod >= 90 && mod < 99) c = c + (99 - mod); // ~.90 → .99
     priceCents = Math.max(0, c);
-    e.target.value = centsToBRL(priceCents);
-    pushState();
+    syncPriceInputs("text");
+    pushStateDebounced();
     recalc();
   });
+
+  // Preço (slider)
+  priceRangeEl?.setAttribute("min", String(PRICE_MIN));
+  priceRangeEl?.setAttribute("max", String(PRICE_MAX));
+  priceRangeEl?.setAttribute("step", String(PRICE_STEP));
+  priceRangeEl?.addEventListener("input", (e) => {
+    const v = clampInt(e.target.value, PRICE_MIN, PRICE_MAX);
+    priceCents = v;
+    syncPriceInputs("range");
+    pushStateDebounced();
+    recalc();
+  });
+
+  // Quantidade (numérico + slider)
   $("#calc-qty-n")?.addEventListener("input", (e) => {
     const v = clampInt(e.target.value, 0, 10000);
     e.target.value = String(v);
     qty = v;
     if (qtySlider) qtySlider.value = String(Math.min(1000, v));
-    pushState();
+    pushStateDebounced();
     recalc();
   });
   $("#calc-qty")?.addEventListener("input", (e) => {
     const v = clampInt(e.target.value, 0, 1000);
     if (qtyNEl) qtyNEl.value = String(v);
     qty = v;
-    pushState();
+    pushStateDebounced();
     recalc();
   });
 
@@ -494,8 +531,8 @@
     const venue = $("#req-venue")?.value?.trim() || "";
     const date = $("#req-date")?.value?.trim() || "";
 
-    if (!phone || !title || !city) {
-      if (reqHint) reqHint.textContent = "Preencha WhatsApp, nome e cidade.";
+    if (!/^\d{12,14}$/.test(phone) || !title || !city) {
+      if (reqHint) reqHint.textContent = "Preencha WhatsApp (só números), nome e cidade.";
       return;
     }
 
@@ -580,6 +617,12 @@
   window.addEventListener("DOMContentLoaded", () => {
     // estado inicial da calculadora
     priceEl.value = centsToBRL(priceCents);
+    if (priceRangeEl) {
+      priceRangeEl.min = String(PRICE_MIN);
+      priceRangeEl.max = String(PRICE_MAX);
+      priceRangeEl.step = String(PRICE_STEP);
+      priceRangeEl.value = String(Math.max(PRICE_MIN, Math.min(PRICE_MAX, priceCents)));
+    }
     $("#calc-qty-n").value = String(qty);
     $("#calc-qty").value = String(Math.min(1000, qty));
     recalc();
