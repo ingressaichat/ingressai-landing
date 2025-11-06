@@ -2,230 +2,240 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>IngressAI — Compre ingressos no WhatsApp</title>
-  <!-- Importante: meta para override de API -->
-  <meta name="ingressai-api" content="" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="format-detection" content="telephone=no" />
+  <title>IngressAI — Ingressos em minutos, direto no WhatsApp</title>
+  <meta name="description" content="Compre ingressos em minutos pelo WhatsApp. Vitrine por cidade, checkout instantâneo, repasse T+0 e validação por QR Code." />
+  <meta name="robots" content="index,follow,max-image-preview:large" />
 
-  <!-- SEO/OG básicos -->
-  <meta name="description" content="Compre e valide ingressos direto no WhatsApp. Checkout PIX instantâneo.">
-  <meta property="og:title" content="IngressAI — Ingressos no WhatsApp">
-  <meta property="og:description" content="Checkout PIX instantâneo, QR e validação.">
-  <meta property="og:type" content="website">
-  <meta property="og:image" content="https://ingressai.chat/logo_ingressai.png">
-  <meta name="theme-color" content="#0A0A0A">
+  <!-- API: o app.js lê daqui caso não use ?api= -->
+  <meta name="ingressai-api" content="https://ingressai-backend-production.up.railway.app/api" />
+
+  <!-- OG/Twitter -->
+  <meta property="og:title" content="IngressAI — Ingressos em minutos" />
+  <meta property="og:description" content="Vitrine por cidade, checkout instantâneo, QR Code antifraude e repasse T+0." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://ingressai.chat/logo_ingressai.png" />
+  <meta property="og:site_name" content="IngressAI" />
+  <meta property="og:locale" content="pt_BR" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <meta name="theme-color" content="#2F7DD9" />
+  <meta name="color-scheme" content="light dark" />
+  <link rel="icon" href="./favicon.png" type="image/png" />
+  <link rel="preload" as="image" href="./logo_ingressai.png" />
 
   <style>
     :root{
-      --bg:#0a0a0a; --card:#111; --muted:#9aa0a6; --text:#e6e6e6; --blue:#2F7DD9;
-      --radius:18px; --gap:14px; --phi:1.618; --shadow:0 8px 30px rgba(0,0,0,.25);
+      --phi:1.618;--s0:8px;--s1:calc(var(--s0)*var(--phi));--s2:calc(var(--s1)*var(--phi));--s3:calc(var(--s2)*var(--phi));--s4:calc(var(--s3)*var(--phi));
+      --fs-0:1rem;--fs--1:calc(var(--fs-0)/var(--phi));--lh:1.45;--lh-compact:1.22;
+      --ink:#0b1220;--muted:#5b6b86;--bg:#f6f8fc;--card:#ffffff;
+      --blue-2:#2F7DD9;--blue-soft:#eaf3ff;
+      --shadow:0 10px 28px rgba(47,125,217,.14),0 2px 6px rgba(11,18,32,.08);
+      --shadow-soft:0 6px 18px rgba(47,125,217,.12);--ring:0 0 0 2px rgba(74,147,240,.18);
+      --container-max:calc(680px*var(--phi));--btn-h:52px;--radius-pill:999px;--t-fast:.18s;--t-med:.28s;
+      --ok:#157f3b;--ok-bg:#e9f7ec;--ok-bd:#cfe8d7;--bd:#e7eefb;
+    }
+    @media (prefers-color-scheme: dark){
+      :root{--ink:#eaf0ff;--muted:#9fb0cc;--bg:#0b1220;--card:#111a2e;--blue-soft:#0c2244;--bd:#1b2a4a;--shadow:none;--shadow-soft:none}
+      header{background:#0b1220;border-color:#1b2a4a}
+      .menu-btn,.drawer,.feature,.card,.chip,.btn,.drawer-btn{background:#111a2e;border-color:#1b2a4a}
+      .search input{background:#111a2e;border-color:#1b2a4a;color:var(--ink)}
     }
     *{box-sizing:border-box}
-    html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:400 16px/1.5 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial}
-    a{color:var(--blue);text-decoration:none}
-    button{cursor:pointer;border:0;border-radius:14px;padding:12px 16px;background:var(--blue);color:#fff;font-weight:600}
-    .container{max-width:1100px;margin:0 auto;padding:24px}
-    header{padding:22px 0 10px}
-    .hero{
-      display:grid; place-items:center; text-align:center; gap:10px; padding:8px 0 18px;
-    }
-    .logo-wrap{display:flex;align-items:center;justify-content:center}
-    .logo{
-      width:96px;height:96px; border-radius:24px; background:linear-gradient(180deg,#2F7DD9 0%,#195cad 100%);
-      display:grid;place-items:center; box-shadow:var(--shadow)
-    }
-    .logo img{width:64px;height:64px;object-fit:contain;filter:drop-shadow(0 4px 16px rgba(0,0,0,.3))}
-    h1{margin:14px 0 6px;font-size:28px;letter-spacing:.2px}
-    .sub{color:var(--muted);font-size:15px}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font:16px/var(--lh) -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Ubuntu,Inter,system-ui,sans-serif}
+    a{color:inherit;text-decoration:none}
+    :focus-visible{outline:none;box-shadow:var(--ring)}
+    .container{max-width:var(--container-max);margin:0 auto;padding:0 var(--s3)}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
+    .subtle{color:var(--muted)}
+    :where(section,[id]){scroll-margin-top:96px}
 
-    /* Filtros / Busca */
-    .filters{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0 6px}
-    .chip{background:#151515;border:1px solid #1f1f1f;padding:8px 12px;border-radius:999px;color:#cfcfcf}
-    .chip.active{background:#1d3350;border-color:#2F7DD9;color:#e8f0ff}
-    .search{flex:1;min-width:220px;background:#151515;border:1px solid #1f1f1f;border-radius:12px;padding:10px 12px;color:#eaeaea;outline:none}
+    /* Header */
+    header{position:sticky;top:0;z-index:40;background:#fff;border-bottom:1px solid var(--bd);transition:box-shadow var(--t-fast),border-color var(--t-fast),background-color var(--t-fast)}
+    header.is-scrolled{box-shadow:var(--shadow);border-color:#e1e9fb}
+    .head{display:flex;align-items:center;justify-content:space-between;padding:10px 0}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:900;margin:0 auto}
+    .brand img{width:36px;height:36px}
+    .brand span{font-weight:900;letter-spacing:.2px}
 
-    /* Grade de eventos */
-    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-top:12px}
-    .card{
-      background:var(--card);border:1px solid #1d1d1d;border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column;
-      transition:transform .2s ease, border-color .2s ease;
-    }
-    .card:hover{transform:translateY(-2px);border-color:#2a2a2a}
-    .thumb{
-      position:relative;width:100%;padding-top:61.8%; /* proporção áurea */
-      background:#0e0e0e;overflow:hidden
-    }
-    .thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-    .card-body{padding:12px 12px 14px;display:grid;gap:8px}
-    .card-title{font-weight:700;font-size:16px}
-    .card-meta{color:#bdbdbd;font-size:13px;display:flex;gap:10px;flex-wrap:wrap}
-    .card-cta{display:flex;gap:8px;margin-top:4px}
-    .btn{background:#202020;border:1px solid #2a2a2a;color:#eaeaea;border-radius:12px;padding:10px 12px}
-    .btn.primary{background:var(--blue);border-color:#205c9e;color:#fff}
+    .only-action{display:flex;align-items:center;gap:8px}
+    .menu-btn{appearance:none;border:1px solid var(--bd);background:#fff;border-radius:12px;padding:.55rem .7rem;box-shadow:var(--shadow-soft);display:inline-grid;place-items:center;cursor:pointer}
+    .menu-btn:active{transform:scale(.98)}
+    .menu-icon{width:26px;height:26px;display:block;color:#2F7DD9}
 
-    /* Bottom sheet (mídia primeiro) */
-    .sheet-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(2px);display:none}
-    .sheet{
-      position:fixed;left:0;right:0;bottom:0;max-height:86vh;background:#0d0d0d;border-radius:18px 18px 0 0;border:1px solid #1b1b1b;
-      transform:translateY(110%);transition:transform .28s ease;display:flex;flex-direction:column;overflow:hidden
-    }
-    .sheet.open{transform:translateY(0)}
-    .sheet-backdrop.open{display:block}
-    .sheet-media{position:relative;width:100%;padding-top:61.8%;background:#0c0c0c}
-    .sheet-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-    .sheet-body{padding:14px 14px 18px;display:grid;gap:10px}
-    .sheet-title{font-size:18px;font-weight:800}
-    .sheet-meta{color:#bdbdbd;font-size:13px}
-    .sheet-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
-    .sheet-close{position:absolute;top:10px;right:10px;background:#151515;border:1px solid #222;border-radius:12px;color:#ddd;padding:8px 10px}
+    /* Drawer */
+    .drawer{position:fixed;top:0;right:-320px;width:min(320px,90vw);height:100%;background:#fff;border-left:1px solid var(--bd);box-shadow:-20px 0 40px rgba(11,18,32,.14);transition:right var(--t-med) cubic-bezier(.2,.7,.2,1);z-index:60;padding:16px;display:flex;flex-direction:column;gap:10px}
+    .drawer.is-open{right:0}
+    .drawer-head{display:flex;align-items:center;justify-content:space-between}
+    .drawer-title{font-weight:900;margin:0}
+    .drawer-btn{min-height:44px;padding:0 14px;border-radius:12px;border:1px solid var(--bd);background:#fff;box-shadow:var(--shadow-soft);font-weight:800;display:inline-flex;align-items:center;gap:8px}
+    .drawer-backdrop{position:fixed;inset:0;background:rgba(11,18,32,.36);opacity:0;pointer-events:none;transition:opacity var(--t-fast);z-index:55}
+    .drawer-backdrop.is-open{opacity:1;pointer-events:auto}
+
+    .tag{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:.25rem .6rem;font:inherit;font-weight:800}
+    .tag.on{background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-bd)}
+    .tag.off{background:#fff4f4;color:#b64848;border:1px solid #ffdede}
+
+    .hero{padding:var(--s4) 0}
+    .hero h1{font-size:clamp(calc(1.25rem*var(--phi)),6.2vw,calc(1.25rem*var(--phi)*var(--phi)));line-height:var(--lh-compact);margin:var(--s1) 0 var(--s2) 0;font-weight:850;text-align:center}
+    .hero-brand{display:grid;gap:var(--s1);place-items:center;margin-bottom:var(--s2)}
+    .badges{display:flex;gap:calc(var(--s1)*1.4);align-items:center;justify-content:center;flex-wrap:wrap;margin-top:6px}
+    .badge{display:inline-flex;align-items:center;gap:.55rem;padding:0;background:transparent;border-radius:0;box-shadow:none;font-weight:700;cursor:default;user-select:none}
+    .badge img{height:18px;width:auto;display:block}.badge span{color:#445570;font-weight:700;opacity:.95}
+
+    .btn{min-height:var(--btn-h);padding:0 var(--s2);border-radius:var(--radius-pill);border:1px solid #d6e4ff;display:inline-flex;align-items:center;justify-content:space-between;font-weight:800;gap:10px;background:#fff;color:#0b1220;transition:transform .08s,box-shadow var(--t-fast)}
+    .btn--secondary{box-shadow:var(--shadow-soft)}
+    .btn--ghost{background:#fff;border-color:#e1e8f6;box-shadow:none;color:#2d3b50}
+    .btn--sm{min-height:40px;padding:0 .9rem;font-size:1rem}
+
+    .section{padding:calc(var(--s4)*1.1) 0;content-visibility:auto}
+    .section h2{font-size:clamp(calc(1rem*var(--phi)),3.8vw,calc(1.1rem*var(--phi)*var(--phi)));margin:0 0 var(--s2) 0;font-weight:800}
+
+    .filters{display:grid;grid-template-columns:1fr;gap:var(--s1);margin:0 0 var(--s1) 0}
+    @media(min-width:680px){.filters{grid-template-columns:1fr max-content}}
+    .search input{width:100%;border:1px solid #e5ecff;border-radius:999px;padding:.9rem 1rem;font:inherit;box-shadow:var(--shadow-soft);font-weight:600;font-size:16px}
+    .chips{display:flex;gap:8px;align-items:center;overflow:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity}
+    .chip{appearance:none;border:1px solid #e5ecff;background:#fff;border-radius:999px;padding:.6rem .95rem;font-weight:800;color:#415577;cursor:pointer;white-space:nowrap;min-height:40px;scroll-snap-align:start}
+    .chip[aria-selected="true"]{background:var(--blue-2);color:#fff;border-color:rgba(27,95,179,.35);box-shadow:0 6px 14px rgba(47,125,217,.25)}
+
+    .cards{display:grid;grid-template-columns:repeat(1,minmax(0,1fr));gap:var(--s1)}
+    @media(min-width:700px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(min-width:1000px){.cards{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+    .card{background:var(--card);border-radius:calc(var(--s2));box-shadow:var(--shadow);padding:var(--s2);border:1px solid #eaf1ff;display:flex;flex-direction:column;gap:var(--s1);transition:transform .12s,box-shadow var(--t-fast);position:relative;overflow:hidden;cursor:pointer}
+    .card:hover{transform:translateY(-2px)}
+    .card .media{aspect-ratio:1.618/1;border-radius:12px;overflow:hidden;background:var(--blue-soft);display:grid;place-items:center;border:1px solid #dfe9ff}
+    .card .media img{width:100%;height:100%;object-fit:cover;display:block}
+    .card .title{font-weight:900}
+    .card .meta{display:flex;gap:8px;align-items:center;color:var(--muted);font-weight:700}
+    .card .price{font-weight:900}
+    .card .buy{display:flex;gap:8px;align-items:center}
+    .skeleton{animation:pulse 1.2s ease-in-out infinite;background:linear-gradient(90deg,rgba(200,215,240,.28),rgba(200,215,240,.6),rgba(200,215,240,.28));background-size:200% 100%}
+    @keyframes pulse{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+    /* Bottom sheet */
+    .sheet{position:fixed;inset:0;display:none;z-index:80}
+    .sheet.is-open{display:block}
+    .sheet .backdrop{position:absolute;inset:0;background:rgba(0,0,0,.4)}
+    .sheet .panel{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:16px 16px 0 0;box-shadow:0 -18px 40px rgba(0,0,0,.18);padding:var(--s2);max-height:min(85vh,100%);overflow:auto}
+    @media (prefers-color-scheme: dark){.sheet .panel{background:#0f172a}}
+    .sheet .media{aspect-ratio:1.618/1;border-radius:12px;overflow:hidden;background:var(--blue-soft);border:1px solid #dfe9ff;margin-bottom:var(--s1)}
+    .sheet .media img{width:100%;height:100%;object-fit:cover}
+    .sheet .close{position:sticky;top:-8px;display:inline-flex;align-items:center;gap:8px;border:1px solid var(--bd);border-radius:999px;background:#fff;padding:.5rem .8rem;font-weight:800;margin-bottom:var(--s1)}
+    @media (prefers-color-scheme: dark){.sheet .close{background:#111a2e}}
+    .sheet .h{display:flex;align-items:center;justify-content:space-between;gap:var(--s1)}
+    .sheet .h h3{margin:.25rem 0;font-size:1.2rem;font-weight:900}
+    .sheet .meta{color:var(--muted);font-weight:700}
+    .sheet .actions{display:grid;grid-template-columns:1fr;gap:8px;margin-top:var(--s1)}
+    .sheet .actions .btn{width:100%}
 
     /* Organizadores */
-    section.org{margin:34px 0 8px;padding:20px;border:1px solid #1a1a1a;border-radius:18px;background:#0e0e0e}
-    .org-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}
-    @media (max-width:900px){.org-grid{grid-template-columns:1fr}}
-    .calc{background:#0b0b0b;border:1px solid #1a1a1a;border-radius:14px;padding:14px;display:grid;gap:10px}
-    .calc h3{margin:0 0 6px;font-size:16px}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .row > div{display:grid;gap:6px}
-    label{font-size:13px;color:#c9c9c9}
-    input,select{
-      background:#111;border:1px solid #1e1e1e;border-radius:10px;padding:10px 12px;color:#f0f0f0;outline:none
-    }
-    .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:4px}
-    .kpi{background:#101010;border:1px solid #1b1b1b;border-radius:12px;padding:12px}
-    .kpi b{display:block;font-size:18px;margin-top:4px}
-    .plan-note{font-size:12px;color:#9aa0a6}
-
-    /* Criar evento (UX guiada simples) */
-    .create{background:#0b0b0b;border:1px solid #1a1a1a;border-radius:14px;padding:14px;display:grid;gap:10px}
-    .create .inline{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    @media (max-width:720px){.create .inline{grid-template-columns:1fr}}
-    .create .actions{display:flex;gap:10px;margin-top:6px}
-
-    /* Footer */
-    footer{color:#8e8e8e;font-size:12px;text-align:center;padding:18px 0 30px}
+    .org{display:grid;gap:var(--s2)}
+    .calc{display:grid;gap:var(--s1)}
+    .calc-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .calc input{width:100%;border:1px solid var(--bd);border-radius:12px;padding:.7rem 1rem;background:#fff;font:inherit}
+    @media (prefers-color-scheme: dark){.calc input{background:#111a2e;color:var(--ink)}}
+    .kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    .kpi{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:.9rem}
+    .kpi strong{display:block;font-weight:900}
   </style>
 </head>
 <body>
-  <header class="container">
-    <div class="hero">
-      <div class="logo-wrap">
-        <div class="logo">
-          <img src="https://ingressai.chat/logo_ingressai.png" alt="IngressAI">
-        </div>
+  <header id="hdr">
+    <div class="container head">
+      <button id="openMenu" class="menu-btn" aria-label="Abrir menu" style="visibility:hidden">
+        <svg class="menu-icon" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2"/></svg>
+      </button>
+      <div class="brand" id="brand">
+        <img src="./logo_ingressai.png" alt="IngressAI" width="36" height="36" />
+        <span>IngressAI</span>
       </div>
-      <h1>IngressAI</h1>
-      <div class="sub">Compre e valide ingressos direto pelo WhatsApp — rápido, minimalista e sem fricção.</div>
+      <div class="only-action" style="visibility:hidden;"></div>
     </div>
   </header>
 
-  <main class="container">
-    <!-- Filtros / busca -->
-    <div class="filters">
-      <input id="search" class="search" type="search" placeholder="Buscar eventos…" />
-      <div id="chips" class="chips" aria-label="Filtro por cidade"></div>
-    </div>
-
-    <!-- Grade -->
-    <div id="grid" class="grid" aria-live="polite"></div>
-
-    <!-- Bottom Sheet -->
-    <div id="sheet-backdrop" class="sheet-backdrop" role="button" aria-label="Fechar"></div>
-    <aside id="sheet" class="sheet" aria-modal="true" aria-hidden="true">
-      <button id="sheet-close" class="sheet-close">✕</button>
-      <div class="sheet-media">
-        <img id="sheet-img" src="" alt="" />
-      </div>
-      <div class="sheet-body">
-        <div class="sheet-title" id="sheet-title"></div>
-        <div class="sheet-meta" id="sheet-meta"></div>
-        <div class="sheet-actions">
-          <button id="buy-btn" class="btn primary">Comprar no WhatsApp</button>
-          <button id="share-btn" class="btn">Compartilhar</button>
+  <main>
+    <section class="hero container" id="hero">
+      <div class="hero-brand">
+        <img src="./logo_ingressai.png" alt="IngressAI" width="84" height="84" style="filter: drop-shadow(0 6px 18px rgba(47,125,217,.25)); border-radius:20px;" />
+        <div class="badges">
+          <div class="badge"><span>Ingressos no WhatsApp</span></div>
+          <div class="badge"><span>QR Code antifraude</span></div>
+          <div class="badge"><span>Repasse T+0</span></div>
         </div>
       </div>
-    </aside>
+      <h1>Compre em minutos. Receba o QR. <br/> Pronto pro rolê.</h1>
+      <div style="display:flex;justify-content:center">
+        <a id="openWhatsapp" class="btn btn--secondary" href="https://wa.me/5534999992747" target="_blank" rel="noopener">Abrir WhatsApp</a>
+      </div>
+    </section>
 
-    <!-- Seção Organizadores -->
-    <section class="org" id="organizers">
-      <h2 style="margin:0 0 10px">Para Organizadores</h2>
-      <div class="org-grid">
-        <!-- Calculadora (3% org; comprador 4% ou 5%) -->
+    <section class="section container">
+      <h2>Vitrine</h2>
+      <div class="filters">
+        <label class="search">
+          <span class="sr-only">Buscar</span>
+          <input id="q" type="search" placeholder="Buscar evento, cidade ou local…" />
+        </label>
+        <div class="tag on" id="backendStatus">Backend: ok</div>
+      </div>
+      <div class="chips" id="chips"></div>
+      <div class="cards" id="cards"></div>
+    </section>
+
+    <section class="section container" id="organizadores">
+      <h2>Organizadores</h2>
+      <div class="org">
         <div class="calc">
-          <h3>Calculadora de taxas</h3>
-          <div class="row">
-            <div>
-              <label for="calc-price">Preço do ingresso (R$)</label>
-              <input id="calc-price" inputmode="decimal" placeholder="ex.: 60,00">
-            </div>
-            <div>
-              <label for="calc-qty">Quantidade</label>
-              <input id="calc-qty" inputmode="numeric" placeholder="ex.: 150">
-            </div>
+          <div class="calc-row">
+            <label>
+              <span class="subtle">Preço do ingresso (R$)</span>
+              <input id="inPrice" type="number" min="0" step="0.01" value="60" />
+            </label>
+            <label>
+              <span class="subtle">Qtd. ingressos</span>
+              <input id="inQty" type="number" min="1" step="1" value="100" />
+            </label>
           </div>
-          <div>
-            <label for="calc-model">Categoria</label>
-            <select id="calc-model">
-              <option value="4">Atléticas &amp; Repúblicas (4% comprador)</option>
-              <option value="5">Produtoras &amp; Locais (5% comprador)</option>
-            </select>
-            <div class="plan-note">Organizador paga sempre <b>3%</b> por ingresso.</div>
+          <div class="calc-row">
+            <button class="chip" id="planAtl">Atléticas &amp; Repúblicas (4%)</button>
+            <button class="chip" id="planProd">Produtoras &amp; Locais (5%)</button>
           </div>
           <div class="kpis">
-            <div class="kpi"><span>Bruto por ingresso</span><b id="kpi-bruto">R$ 0,00</b></div>
-            <div class="kpi"><span>Taxas (org+comp)</span><b id="kpi-taxas">R$ 0,00</b></div>
-            <div class="kpi"><span>Líquido por ingresso</span><b id="kpi-liq">R$ 0,00</b></div>
-          </div>
-          <div class="kpis">
-            <div class="kpi"><span>Total bruto</span><b id="kpi-tbruto">R$ 0,00</b></div>
-            <div class="kpi"><span>Total taxas</span><b id="kpi-ttaxas">R$ 0,00</b></div>
-            <div class="kpi"><span>Total líquido</span><b id="kpi-tliq">R$ 0,00</b></div>
+            <div class="kpi"><strong>Taxa Organizador</strong><div id="kOrg">3% por ingresso</div></div>
+            <div class="kpi"><strong>Taxa Comprador</strong><div id="kBuyer">4% ou 5%</div></div>
+            <div class="kpi"><strong>Bruto total</strong><div id="kBruto">—</div></div>
+            <div class="kpi"><strong>Líquido organizador</strong><div id="kLiquido">—</div></div>
           </div>
         </div>
-
-        <!-- Criar evento -->
-        <div class="create">
-          <h3>Criar evento (beta)</h3>
-          <div>
-            <label for="ev-title">Título</label>
-            <input id="ev-title" placeholder="ex.: Hello World Fest" maxlength="100">
-          </div>
-          <div class="inline">
-            <div>
-              <label for="ev-city">Cidade</label>
-              <input id="ev-city" placeholder="ex.: Uberaba" maxlength="60">
-            </div>
-            <div>
-              <label for="ev-date">Data e hora</label>
-              <input id="ev-date" type="datetime-local">
-            </div>
-          </div>
-          <div class="inline">
-            <div>
-              <label for="ev-price">Preço (R$)</label>
-              <input id="ev-price" inputmode="decimal" placeholder="ex.: 60,00">
-            </div>
-            <div>
-              <label for="ev-venue">Local</label>
-              <input id="ev-venue" placeholder="ex.: Espaço Boiler" maxlength="120">
-            </div>
-          </div>
-          <div class="actions">
-            <button id="create-btn" class="btn primary">Criar rascunho</button>
-            <button id="create-wa" class="btn">Abrir no WhatsApp</button>
-          </div>
-          <div id="create-hint" class="plan-note">
-            Dica: após criar, envie a <b>capa</b> pelo WhatsApp (o bot vai salvar e já aparece na landing).
-          </div>
+        <div>
+          <a id="ctaOrganizador" class="btn btn--ghost btn--sm" href="#organizadores">Quero criar meu evento</a>
+          <small class="subtle" style="display:block;margin-top:6px">Fluxo de criação e publicação pelo WhatsApp, sem digitar — só listas.</small>
         </div>
       </div>
     </section>
   </main>
 
-  <footer class="container">
-    <div>© <span id="year"></span> IngressAI — Checkout instantâneo no WhatsApp</div>
-  </footer>
+  <!-- Bottom Sheet -->
+  <div class="sheet" id="sheet">
+    <div class="backdrop" data-close></div>
+    <div class="panel">
+      <button class="close" data-close>✕ Fechar</button>
 
-  <script src="./app.js" defer></script>
+      <div class="media"><img id="sImg" alt="" /></div>
+      <div class="h">
+        <h3 id="sTitle">Evento</h3>
+        <div class="price" id="sPrice">R$ —</div>
+      </div>
+      <div class="meta" id="sMeta">Cidade • Data • Local</div>
+      <div class="actions">
+        <a id="sBuy" class="btn btn--secondary" target="_blank" rel="noopener">Comprar no WhatsApp</a>
+        <a id="sView" class="btn btn--ghost" target="_blank" rel="noopener">Ver validador</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="./app.js" type="module"></script>
 </body>
 </html>
