@@ -5,8 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="format-detection" content="telephone=no" />
   <title>IngressAI — Ingressos em minutos, direto no WhatsApp</title>
-  <meta name="description" content="Compre ingressos em minutos pelo WhatsApp. Vitrine por cidade, checkout instantâneo, repasse T+0 e validação por QR Code." />
+  <meta name="description" content="Compre ingressos em minutos pelo WhatsApp. Vitrine por cidade, checkout instantâneo, repasse via Pix e QR Code antifraude." />
   <meta name="robots" content="index,follow,max-image-preview:large" />
+
+  <!-- API: o app.js lê daqui caso não use ?api= -->
   <meta name="ingressai-api" content="https://ingressai-backend-production.up.railway.app/api" />
 
   <!-- OG/Twitter -->
@@ -17,6 +19,7 @@
   <meta property="og:site_name" content="IngressAI" />
   <meta property="og:locale" content="pt_BR" />
   <meta name="twitter:card" content="summary_large_image" />
+
   <meta name="theme-color" content="#2F7DD9" />
   <meta name="color-scheme" content="light" />
   <link rel="icon" href="./favicon.png" type="image/png" />
@@ -24,12 +27,19 @@
 
   <style>
     :root{
+      /* Escala áurea */
       --phi:1.618;
-      --s-2:4px; --s-1:8px; --s0:12px; --s1:calc(var(--s0)*var(--phi));
-      --s2:calc(var(--s1)*var(--phi)); --s3:calc(var(--s2)*var(--phi));
-      --s4:calc(var(--s3)*var(--phi));
-      --fs-0:1rem; --fs--1:calc(var(--fs-0)/var(--phi)); --fs-1:calc(var(--fs-0)*var(--phi));
-      --fs-2:calc(var(--fs-1)*var(--phi)); --lh:1.45; --lh-compact:1.22;
+      --s-2:4px; --s-1:8px; --s0:12px;
+      --s1:calc(var(--s0)*var(--phi));      /* ~19px */
+      --s2:calc(var(--s1)*var(--phi));      /* ~31px */
+      --s3:calc(var(--s2)*var(--phi));      /* ~50px */
+      --s4:calc(var(--s3)*var(--phi));      /* ~81px */
+
+      --fs-0:1rem;
+      --fs--1:calc(var(--fs-0)/var(--phi));
+      --fs-1:calc(var(--fs-0)*var(--phi));
+      --fs-2:calc(var(--fs-1)*var(--phi));
+      --lh:1.45; --lh-compact:1.22;
 
       --ink:#0b1220; --muted:#5b6b86; --bg:#f6f8fc; --card:#ffffff;
       --blue-2:#2F7DD9; --blue-soft:#eaf3ff;
@@ -162,19 +172,20 @@
     .num{font-variant-numeric:tabular-nums}
     .kpis{display:grid;gap:8px;grid-template-columns:repeat(2,minmax(0,1fr))}
     @media(min-width:680px){.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}}
-    .kpi{background:var(--card);border:1px solid #e5ecff;border-radius:12px;padding:10px;min-height:88px}
+    .kpi{background:var(--card);border:1px solid #e5ecff;border-radius:12px;padding:10px}
     .kpi strong{display:block;font-size:.86rem;color:#445570}
-    .kpi .val{font-weight:900}
-    .kpi .val.auto{font-size:clamp(1rem, 3.9vw, 1.12rem); line-height:1.2; overflow-wrap:anywhere}
+    .kpi .val{font-weight:900;font-size:1.08rem;overflow-wrap:anywhere;line-height:1.18}
 
-    /* Tip / Info buttons */
-    .i-row{display:flex;align-items:center;gap:8px;color:#415577}
+    .i-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
     .i-btn{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;border:1px solid #cfe3ff;background:#fff;color:#1B5FB3;font-weight:900;cursor:pointer}
-    .tip-pop{position:relative;display:none}
-    .tip-pop.open{display:block}
-    .tip-pop[aria-hidden="true"]{display:none}
-    .tip-pop[aria-hidden="false"]{display:block}
-    .tip-pop .bubble{margin-top:6px;background:#fff;border:1px solid #e5ecff;border-radius:10px;box-shadow:var(--shadow-soft);padding:.6rem .75rem;font-size:.9rem;color:#415577}
+    .tip{display:none;margin-top:6px}
+    .tip.open{display:block}
+    .tip .bubble{background:#fff;border:1px solid #e5ecff;border-radius:10px;box-shadow:0 6px 18px rgba(47,125,217,.12);padding:.6rem .75rem;font-size:.9rem;color:#415577}
+
+    /* --- Form chips --- */
+    .chip-group{display:flex;gap:8px;flex-wrap:wrap}
+    .chip-opt{appearance:none;border:1px solid #e5ecff;background:#fff;border-radius:999px;padding:.6rem .95rem;font-weight:800;color:#415577;cursor:pointer}
+    .chip-opt[aria-checked="true"]{background:var(--blue-2);color:#fff;border-color:rgba(27,95,179,.35);box-shadow:0 6px 14px rgba(47,125,217,.25)}
 
     footer{background:#fff;border-top:1px solid #e7eefb;margin-top:var(--s4)}
     .foot{max-width:var(--container-max);margin:0 auto;padding:var(--s3) var(--s3)}
@@ -190,22 +201,6 @@
     .diag div{background:#fff;border:1px solid #e7eefb;border-radius:8px;padding:6px 8px}
     .diag strong{display:block}
   </style>
-
-  <!-- Normaliza API global (fallback) -->
-  <script>
-    (function () {
-      const qsApi = new URLSearchParams(location.search).get("api") || "";
-      const PROD = "https://ingressai-backend-production.up.railway.app/api";
-      function normalizeApi(raw){
-        let s = String(raw||"").trim().replace(/\/+$/g,"");
-        if(!/\/api$/i.test(s)) s += "/api";
-        s = s.replace(/([^:])\/{2,}/g,"$1/");
-        return s;
-      }
-      window.INGRESSAI_API = normalizeApi(qsApi || PROD);
-      window.INGRESSAI_BASE = window.INGRESSAI_API.replace(/\/api$/,'');
-    })();
-  </script>
 </head>
 <body>
   <!-- HEADER -->
@@ -317,9 +312,27 @@
         <div id="filtro-cidades" class="chips" role="tablist" aria-label="Filtrar por cidade"></div>
       </div>
       <div class="cards" id="lista-eventos" aria-live="polite">
-        <!-- skeletons -->
-        <article class="card"><div class="card-header"><div style="width:60%"><div class="skeleton" style="height:14px;border-radius:8px;margin:2px 0 8px"></div><div class="skeleton" style="height:22px;border-radius:8px;margin:2px 0 8px"></div><div class="skeleton" style="height:12px;border-radius:8px;width:40%"></div></div></div><div class="card-media skeleton" style="height:auto;aspect-ratio:1.618"></div></article>
-        <article class="card"><div class="card-header"><div style="width:60%"><div class="skeleton" style="height:14px;border-radius:8px;margin:2px 0 8px"></div><div class="skeleton" style="height:22px;border-radius:8px;margin:2px 0 8px"></div><div class="skeleton" style="height:12px;border-radius:8px;width:40%"></div></div></div><div class="card-media skeleton" style="height:auto;aspect-ratio:1.618"></div></article>
+        <!-- skeletons iniciais -->
+        <article class="card">
+          <div class="card-header">
+            <div style="width:60%">
+              <div class="skeleton" style="height:14px;border-radius:8px;margin:2px 0 8px"></div>
+              <div class="skeleton" style="height:22px;border-radius:8px;margin:2px 0 8px"></div>
+              <div class="skeleton" style="height:12px;border-radius:8px;width:40%"></div>
+            </div>
+          </div>
+          <div class="card-media skeleton" style="height:auto;aspect-ratio:1.618"></div>
+        </article>
+        <article class="card">
+          <div class="card-header">
+            <div style="width:60%">
+              <div class="skeleton" style="height:14px;border-radius:8px;margin:2px 0 8px"></div>
+              <div class="skeleton" style="height:22px;border-radius:8px;margin:2px 0 8px"></div>
+              <div class="skeleton" style="height:12px;border-radius:8px;width:40%"></div>
+            </div>
+          </div>
+          <div class="card-media skeleton" style="height:auto;aspect-ratio:1.618"></div>
+        </article>
       </div>
     </section>
 
@@ -337,14 +350,15 @@
         </div>
       </div>
 
-      <!-- Calculadora -->
+      <!-- Calculadora: Vendas pela plataforma (3%) + Emissão manual (1,5%) -->
       <div class="std-card" id="calc-card">
         <div class="plan-calc">
           <div class="calc-grid">
+            <!-- Linha preço + qtd (mobile-first empilhado) -->
             <div class="calc-row">
               <div>
                 <label for="calc-price"><strong>Preço base do ingresso</strong></label>
-                <input id="calc-price" class="input" type="text" inputmode="decimal" placeholder="R$ 60,00" />
+                <input id="calc-price" class="input" type="text" inputmode="decimal" placeholder="R$ 60,00" value="R$ 60,00" />
                 <div class="range-box" style="margin-top:6px">
                   <input id="calc-price-range" type="range" min="5" max="500" step="1" value="60" aria-label="Preço (slider)" />
                   <small class="subtle">Arraste para ajustar rapidamente (R$ 5 a R$ 500)</small>
@@ -359,59 +373,61 @@
               </div>
             </div>
 
-            <!-- KPIs 3% (plataforma) -->
-            <div class="kpis" aria-label="Resumo (plataforma)">
+            <!-- BLOCO 1: Vendas pela plataforma (3%) -->
+            <div class="i-row" style="margin-top:6px">
+              <strong>Vendas pela plataforma</strong>
+              <button type="button" class="i-btn" data-tip="#tip-plat" aria-label="Mais informações">i</button>
+            </div>
+            <div id="tip-plat" class="tip" aria-hidden="true">
+              <div class="bubble">A taxa fixa para vendas pela plataforma é <b>3%</b> por ingresso.</div>
+            </div>
+
+            <div class="kpis" aria-label="Resumo (plataforma 3%)">
               <div class="kpi">
-                <strong>Preço base</strong>
-                <div class="val auto num" id="calc-base-unit">R$ 0,00</div>
+                <strong>Preço base (unit.)</strong>
+                <div class="val num" id="calc-base-unit">R$ 0,00</div>
               </div>
               <div class="kpi">
-                <div class="i-row" style="justify-content:space-between">
-                  <strong>Taxa IngressAI (3%)</strong>
-                  <button class="i-btn" type="button" aria-label="Abrir detalhes" aria-controls="tip-3pct">i</button>
-                </div>
-                <div class="val auto num" id="calc-fee-org">R$ 0,00</div>
-                <div class="tip-pop" id="tip-3pct" role="tooltip" aria-hidden="true"><div class="bubble">Nas vendas pela plataforma, retemos <b>3%</b> por ingresso. O valor final ao comprador é calculado no bot.</div></div>
+                <strong>Taxa do organizador (3%)</strong>
+                <div class="val num" id="calc-fee-org">R$ 0,00</div>
               </div>
               <div class="kpi">
                 <strong>Bruto total (base × qtd)</strong>
-                <div class="val auto num" id="calc-gross">R$ 0,00</div>
+                <div class="val num" id="calc-gross">R$ 0,00</div>
               </div>
               <div class="kpi">
-                <strong>Receita do organizador (após 3%)</strong>
-                <div class="val auto num" id="calc-net">R$ 0,00</div>
+                <strong>Receita do organizador</strong>
+                <div class="val num" id="calc-net">R$ 0,00</div>
               </div>
             </div>
 
             <hr style="border:none;border-top:1px solid #e6eaf6;margin:10px 0" />
 
-            <!-- Emissão manual 1,5% -->
-            <div>
-              <div class="i-row" style="justify-content:space-between">
-                <strong>Emissão manual (pagamento fora)</strong>
-                <button class="i-btn" type="button" aria-label="Abrir detalhes" aria-controls="tip-15pct">i</button>
-              </div>
-              <div class="tip-pop" id="tip-15pct" role="tooltip" aria-hidden="true">
-                <div class="bubble">Para vendas por fora (PIX/caixa), emitimos o ingresso cobrando <b>1,5%</b> por ingresso.</div>
-              </div>
+            <!-- BLOCO 2: Emissão manual (1,5%) -->
+            <div class="i-row" style="margin-top:2px">
+              <strong>Emissão manual</strong>
+              <button type="button" class="i-btn" data-tip="#tip-manual" aria-label="Mais informações">i</button>
+            </div>
+            <div id="tip-manual" class="tip" aria-hidden="true">
+              <div class="bubble">Para emissão manual de ingressos, a taxa é de <b>1,5%</b> por ingresso.</div>
+            </div>
 
-              <div class="kpis" aria-label="Resumo emissão manual (1,5%)" style="margin-top:10px">
-                <div class="kpi">
-                  <strong>Taxa por ingresso (1,5%)</strong>
-                  <div class="val auto num" id="manual-fee-unit">R$ 0,00</div>
-                </div>
-                <div class="kpi">
-                  <strong>Taxa total</strong>
-                  <div class="val auto num" id="manual-fee-total">R$ 0,00</div>
-                </div>
-                <div class="kpi">
-                  <strong>Líquido total (após 1,5%)</strong>
-                  <div class="val auto num" id="manual-net-total">R$ 0,00</div>
-                </div>
-                <div class="kpi">
-                  <strong>Líquido por ingresso</strong>
-                  <div class="val auto num" id="manual-net-unit">R$ 0,00</div>
-                </div>
+            <div class="kpis" aria-label="Resumo (emissão manual 1,5%)">
+              <div class="kpi">
+                <strong>Taxa por ingresso (1,5%)</strong>
+                <div class="val num" id="manual-fee-unit">R$ 0,00</div>
+              </div>
+              <div class="kpi">
+                <strong>Taxa total</strong>
+                <div class="val num" id="manual-fee-total">R$ 0,00</div>
+              </div>
+              <div class="kpi">
+                <strong>Líquido total (após 1,5%)</strong>
+                <div class="val num" id="manual-net-total">R$ 0,00</div>
+              </div>
+              <div class="kpi">
+                <strong>Líquido por ingresso</strong>
+                <div class="val num" id="manual-net-unit">R$ 0,00</div>
               </div>
             </div>
 
@@ -428,6 +444,7 @@
             <input id="req-title" class="input" placeholder="Nome do evento" />
             <input id="req-name" class="input" placeholder="Seu nome" />
             <input id="req-city" class="input" placeholder="Cidade" />
+
             <div>
               <label><strong>Categoria</strong></label>
               <div class="chip-group" role="radiogroup" aria-label="Categoria do evento">
@@ -435,6 +452,7 @@
                 <button type="button" class="chip-opt" id="cat-prod" role="radio" aria-checked="false" data-value="produtoras">Produtoras & Locais</button>
               </div>
             </div>
+
             <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
               <button id="req-send" class="btn btn--secondary btn--sm" type="button">Solicitar criação</button>
               <span id="req-hint" class="subtle" aria-live="polite"></span>
@@ -495,11 +513,28 @@
     </div>
   </footer>
 
+  <!-- JSON-LD -->
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"Organization","name":"IngressAI","url":"https://ingressai.chat/","logo":"https://ingressai.chat/logo_ingressai.png","sameAs":["https://instagram.com/ingressai"],"contactPoint":[{"@type":"ContactPoint","contactType":"customer support","areaServed":"BR","availableLanguage":"pt-BR"}]}
   </script>
 
-  <!-- Wire do Validador -->
+  <!-- Normaliza API global (fallback) -->
+  <script>
+    (function () {
+      const qsApi = new URLSearchParams(location.search).get("api") || "";
+      const PROD = "https://ingressai-backend-production.up.railway.app/api";
+      function normalizeApi(raw){
+        let s = String(raw||"").trim().replace(/\/+$/g,"");
+        if(!/\/api$/i.test(s)) s += "/api";
+        s = s.replace(/([^:])\/{2,}/g,"$1/");
+        return s;
+      }
+      window.INGRESSAI_API = normalizeApi(qsApi || PROD);
+      window.INGRESSAI_BASE = window.INGRESSAI_API.replace(/\/api$/,'');
+    })();
+  </script>
+
+  <!-- Wire do Validador: aponta pro backend, evitando CORS -->
   <script>
     requestAnimationFrame(() => {
       try {
@@ -511,11 +546,58 @@
         }
         var link = document.getElementById("org-validator");
         if (link && base) link.href = base + "/app/validator.html";
-      } catch {}
+      } catch (e) {}
     });
   </script>
 
-  <!-- app -->
-  <!-- (o script completo atualizado está logo acima, em <script> para facilitar o copy/paste) -->
+  <!-- Tooltips (i) e Drawer: JS leve e isolado para não conflitar com app.js -->
+  <script>
+    (function () {
+      const $ = (s, r=document) => r.querySelector(s);
+      const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+
+      // Header scroll
+      const header = $("header");
+      const toggleScrolled = () => header && (window.scrollY > 4 ? header.classList.add("is-scrolled") : header.classList.remove("is-scrolled"));
+      window.addEventListener("scroll", toggleScrolled, { passive: true }); toggleScrolled();
+
+      // Drawer
+      const drawer = $("#drawer");
+      const drawerBackdrop = $("#drawer-backdrop");
+      const btnDrawerOpen = $("#drawer-toggle");
+      const btnDrawerClose = $("#drawer-close");
+      const btnDrawerCreate = $("#drawer-create");
+      function openDrawer(){ if(!drawer) return; drawer.classList.add("is-open"); drawerBackdrop.classList.add("is-open"); btnDrawerOpen?.setAttribute("aria-expanded","true"); drawer.setAttribute("aria-hidden","false"); drawerBackdrop.setAttribute("aria-hidden","false"); }
+      function closeDrawer(){ if(!drawer) return; drawer.classList.remove("is-open"); drawerBackdrop.classList.remove("is-open"); btnDrawerOpen?.setAttribute("aria-expanded","false"); drawer.setAttribute("aria-hidden","true"); drawerBackdrop.setAttribute("aria-hidden","true"); }
+      btnDrawerOpen?.addEventListener("click", openDrawer);
+      btnDrawerClose?.addEventListener("click", closeDrawer);
+      drawerBackdrop?.addEventListener("click", closeDrawer);
+      btnDrawerCreate?.addEventListener("click", () => { closeDrawer(); document.getElementById("organizadores")?.scrollIntoView({ behavior: "smooth", block: "start" }); });
+
+      // Tooltips
+      $$(".i-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = btn.getAttribute("data-tip");
+          if (!id) return;
+          const tip = document.querySelector(id);
+          if (!tip) return;
+          const isOpen = tip.classList.contains("open");
+          $$(".tip.open").forEach(t => t.classList.remove("open"));
+          if (!isOpen) tip.classList.add("open");
+          tip.setAttribute("aria-hidden", isOpen ? "true" : "false");
+        });
+      });
+
+      // Fechar tooltip ao clicar fora
+      document.addEventListener("click", (e) => {
+        const isBtn = e.target.closest(".i-btn");
+        const isTip = e.target.closest(".tip");
+        if (!isBtn && !isTip) $$(".tip.open").forEach(t => t.classList.remove("open"));
+      });
+    })();
+  </script>
+
+  <!-- app principal -->
+  <script defer src="./app.js"></script>
 </body>
 </html>
