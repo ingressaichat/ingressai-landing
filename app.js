@@ -1,9 +1,10 @@
+<script>
 /* app.js — IngressAI (frontend leve)
    - vitrine, filtros, sheet
-   - calculadora (mobile-first): 3% organizador; emissão manual 1,5%
-   - preço com máscara + slider; quantidade com número + slider
-   - formulário "Quero criar meu evento" com categoria (chips)
-   - máscara BRL, URL state, localStorage, skeletons
+   - calculadora (mobile-first): 3% plataforma (top); emissão manual 1,5% (bottom)
+   - preço com digitação livre; máscara no blur; sliders sincronizados
+   - formulário "Quero criar meu evento"
+   - máscara BRL, URL state, localStorage, skeletons, tooltips acessíveis
    - diagnóstico de backend
 */
 (() => {
@@ -23,8 +24,7 @@
   }
 
   const INGRESSAI_API = window.INGRESSAI_API || normalizeApi(QS_API || META_API);
-  const INGRESSAI_BASE =
-    window.INGRESSAI_BASE || INGRESSAI_API.replace(/\/api$/i, "");
+  const INGRESSAI_BASE = window.INGRESSAI_BASE || INGRESSAI_API.replace(/\/api$/i, "");
 
   window.INGRESSAI_API = INGRESSAI_API;
   window.INGRESSAI_BASE = INGRESSAI_BASE;
@@ -85,28 +85,20 @@
     return node;
   }
 
-  /* =============== Drawer (acessível) =============== */
+  /* =============== Drawer =============== */
   const drawer = $("#drawer");
   const drawerBackdrop = $("#drawer-backdrop");
   const btnDrawerOpen = $("#drawer-toggle");
   const btnDrawerClose = $("#drawer-close");
   const btnDrawerCreate = $("#drawer-create");
-  let lastFocus = null;
 
-  function lockScroll(on) {
-    document.documentElement.style.overflow = on ? "hidden" : "";
-    document.body.style.overscrollBehavior = on ? "contain" : "";
-  }
   function openDrawer() {
     if (!drawer) return;
-    lastFocus = document.activeElement;
     drawer.classList.add("is-open");
     drawerBackdrop.classList.add("is-open");
     btnDrawerOpen?.setAttribute("aria-expanded", "true");
     drawer.setAttribute("aria-hidden", "false");
     drawerBackdrop.setAttribute("aria-hidden", "false");
-    lockScroll(true);
-    drawer.querySelector("button, a, [tabindex]")?.focus();
   }
   function closeDrawer() {
     if (!drawer) return;
@@ -114,8 +106,7 @@
     drawerBackdrop.classList.remove("is-open");
     btnDrawerOpen?.setAttribute("aria-expanded", "false");
     drawer.setAttribute("aria-hidden", "true");
-    lockScroll(false);
-    lastFocus?.focus?.();
+    drawerBackdrop.setAttribute("aria-hidden", "true");
   }
   btnDrawerOpen?.addEventListener("click", openDrawer);
   btnDrawerClose?.addEventListener("click", closeDrawer);
@@ -124,12 +115,6 @@
     closeDrawer();
     document.getElementById("organizadores")?.scrollIntoView({ behavior: "smooth", block: "start" });
   });
-  window.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      if (drawer?.classList.contains("is-open")) closeDrawer();
-      if ($("#sheet")?.classList.contains("is-open")) closeSheet();
-    }
-  }, { passive: true });
 
   /* =============== Header scroll effect =============== */
   const header = $("header");
@@ -147,16 +132,11 @@
   const buscaEl = $("#busca-eventos");
 
   let allEvents = [];
-  let activeCity = localStorage.getItem("ia.city") || null;
+  let activeCity = null;
   let searchTerm = "";
 
   async function fetchEventsSmart() {
-    const endpoints = [
-      "/events/vitrine",
-      "/events/public",
-      "/events",
-      "/events/seed",
-    ];
+    const endpoints = ["/events/vitrine", "/events/public", "/events", "/events/seed"];
     for (const p of endpoints) {
       try {
         const url = INGRESSAI_API + p;
@@ -170,9 +150,7 @@
           json?.rows ||
           [];
         if (Array.isArray(events)) return events;
-      } catch {
-        /* tenta próximo */
-      }
+      } catch (e) { /* tenta próximo */ }
     }
     throw new Error("Nenhum endpoint de eventos respondeu.");
   }
@@ -270,45 +248,25 @@
     const cities = Array.from(set).sort((a, b) => a.localeCompare(b, "pt-BR"));
     filtroCidadesEl.innerHTML = "";
 
-    const allChip = el(
-      "button",
-      {
-        class: "chip",
-        role: "tab",
-        "aria-selected": activeCity ? "false" : "true",
-      },
-      "Todas"
-    );
+    const allChip = el("button", {
+      class: "chip", role: "tab", "aria-selected": activeCity ? "false" : "true",
+    }, "Todas");
     allChip.addEventListener("click", () => {
       activeCity = null;
-      localStorage.removeItem("ia.city");
-      $$('[role="tab"]', filtroCidadesEl).forEach((n) =>
-        n.setAttribute("aria-selected", "false")
-      );
+      $$('[role="tab"]', filtroCidadesEl).forEach((n) => n.setAttribute("aria-selected", "false"));
       allChip.setAttribute("aria-selected", "true");
       renderEvents();
     });
     filtroCidadesEl.appendChild(allChip);
 
     cities.forEach((city) => {
-      const chip = el(
-        "button",
-        {
-          class: "chip",
-          role: "tab",
-          "aria-selected":
-            activeCity && activeCity.toLowerCase() === city.toLowerCase()
-              ? "true"
-              : "false",
-        },
-        city
-      );
+      const chip = el("button", {
+        class: "chip", role: "tab",
+        "aria-selected": activeCity && activeCity.toLowerCase() === city.toLowerCase() ? "true" : "false",
+      }, city);
       chip.addEventListener("click", () => {
         activeCity = city;
-        localStorage.setItem("ia.city", city);
-        $$('[role="tab"]', filtroCidadesEl).forEach((n) =>
-          n.setAttribute("aria-selected", "false")
-        );
+        $$('[role="tab"]', filtroCidadesEl).forEach((n) => n.setAttribute("aria-selected", "false"));
         chip.setAttribute("aria-selected", "true");
         renderEvents();
       });
@@ -335,22 +293,15 @@
       ]),
     ]);
 
-    const mediaNode = el("div", { class: "sheet-media" }, [
-      img ? imgNode(img) : imgNode(null),
-    ]);
+    const mediaNode = el("div", { class: "sheet-media" }, [ img ? imgNode(img) : imgNode(null) ]);
 
-    // Deep-link: ingressai:start ev=<id> qty=1 autopay=1
     const makeWaDeepLink = (ev) => {
       const id = ev.id || ev.slug || "";
       if (!id) return `https://wa.me/${BOT_NUMBER}`;
       const txt = encodeURIComponent(`ingressai:start ev=${id} qty=1 autopay=1`);
       return `https://wa.me/${BOT_NUMBER}?text=${txt}`;
     };
-
-    const ctaHref =
-      ev.whatsappLink ||
-      ev.deepLink ||
-      makeWaDeepLink(ev);
+    const ctaHref = ev.whatsappLink || ev.deepLink || makeWaDeepLink(ev);
 
     const details = el("div", { class: "std-list" }, [
       el("div", {}, `Quando: ${dateText || "—"}`),
@@ -358,11 +309,7 @@
     ]);
 
     const actions = el("div", { style: "display:flex;gap:8px;margin-top:8px" }, [
-      el(
-        "a",
-        { class: "btn btn--secondary btn--sm", href: ctaHref, target: "_blank", rel: "noopener noreferrer" },
-        "Comprar no WhatsApp"
-      ),
+      el("a", { class: "btn btn--secondary btn--sm", href: ctaHref, target: "_blank", rel: "noopener noreferrer" }, "Comprar no WhatsApp"),
     ]);
 
     sheetBody.appendChild(head);
@@ -373,7 +320,6 @@
     sheet.setAttribute("aria-hidden", "false");
     sheet.classList.add("is-open");
     sheetBackdrop.classList.add("is-open");
-    lockScroll(true);
   }
 
   function closeSheet() {
@@ -383,55 +329,39 @@
     sheet.classList.remove("is-open");
     sheetBackdrop.classList.remove("is-open");
     sheet.setAttribute("aria-hidden", "true");
-    lockScroll(false);
   }
   $("#sheet-close")?.addEventListener("click", closeSheet);
   $("#sheet-backdrop")?.addEventListener("click", closeSheet);
+  buscaEl?.addEventListener("input", (e) => { searchTerm = e.target.value || ""; renderEvents(); });
 
-  // Busca com leve debounce
-  let searchT = 0;
-  $("#busca-eventos")?.addEventListener("input", (e) => {
-    searchTerm = e.target.value || "";
-    if (searchT) cancelAnimationFrame(searchT);
-    searchT = requestAnimationFrame(renderEvents);
-  });
-
-  /* =============== Calculadora (3% + manual 1,5%) =============== */
-  const priceEl = $("#calc-price"); // texto com máscara
+  /* =============== Calculadora (3% top + 1,5% manual) =============== */
+  const priceEl = $("#calc-price");       // texto livre
   const priceRangeEl = $("#calc-price-range");
   const qtyNEl = $("#calc-qty-n");
   const qtySlider = $("#calc-qty");
 
+  // KPIs (3%)
   const baseUnitEl = $("#calc-base-unit");
   const feeOrgEl = $("#calc-fee-org");
   const grossEl = $("#calc-gross");
   const netEl = $("#calc-net");
 
-  const manualFeeUnitEl = $("#manual-fee-unit");
-  const manualFeeTotalEl = $("#manual-fee-total");
-  const manualNetTotalEl = $("#manual-net-total");
-  const manualNetUnitEl = $("#manual-net-unit");
+  // KPIs (1,5% manual)
+  const manualFeeUnitEl   = $("#manual-fee-unit");
+  const manualFeeTotalEl  = $("#manual-fee-total");
+  const manualNetTotalEl  = $("#manual-net-total");
+  const manualNetUnitEl   = $("#manual-net-unit");
 
   let priceCents = brlToCents(qs.get("price")) || 6000; // default R$ 60,00
   let qty = clampInt(qs.get("qty") || localStorage.getItem("ia.qty") || "100", 0, 10000);
 
-  function clampInt(v, min, max){
-    const n = Math.max(min, Math.min(max, parseInt(v || "0", 10) || 0));
-    return n;
-  }
-
+  function clampInt(v, min, max){ const n = Math.max(min, Math.min(max, parseInt(v || "0", 10) || 0)); return n; }
   function centsToBRL(c){ return (c/100).toLocaleString("pt-BR", { style:"currency", currency:"BRL" }); }
   function brlToCents(raw){
     if (raw == null) return 0;
-    const s = String(raw).replace(/[^\d,.-]/g,"").replace(/\./g,"").replace(",",".");
+    const s = String(raw).replace(/[^\d,,-.]/g,"").replace(/\./g,"").replace(",",".");
     const n = Number(s);
-    return isFinite(n) ? Math.round(n * 100) : 0;
-  }
-  function maskBRLInput(el){
-    const v = el.value;
-    const cents = brlToCents(v);
-    el.value = centsToBRL(cents);
-    return cents;
+    return Number.isFinite(n) ? Math.round(n*100) : 0;
   }
 
   function pushState(){
@@ -444,36 +374,33 @@
   }
 
   function recalc(){
-    // Exibe base unitária
+    // Top (3%)
     baseUnitEl.textContent = centsToBRL(priceCents);
-
-    // Organizadores: 3%
-    const orgPct = 0.03;
-    const feeOrgUnit = Math.round(priceCents * orgPct);
+    const pct3 = 0.03;
+    const feeUnit3 = Math.round(priceCents * pct3);
     const gross = priceCents * qty;
-    const net = Math.max(0, (priceCents - feeOrgUnit) * qty);
-
-    feeOrgEl.textContent = `${centsToBRL(feeOrgUnit)} / ingresso`;
+    const net = Math.max(0, (priceCents - feeUnit3) * qty);
+    feeOrgEl.textContent = `${centsToBRL(feeUnit3)} / ingresso`;
     grossEl.textContent = centsToBRL(gross);
     netEl.textContent = centsToBRL(net);
 
-    // Emissão manual: 1,5% do valor base
-    const manualPct = 0.015;
-    const manualFeeUnit = Math.round(priceCents * manualPct);
-    const manualFeeTotal = manualFeeUnit * qty;
-    const manualNetTotal = Math.max(0, (priceCents - manualFeeUnit) * qty);
-    const manualNetUnit = Math.max(0, priceCents - manualFeeUnit);
-
-    manualFeeUnitEl.textContent = `${centsToBRL(manualFeeUnit)} / ingresso`;
-    manualFeeTotalEl.textContent = centsToBRL(manualFeeTotal);
+    // Bottom manual (1,5%)
+    const pct15 = 0.015;
+    const feeUnit15 = Math.round(priceCents * pct15);
+    const feeTotal15 = feeUnit15 * qty;
+    const manualNetTotal = Math.max(0, (priceCents - feeUnit15) * qty);
+    const manualNetUnit  = Math.max(0, priceCents - feeUnit15);
+    manualFeeUnitEl.textContent  = `${centsToBRL(feeUnit15)} / ingresso`;
+    manualFeeTotalEl.textContent = centsToBRL(feeTotal15);
     manualNetTotalEl.textContent = centsToBRL(manualNetTotal);
-    manualNetUnitEl.textContent = centsToBRL(manualNetUnit);
+    manualNetUnitEl.textContent  = centsToBRL(manualNetUnit);
   }
 
-  // UI events
+  // ====== UI events (preço livre; máscara só no blur) ======
   priceEl?.addEventListener("input", (e) => {
-    priceCents = maskBRLInput(e.target);
-    // sincroniza slider (intervalo 5..500)
+    // não sobrescreve o valor digitado; apenas recalcula
+    priceCents = brlToCents(e.target.value);
+    // sinc slider (5..500)
     const v = Math.max(5, Math.min(500, Math.round(priceCents/100)));
     if (priceRangeEl) priceRangeEl.value = String(v);
     pushState();
@@ -481,14 +408,13 @@
   });
 
   priceEl?.addEventListener("blur", (e) => {
-    // arredondamento “bonito”: se terminar em .00 → tenta .90; se > .90 → .99
+    // formata bonito no blur
     let c = brlToCents(e.target.value);
     const mod = c % 100;
     if (mod === 0 && c >= 1000) c = c - 10;            // .00 → .90
     else if (mod >= 90 && mod < 99) c = c + (99 - mod); // ~.90 → .99
     priceCents = Math.max(0, c);
     e.target.value = centsToBRL(priceCents);
-    // reflete no slider
     const v = Math.max(5, Math.min(500, Math.round(priceCents/100)));
     if (priceRangeEl) priceRangeEl.value = String(v);
     pushState();
@@ -503,7 +429,7 @@
     recalc();
   });
 
-  $("#calc-qty-n")?.addEventListener("input", (e) => {
+  qtyNEl?.addEventListener("input", (e) => {
     const v = clampInt(e.target.value, 0, 10000);
     e.target.value = String(v);
     qty = v;
@@ -511,7 +437,7 @@
     pushState();
     recalc();
   });
-  $("#calc-qty")?.addEventListener("input", (e) => {
+  qtySlider?.addEventListener("input", (e) => {
     const v = clampInt(e.target.value, 0, 1000);
     if (qtyNEl) qtyNEl.value = String(v);
     qty = v;
@@ -519,12 +445,35 @@
     recalc();
   });
 
+  /* =============== Tooltips (ícone "i") =============== */
+  function closeAllTips(exceptId){
+    $$(".tip-pop[aria-hidden='false']").forEach(n=>{
+      if (n.id !== exceptId) { n.setAttribute("aria-hidden","true"); n.classList.remove("open"); }
+    });
+  }
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest(".i-btn");
+    if (btn) {
+      const id = btn.getAttribute("aria-controls");
+      const tip = id && document.getElementById(id);
+      if (tip) {
+        const isOpen = tip.getAttribute("aria-hidden") === "false";
+        closeAllTips(isOpen ? undefined : id);
+        tip.setAttribute("aria-hidden", isOpen ? "true" : "false");
+        tip.classList.toggle("open", !isOpen);
+      }
+    } else {
+      if (!e.target.closest(".tip-pop")) closeAllTips();
+    }
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeAllTips();
+  });
+
   /* =============== Solicitação de criação (org) =============== */
   const reqForm = $("#req-form");
   const reqBtn = $("#req-send");
   const reqHint = $("#req-hint");
-
-  // categoria chips
   const catAth = $("#cat-ath");
   const catProd = $("#cat-prod");
   let reqCategory = "atleticas";
@@ -557,14 +506,12 @@
       if (res?.ok) {
         if (reqHint) reqHint.textContent = "Solicitação enviada. Você receberá o passo a passo no WhatsApp.";
         reqForm.reset();
-        setCat("atleticas"); // default
-        console.log("[analytics] org_request_sent", payload);
+        setCat("atleticas");
       } else {
         if (reqHint) reqHint.textContent = "Não foi possível enviar agora.";
       }
-    } catch (e) {
+    } catch {
       if (reqHint) reqHint.textContent = "Falha ao enviar. Tente novamente.";
-      console.error(e);
     } finally {
       reqBtn?.removeAttribute("disabled");
       setTimeout(() => reqHint && (reqHint.textContent = ""), 4500);
@@ -590,11 +537,8 @@
 
     try {
       let j;
-      try {
-        j = await getJSON(INGRESSAI_API + "/health");
-      } catch {
-        j = await getJSON(INGRESSAI_BASE + "/health");
-      }
+      try { j = await getJSON(INGRESSAI_API + "/health"); }
+      catch { j = await getJSON(INGRESSAI_BASE + "/health"); }
       setDiag(dHealth, !!j?.ok, j?.ok ? "on" : "off");
       authIndicator?.classList.remove("off", "on");
       authIndicator?.classList.add(j?.ok ? "on" : "off");
@@ -611,9 +555,8 @@
       setDiag(dEv, true, `${allEvents.length} evt`);
       buildCityChips();
       renderEvents();
-    } catch (e) {
+    } catch {
       setDiag(dEv, false, "—");
-      console.error(e);
     }
 
     try {
@@ -627,17 +570,17 @@
   }
 
   window.addEventListener("DOMContentLoaded", () => {
-    // estado inicial da calculadora
-    if (priceEl) priceEl.value = centsToBRL(priceCents);
-    if (baseUnitEl) baseUnitEl.textContent = centsToBRL(priceCents);
+    // estado inicial
+    priceEl.value = (priceCents/100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    baseUnitEl.textContent = (priceCents/100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
     const priceRangeDefault = Math.max(5, Math.min(500, Math.round(priceCents/100)));
     if (priceRangeEl) priceRangeEl.value = String(priceRangeDefault);
 
-    $("#calc-qty-n")?.value && ($("#calc-qty-n").value = String(qty));
-    $("#calc-qty")?.value && ($("#calc-qty").value = String(Math.min(1000, qty)));
+    qtyNEl.value = String(qty);
+    qtySlider.value = String(Math.min(1000, qty));
     recalc();
 
-    // run
-    runDiagnostics().catch((e) => console.error(e));
+    runDiagnostics().catch(()=>{});
   });
 })();
+</script>
