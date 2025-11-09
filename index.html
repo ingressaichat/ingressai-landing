@@ -7,6 +7,10 @@
   <title>IngressAI — Ingressos em minutos, direto no WhatsApp</title>
   <meta name="description" content="Compre ingressos em minutos pelo WhatsApp. Vitrine por cidade, checkout instantâneo, repasse via Pix e QR Code antifraude." />
   <meta name="robots" content="index,follow,max-image-preview:large" />
+  <!-- Força não-cache do HTML (o JS usa cache busting por querystring) -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
 
   <!-- API: o app.js lê daqui caso não use ?api= -->
   <meta name="ingressai-api" content="https://ingressai-backend-production.up.railway.app/api" />
@@ -358,7 +362,7 @@
             <div class="calc-row">
               <div>
                 <label for="calc-price"><strong>Preço base do ingresso</strong></label>
-                <input id="calc-price" class="input" type="text" inputmode="decimal" placeholder="R$ 60,00" value="R$ 60,00" />
+                <input id="calc-price" class="input" type="text" inputmode="decimal" placeholder="R$ 60,00" />
                 <div class="range-box" style="margin-top:6px">
                   <input id="calc-price-range" type="range" min="5" max="500" step="1" value="60" aria-label="Preço (slider)" />
                   <small class="subtle">Arraste para ajustar rapidamente (R$ 5 a R$ 500)</small>
@@ -376,7 +380,7 @@
             <!-- BLOCO 1: Vendas pela plataforma (3%) -->
             <div class="i-row" style="margin-top:6px">
               <strong>Vendas pela plataforma</strong>
-              <button type="button" class="i-btn" data-tip="#tip-plat" aria-label="Mais informações">i</button>
+              <button type="button" class="i-btn" aria-controls="tip-plat" aria-expanded="false" aria-label="Mais informações">i</button>
             </div>
             <div id="tip-plat" class="tip" aria-hidden="true">
               <div class="bubble">A taxa fixa para vendas pela plataforma é <b>3%</b> por ingresso.</div>
@@ -406,7 +410,7 @@
             <!-- BLOCO 2: Emissão manual (1,5%) -->
             <div class="i-row" style="margin-top:2px">
               <strong>Emissão manual</strong>
-              <button type="button" class="i-btn" data-tip="#tip-manual" aria-label="Mais informações">i</button>
+              <button type="button" class="i-btn" aria-controls="tip-manual" aria-expanded="false" aria-label="Mais informações">i</button>
             </div>
             <div id="tip-manual" class="tip" aria-hidden="true">
               <div class="bubble">Para emissão manual de ingressos, a taxa é de <b>1,5%</b> por ingresso.</div>
@@ -468,7 +472,7 @@
     <!-- SHEET -->
     <div class="sheet-backdrop" id="sheet-backdrop" aria-hidden="true"></div>
     <aside class="sheet" id="sheet" aria-hidden="true" role="dialog" aria-modal="true">
-      <button type="button" class="sheet-close" id="sheet-close" data-close="sheet" aria-label="Fechar">
+      <button type="button" class="sheet-close" id="sheet-close" aria-label="Fechar">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6L18 18M18 6L6 18"/></svg>
       </button>
       <div class="sheet-body" id="sheet-body"></div>
@@ -518,86 +522,7 @@
   {"@context":"https://schema.org","@type":"Organization","name":"IngressAI","url":"https://ingressai.chat/","logo":"https://ingressai.chat/logo_ingressai.png","sameAs":["https://instagram.com/ingressai"],"contactPoint":[{"@type":"ContactPoint","contactType":"customer support","areaServed":"BR","availableLanguage":"pt-BR"}]}
   </script>
 
-  <!-- Normaliza API global (fallback) -->
-  <script>
-    (function () {
-      const qsApi = new URLSearchParams(location.search).get("api") || "";
-      const PROD = "https://ingressai-backend-production.up.railway.app/api";
-      function normalizeApi(raw){
-        let s = String(raw||"").trim().replace(/\/+$/g,"");
-        if(!/\/api$/i.test(s)) s += "/api";
-        s = s.replace(/([^:])\/{2,}/g,"$1/");
-        return s;
-      }
-      window.INGRESSAI_API = normalizeApi(qsApi || PROD);
-      window.INGRESSAI_BASE = window.INGRESSAI_API.replace(/\/api$/,'');
-    })();
-  </script>
-
-  <!-- Wire do Validador: aponta pro backend, evitando CORS -->
-  <script>
-    requestAnimationFrame(() => {
-      try {
-        var base = (window.INGRESSAI_BASE || "").replace(/\/+$/,"");
-        if (!base) {
-          var meta = document.querySelector('meta[name="ingressai-api"]');
-          var api = (meta?.content || "").trim();
-          base = api ? api.replace(/\/api$/,"") : "";
-        }
-        var link = document.getElementById("org-validator");
-        if (link && base) link.href = base + "/app/validator.html";
-      } catch (e) {}
-    });
-  </script>
-
-  <!-- Tooltips (i) e Drawer: JS leve e isolado para não conflitar com app.js -->
-  <script>
-    (function () {
-      const $ = (s, r=document) => r.querySelector(s);
-      const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
-
-      // Header scroll
-      const header = $("header");
-      const toggleScrolled = () => header && (window.scrollY > 4 ? header.classList.add("is-scrolled") : header.classList.remove("is-scrolled"));
-      window.addEventListener("scroll", toggleScrolled, { passive: true }); toggleScrolled();
-
-      // Drawer
-      const drawer = $("#drawer");
-      const drawerBackdrop = $("#drawer-backdrop");
-      const btnDrawerOpen = $("#drawer-toggle");
-      const btnDrawerClose = $("#drawer-close");
-      const btnDrawerCreate = $("#drawer-create");
-      function openDrawer(){ if(!drawer) return; drawer.classList.add("is-open"); drawerBackdrop.classList.add("is-open"); btnDrawerOpen?.setAttribute("aria-expanded","true"); drawer.setAttribute("aria-hidden","false"); drawerBackdrop.setAttribute("aria-hidden","false"); }
-      function closeDrawer(){ if(!drawer) return; drawer.classList.remove("is-open"); drawerBackdrop.classList.remove("is-open"); btnDrawerOpen?.setAttribute("aria-expanded","false"); drawer.setAttribute("aria-hidden","true"); drawerBackdrop.setAttribute("aria-hidden","true"); }
-      btnDrawerOpen?.addEventListener("click", openDrawer);
-      btnDrawerClose?.addEventListener("click", closeDrawer);
-      drawerBackdrop?.addEventListener("click", closeDrawer);
-      btnDrawerCreate?.addEventListener("click", () => { closeDrawer(); document.getElementById("organizadores")?.scrollIntoView({ behavior: "smooth", block: "start" }); });
-
-      // Tooltips
-      $$(".i-btn").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const id = btn.getAttribute("data-tip");
-          if (!id) return;
-          const tip = document.querySelector(id);
-          if (!tip) return;
-          const isOpen = tip.classList.contains("open");
-          $$(".tip.open").forEach(t => t.classList.remove("open"));
-          if (!isOpen) tip.classList.add("open");
-          tip.setAttribute("aria-hidden", isOpen ? "true" : "false");
-        });
-      });
-
-      // Fechar tooltip ao clicar fora
-      document.addEventListener("click", (e) => {
-        const isBtn = e.target.closest(".i-btn");
-        const isTip = e.target.closest(".tip");
-        if (!isBtn && !isTip) $$(".tip.open").forEach(t => t.classList.remove("open"));
-      });
-    })();
-  </script>
-
-  <!-- app principal -->
-  <script defer src="./app.js"></script>
+  <!-- app principal (com cache-busting) -->
+  <script defer src="./app.js?v=2025-11-09-01"></script>
 </body>
 </html>
