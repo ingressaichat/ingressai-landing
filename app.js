@@ -85,20 +85,28 @@
     return node;
   }
 
-  /* =============== Drawer =============== */
+  /* =============== Drawer (acessível) =============== */
   const drawer = $("#drawer");
   const drawerBackdrop = $("#drawer-backdrop");
   const btnDrawerOpen = $("#drawer-toggle");
   const btnDrawerClose = $("#drawer-close");
   const btnDrawerCreate = $("#drawer-create");
+  let lastFocus = null;
 
+  function lockScroll(on) {
+    document.documentElement.style.overflow = on ? "hidden" : "";
+    document.body.style.overscrollBehavior = on ? "contain" : "";
+  }
   function openDrawer() {
     if (!drawer) return;
+    lastFocus = document.activeElement;
     drawer.classList.add("is-open");
     drawerBackdrop.classList.add("is-open");
     btnDrawerOpen?.setAttribute("aria-expanded", "true");
     drawer.setAttribute("aria-hidden", "false");
     drawerBackdrop.setAttribute("aria-hidden", "false");
+    lockScroll(true);
+    drawer.querySelector("button, a, [tabindex]")?.focus();
   }
   function closeDrawer() {
     if (!drawer) return;
@@ -106,7 +114,8 @@
     drawerBackdrop.classList.remove("is-open");
     btnDrawerOpen?.setAttribute("aria-expanded", "false");
     drawer.setAttribute("aria-hidden", "true");
-    drawerBackdrop.setAttribute("aria-hidden", "true");
+    lockScroll(false);
+    lastFocus?.focus?.();
   }
   btnDrawerOpen?.addEventListener("click", openDrawer);
   btnDrawerClose?.addEventListener("click", closeDrawer);
@@ -115,6 +124,12 @@
     closeDrawer();
     document.getElementById("organizadores")?.scrollIntoView({ behavior: "smooth", block: "start" });
   });
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      if (drawer?.classList.contains("is-open")) closeDrawer();
+      if ($("#sheet")?.classList.contains("is-open")) closeSheet();
+    }
+  }, { passive: true });
 
   /* =============== Header scroll effect =============== */
   const header = $("header");
@@ -132,7 +147,7 @@
   const buscaEl = $("#busca-eventos");
 
   let allEvents = [];
-  let activeCity = null;
+  let activeCity = localStorage.getItem("ia.city") || null;
   let searchTerm = "";
 
   async function fetchEventsSmart() {
@@ -155,7 +170,7 @@
           json?.rows ||
           [];
         if (Array.isArray(events)) return events;
-      } catch (e) {
+      } catch {
         /* tenta próximo */
       }
     }
@@ -266,6 +281,7 @@
     );
     allChip.addEventListener("click", () => {
       activeCity = null;
+      localStorage.removeItem("ia.city");
       $$('[role="tab"]', filtroCidadesEl).forEach((n) =>
         n.setAttribute("aria-selected", "false")
       );
@@ -289,6 +305,7 @@
       );
       chip.addEventListener("click", () => {
         activeCity = city;
+        localStorage.setItem("ia.city", city);
         $$('[role="tab"]', filtroCidadesEl).forEach((n) =>
           n.setAttribute("aria-selected", "false")
         );
@@ -356,6 +373,7 @@
     sheet.setAttribute("aria-hidden", "false");
     sheet.classList.add("is-open");
     sheetBackdrop.classList.add("is-open");
+    lockScroll(true);
   }
 
   function closeSheet() {
@@ -365,12 +383,17 @@
     sheet.classList.remove("is-open");
     sheetBackdrop.classList.remove("is-open");
     sheet.setAttribute("aria-hidden", "true");
+    lockScroll(false);
   }
   $("#sheet-close")?.addEventListener("click", closeSheet);
   $("#sheet-backdrop")?.addEventListener("click", closeSheet);
+
+  // Busca com leve debounce
+  let searchT = 0;
   $("#busca-eventos")?.addEventListener("input", (e) => {
     searchTerm = e.target.value || "";
-    renderEvents();
+    if (searchT) cancelAnimationFrame(searchT);
+    searchT = requestAnimationFrame(renderEvents);
   });
 
   /* =============== Calculadora (3% + manual 1,5%) =============== */
@@ -576,7 +599,7 @@
       authIndicator?.classList.remove("off", "on");
       authIndicator?.classList.add(j?.ok ? "on" : "off");
       if (authIndicator) authIndicator.textContent = j?.ok ? "online" : "offline";
-    } catch (e) {
+    } catch {
       setDiag(dHealth, false);
       authIndicator?.classList.remove("off", "on");
       authIndicator?.classList.add("off");
@@ -605,13 +628,13 @@
 
   window.addEventListener("DOMContentLoaded", () => {
     // estado inicial da calculadora
-    priceEl.value = centsToBRL(priceCents);
-    baseUnitEl.textContent = centsToBRL(priceCents);
+    if (priceEl) priceEl.value = centsToBRL(priceCents);
+    if (baseUnitEl) baseUnitEl.textContent = centsToBRL(priceCents);
     const priceRangeDefault = Math.max(5, Math.min(500, Math.round(priceCents/100)));
     if (priceRangeEl) priceRangeEl.value = String(priceRangeDefault);
 
-    $("#calc-qty-n").value = String(qty);
-    $("#calc-qty").value = String(Math.min(1000, qty));
+    $("#calc-qty-n")?.value && ($("#calc-qty-n").value = String(qty));
+    $("#calc-qty")?.value && ($("#calc-qty").value = String(Math.min(1000, qty)));
     recalc();
 
     // run
