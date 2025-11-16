@@ -26,6 +26,7 @@
     const t = await r.text();
     return t ? JSON.parse(t) : {};
   }
+
   async function postJSON(url, body = {}, opts = {}) {
     const r = await fetch(url, {
       method: "POST",
@@ -40,20 +41,49 @@
     if (!r.ok) {
       const msg = j?.error || j?.message || `HTTP ${r.status} @ ${url}`;
       const err = new Error(msg);
-      err.response = j; err.status = r.status;
+      err.response = j;
+      err.status = r.status;
       throw err;
     }
     return j;
   }
 
   // Helpers de moeda
-  function clampInt(v, min, max){ const n = Math.max(min, Math.min(max, parseInt(v || "0", 10) || 0)); return n; }
-  function centsToBRL(c){ return (c/100).toLocaleString("pt-BR", { style:"currency", currency:"BRL" }); }
-  function brlToCents(raw){
+  function clampInt(v, min, max) {
+    const n = Math.max(min, Math.min(max, parseInt(v || "0", 10) || 0));
+    return n;
+  }
+  function centsToBRL(c) {
+    return (c / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  }
+  function brlToCents(raw) {
     if (raw == null) return 0;
-    const s = String(raw).replace(/[^\d,.-]/g,"").replace(/\./g,"").replace(",",".");
+    const s = String(raw).replace(/[^\d,.-]/g, "").replace(/\./g, "").replace(",", ".");
     const n = Number(s);
-    return Number.isFinite(n) ? Math.round(n*100) : 0;
+    return Number.isFinite(n) ? Math.round(n * 100) : 0;
+  }
+
+  // ===== NOVO: extrator robusto de eventos =====
+  function extractEventsPayload(json) {
+    if (!json) return [];
+
+    // Se já for array, é direto
+    if (Array.isArray(json)) return json;
+
+    // Formatos mais comuns
+    if (Array.isArray(json.events)) return json.events;
+    if (Array.isArray(json.data?.events)) return json.data.events;
+    if (Array.isArray(json.data?.rows)) return json.data.rows;
+    if (Array.isArray(json.rows)) return json.rows;
+    if (Array.isArray(json.items)) return json.items;
+    if (Array.isArray(json.data)) return json.data;
+    if (Array.isArray(json.result)) return json.result;
+    if (Array.isArray(json.vitrine)) return json.vitrine;
+
+    // Último fallback: se tiver "events" como objeto com "rows"
+    if (Array.isArray(json.events?.rows)) return json.events.rows;
+
+    return [];
   }
 
   // Entrypoint
@@ -85,7 +115,8 @@
 
     // ===== Header scroll
     const header = $("header");
-    const toggleScrolled = () => header && (window.scrollY > 4 ? header.classList.add("is-scrolled") : header.classList.remove("is-scrolled"));
+    const toggleScrolled = () =>
+      header && (window.scrollY > 4 ? header.classList.add("is-scrolled") : header.classList.remove("is-scrolled"));
     window.addEventListener("scroll", toggleScrolled, { passive: true });
     toggleScrolled();
 
@@ -95,8 +126,22 @@
     const btnDrawerOpen = $("#drawer-toggle");
     const btnDrawerClose = $("#drawer-close");
     const btnDrawerCreate = $("#drawer-create");
-    function openDrawer(){ if(!drawer) return; drawer.classList.add("is-open"); drawerBackdrop.classList.add("is-open"); btnDrawerOpen?.setAttribute("aria-expanded","true"); drawer.setAttribute("aria-hidden","false"); drawerBackdrop.setAttribute("aria-hidden","false"); }
-    function closeDrawer(){ if(!drawer) return; drawer.classList.remove("is-open"); drawerBackdrop.classList.remove("is-open"); btnDrawerOpen?.setAttribute("aria-expanded","false"); drawer.setAttribute("aria-hidden","true"); drawerBackdrop.setAttribute("aria-hidden","true"); }
+    function openDrawer() {
+      if (!drawer) return;
+      drawer.classList.add("is-open");
+      drawerBackdrop.classList.add("is-open");
+      btnDrawerOpen?.setAttribute("aria-expanded", "true");
+      drawer.setAttribute("aria-hidden", "false");
+      drawerBackdrop.setAttribute("aria-hidden", "false");
+    }
+    function closeDrawer() {
+      if (!drawer) return;
+      drawer.classList.remove("is-open");
+      drawerBackdrop.classList.remove("is-open");
+      btnDrawerOpen?.setAttribute("aria-expanded", "false");
+      drawer.setAttribute("aria-hidden", "true");
+      drawerBackdrop.setAttribute("aria-hidden", "true");
+    }
     btnDrawerOpen?.addEventListener("click", openDrawer);
     btnDrawerClose?.addEventListener("click", closeDrawer);
     drawerBackdrop?.addEventListener("click", closeDrawer);
@@ -120,18 +165,22 @@
         try {
           const url = INGRESSAI_API + p;
           const json = await getJSON(url);
-          const events =
-            json?.events ||
-            (Array.isArray(json) ? json : null) ||
-            json?.data?.events ||
-            json?.data ||
-            json?.items ||
-            json?.rows ||
-            [];
-          if (Array.isArray(events)) return events;
-        } catch { /* próximo */ }
+          const events = extractEventsPayload(json);
+          if (Array.isArray(events) && events.length) {
+            console.debug("[vitrine] usando", p, "com", events.length, "eventos");
+            return events;
+          }
+        } catch (err) {
+          console.warn("[vitrine] falha em", p, err?.message || err);
+        }
       }
-      throw new Error("Nenhum endpoint de eventos respondeu.");
+      // Se nenhum endpoint retornou eventos, tenta pelo menos /events "cru"
+      try {
+        const json = await getJSON(INGRESSAI_API + "/events");
+        const events = extractEventsPayload(json);
+        if (Array.isArray(events)) return events;
+      } catch {}
+      return [];
     }
 
     const cityFrom = (ev) => ev.city || ev.cidade || ev.location?.city || ev.venueCity || ev.placeCity || null;
@@ -143,12 +192,19 @@
       if (ev.lowStock) return ["low", "Últimos ingressos"];
       return ["soon", "Disponível"];
     }
+
     function imgNode(src) {
       const img = document.createElement("img");
       img.loading = "lazy";
       img.alt = "Capa do evento";
       img.src = resolveMediaUrl(src);
-      img.addEventListener("error", () => { img.src = PLACEHOLDER_IMG; }, { once:true });
+      img.addEventListener(
+        "error",
+        () => {
+          img.src = PLACEHOLDER_IMG;
+        },
+        { once: true }
+      );
       return img;
     }
 
@@ -175,7 +231,11 @@
         const city = (cityFrom(ev) || "").toLowerCase();
         const title = (ev.title || ev.name || ev.eventTitle || "").toLowerCase();
         const hitCity = !activeCity || city === activeCity.toLowerCase();
-        const hitSearch = !q || title.includes(q) || city.includes(q) || (ev.venue || ev.local || "").toLowerCase().includes(q);
+        const hitSearch =
+          !q ||
+          title.includes(q) ||
+          city.includes(q) ||
+          (ev.venue || ev.local || "").toLowerCase().includes(q);
         return hitCity && hitSearch;
       });
 
@@ -195,22 +255,36 @@
         const img = mediaFrom(ev);
         const [k, label] = statusChip(ev);
 
-        const card = el("article", { class: "card", tabindex: "0", role: "button" }, [
-          el("div", { class: "card-header" }, [
-            el("div", {}, [
-              el("div", { class: "card-city" }, city || "—"),
-              el("div", { class: "card-title" }, ev.title || ev.name || ev.eventTitle || "Evento"),
-              el("div", { class: `status-line status--${k}` }, [
-                el("span", { class: "status-dot", "aria-hidden": "true" }),
-                el("span", {}, label),
+        const card = el(
+          "article",
+          { class: "card", tabindex: "0", role: "button" },
+          [
+            el("div", { class: "card-header" }, [
+              el("div", {}, [
+                el("div", { class: "card-city" }, city || "—"),
+                el(
+                  "div",
+                  { class: "card-title" },
+                  ev.title || ev.name || ev.eventTitle || "Evento"
+                ),
+                el("div", { class: `status-line status--${k}` }, [
+                  el("span", { class: "status-dot", "aria-hidden": "true" }),
+                  el("span", {}, label),
+                ]),
               ]),
             ]),
-          ]),
-          el("div", { class: "card-media" }, img ? imgNode(img) : imgNode(null)),
-        ]);
+            el(
+              "div",
+              { class: "card-media" },
+              img ? imgNode(img) : imgNode(null)
+            ),
+          ]
+        );
 
         card.addEventListener("click", () => openEventSheet(ev));
-        card.addEventListener("keyup", (e) => { if (e.key === "Enter" || e.key === " ") openEventSheet(ev); });
+        card.addEventListener("keyup", (e) => {
+          if (e.key === "Enter" || e.key === " ") openEventSheet(ev);
+        });
         listaEl.appendChild(card);
       });
     }
@@ -218,28 +292,47 @@
     function buildCityChips() {
       if (!filtroCidadesEl) return;
       const set = new Set();
-      allEvents.forEach((ev) => { const c = cityFrom(ev); if (c) set.add(String(c)); });
+      allEvents.forEach((ev) => {
+        const c = cityFrom(ev);
+        if (c) set.add(String(c));
+      });
 
       const cities = Array.from(set).sort((a, b) => a.localeCompare(b, "pt-BR"));
       filtroCidadesEl.innerHTML = "";
 
-      const allChip = el("button", { class: "chip", role: "tab", "aria-selected": activeCity ? "false" : "true" }, "Todas");
+      const allChip = el(
+        "button",
+        { class: "chip", role: "tab", "aria-selected": activeCity ? "false" : "true" },
+        "Todas"
+      );
       allChip.addEventListener("click", () => {
         activeCity = null;
-        $$('[role="tab"]', filtroCidadesEl).forEach((n) => n.setAttribute("aria-selected", "false"));
+        $$('[role="tab"]', filtroCidadesEl).forEach((n) =>
+          n.setAttribute("aria-selected", "false")
+        );
         allChip.setAttribute("aria-selected", "true");
         renderEvents();
       });
       filtroCidadesEl.appendChild(allChip);
 
       cities.forEach((city) => {
-        const chip = el("button", {
-          class: "chip", role: "tab",
-          "aria-selected": activeCity && activeCity.toLowerCase() === city.toLowerCase() ? "true" : "false",
-        }, city);
+        const chip = el(
+          "button",
+          {
+            class: "chip",
+            role: "tab",
+            "aria-selected":
+              activeCity && activeCity.toLowerCase() === city.toLowerCase()
+                ? "true"
+                : "false",
+          },
+          city
+        );
         chip.addEventListener("click", () => {
           activeCity = city;
-          $$('[role="tab"]', filtroCidadesEl).forEach((n) => n.setAttribute("aria-selected", "false"));
+          $$('[role="tab"]', filtroCidadesEl).forEach((n) =>
+            n.setAttribute("aria-selected", "false")
+          );
           chip.setAttribute("aria-selected", "true");
           renderEvents();
         });
@@ -266,7 +359,11 @@
         ]),
       ]);
 
-      const mediaNode = el("div", { class: "sheet-media" }, [ img ? imgNode(img) : imgNode(null) ]);
+      const mediaNode = el(
+        "div",
+        { class: "sheet-media" },
+        [img ? imgNode(img) : imgNode(null)]
+      );
 
       const makeWaDeepLink = (ev) => {
         const id = ev.id || ev.slug || "";
@@ -282,7 +379,16 @@
       ]);
 
       const actions = el("div", { style: "display:flex;gap:8px;margin-top:8px" }, [
-        el("a", { class: "btn btn--secondary btn--sm", href: ctaHref, target: "_blank", rel: "noopener noreferrer" }, "Comprar no WhatsApp"),
+        el(
+          "a",
+          {
+            class: "btn btn--secondary btn--sm",
+            href: ctaHref,
+            target: "_blank",
+            rel: "noopener noreferrer",
+          },
+          "Comprar no WhatsApp"
+        ),
       ]);
 
       sheetBody.appendChild(head);
@@ -300,12 +406,15 @@
       const sheetBackdrop = $("#sheet-backdrop");
       if (!sheet) return;
       sheet.classList.remove("is-open");
-      sheetBackdrop.classList.remove("is-open");
+      sheetBackdrop?.classList.remove("is-open");
       sheet.setAttribute("aria-hidden", "true");
     }
     $("#sheet-close")?.addEventListener("click", closeSheet);
     $("#sheet-backdrop")?.addEventListener("click", closeSheet);
-    buscaEl?.addEventListener("input", (e) => { searchTerm = e.target.value || ""; renderEvents(); });
+    buscaEl?.addEventListener("input", (e) => {
+      searchTerm = e.target.value || "";
+      renderEvents();
+    });
 
     // ===== Calculadora (3% top + 1,5% manual)
     const priceEl = $("#calc-price");
@@ -318,24 +427,24 @@
     const grossEl = $("#calc-gross");
     const netEl = $("#calc-net");
 
-    const manualFeeUnitEl   = $("#manual-fee-unit");
-    const manualFeeTotalEl  = $("#manual-fee-total");
-    const manualNetTotalEl  = $("#manual-net-total");
-    const manualNetUnitEl   = $("#manual-net-unit");
+    const manualFeeUnitEl = $("#manual-fee-unit");
+    const manualFeeTotalEl = $("#manual-fee-total");
+    const manualNetTotalEl = $("#manual-net-total");
+    const manualNetUnitEl = $("#manual-net-unit");
 
     let priceCents = brlToCents(qs.get("price")) || 6000; // R$ 60,00
     let qty = clampInt(qs.get("qty") || localStorage.getItem("ia.qty") || "100", 0, 10000);
 
-    function pushState(){
+    function pushState() {
       const params = new URLSearchParams(location.search);
-      params.set("price", (priceCents/100).toFixed(2));
+      params.set("price", (priceCents / 100).toFixed(2));
       params.set("qty", String(qty));
       const newUrl = `${location.pathname}?${params.toString()}${location.hash || ""}`;
       history.replaceState(null, "", newUrl);
       localStorage.setItem("ia.qty", String(qty));
     }
 
-    function recalc(){
+    function recalc() {
       // 3% (plataforma)
       baseUnitEl.textContent = centsToBRL(priceCents);
       const pct3 = 0.03;
@@ -351,16 +460,16 @@
       const feeUnit15 = Math.round(priceCents * pct15);
       const feeTotal15 = feeUnit15 * qty;
       const manualNetTotal = Math.max(0, (priceCents - feeUnit15) * qty);
-      const manualNetUnit  = Math.max(0, priceCents - feeUnit15);
-      manualFeeUnitEl.textContent  = `${centsToBRL(feeUnit15)} / ingresso`;
+      const manualNetUnit = Math.max(0, priceCents - feeUnit15);
+      manualFeeUnitEl.textContent = `${centsToBRL(feeUnit15)} / ingresso`;
       manualFeeTotalEl.textContent = centsToBRL(feeTotal15);
       manualNetTotalEl.textContent = centsToBRL(manualNetTotal);
-      manualNetUnitEl.textContent  = centsToBRL(manualNetUnit);
+      manualNetUnitEl.textContent = centsToBRL(manualNetUnit);
     }
 
     // Prepara campos iniciais
     if (priceEl) priceEl.value = centsToBRL(priceCents);
-    const priceRangeDefault = Math.max(5, Math.min(500, Math.round(priceCents/100)));
+    const priceRangeDefault = Math.max(5, Math.min(500, Math.round(priceCents / 100)));
     if (priceRangeEl) priceRangeEl.value = String(priceRangeDefault);
     if (qtyNEl) qtyNEl.value = String(qty);
     if (qtySlider) qtySlider.value = String(Math.min(1000, qty));
@@ -369,44 +478,54 @@
     // Eventos UI
     priceEl?.addEventListener("input", (e) => {
       priceCents = brlToCents(e.target.value);
-      const v = Math.max(5, Math.min(500, Math.round(priceCents/100)));
+      const v = Math.max(5, Math.min(500, Math.round(priceCents / 100)));
       if (priceRangeEl) priceRangeEl.value = String(v);
-      pushState(); recalc();
+      pushState();
+      recalc();
     });
     priceEl?.addEventListener("blur", (e) => {
       let c = brlToCents(e.target.value);
       const mod = c % 100;
-      if (mod === 0 && c >= 1000) c = c - 10;            // .00 → .90
+      if (mod === 0 && c >= 1000) c = c - 10; // .00 → .90
       else if (mod >= 90 && mod < 99) c = c + (99 - mod); // ~.90 → .99
       priceCents = Math.max(0, c);
       e.target.value = centsToBRL(priceCents);
-      const v = Math.max(5, Math.min(500, Math.round(priceCents/100)));
+      const v = Math.max(5, Math.min(500, Math.round(priceCents / 100)));
       if (priceRangeEl) priceRangeEl.value = String(v);
-      pushState(); recalc();
+      pushState();
+      recalc();
     });
     priceRangeEl?.addEventListener("input", (e) => {
       const reais = clampInt(e.target.value, 5, 500);
       priceCents = reais * 100;
       if (priceEl) priceEl.value = centsToBRL(priceCents);
-      pushState(); recalc();
+      pushState();
+      recalc();
     });
     qtyNEl?.addEventListener("input", (e) => {
       const v = clampInt(e.target.value, 0, 10000);
       e.target.value = String(v);
       qty = v;
       if (qtySlider) qtySlider.value = String(Math.min(1000, v));
-      pushState(); recalc();
+      pushState();
+      recalc();
     });
     qtySlider?.addEventListener("input", (e) => {
       const v = clampInt(e.target.value, 0, 1000);
       if (qtyNEl) qtyNEl.value = String(v);
       qty = v;
-      pushState(); recalc();
+      pushState();
+      recalc();
     });
 
     // Tooltips acessíveis (usa aria-controls)
-    function closeAllTips(except){
-      $$(".tip[aria-hidden='false']").forEach(n => { if (n.id !== except) { n.setAttribute("aria-hidden","true"); n.classList.remove("open"); }});
+    function closeAllTips(except) {
+      $$(".tip[aria-hidden='false']").forEach((n) => {
+        if (n.id !== except) {
+          n.setAttribute("aria-hidden", "true");
+          n.classList.remove("open");
+        }
+      });
     }
     document.addEventListener("click", (e) => {
       const btn = e.target.closest(".i-btn");
@@ -423,7 +542,9 @@
         closeAllTips();
       }
     });
-    document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeAllTips(); });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeAllTips();
+    });
 
     // Form "Quero criar meu evento"
     const reqForm = $("#req-form");
@@ -432,7 +553,7 @@
     const catAth = $("#cat-ath");
     const catProd = $("#cat-prod");
     let reqCategory = "atleticas";
-    function setCat(which){
+    function setCat(which) {
       reqCategory = which;
       catAth?.setAttribute("aria-checked", which === "atleticas" ? "true" : "false");
       catProd?.setAttribute("aria-checked", which === "produtoras" ? "true" : "false");
@@ -446,7 +567,10 @@
       const title = $("#req-title")?.value?.trim() || "";
       const name = $("#req-name")?.value?.trim() || "";
       const city = $("#req-city")?.value?.trim() || "";
-      if (!phone || !title || !name || !city) { if (reqHint) reqHint.textContent = "Preencha WhatsApp, evento, seu nome e cidade."; return; }
+      if (!phone || !title || !name || !city) {
+        if (reqHint) reqHint.textContent = "Preencha WhatsApp, evento, seu nome e cidade.";
+        return;
+      }
 
       reqBtn?.setAttribute("disabled", "true");
       if (reqHint) reqHint.textContent = "Enviando…";
@@ -455,7 +579,8 @@
         const res = await postJSON(INGRESSAI_API + "/org/request", payload);
         if (res?.ok) {
           if (reqHint) reqHint.textContent = "Solicitação enviada. Você receberá o passo a passo no WhatsApp.";
-          reqForm.reset(); setCat("atleticas");
+          reqForm.reset();
+          setCat("atleticas");
         } else {
           if (reqHint) reqHint.textContent = "Não foi possível enviar agora.";
         }
@@ -482,8 +607,11 @@
     try {
       setDiag(dApi, !!INGRESSAI_API, INGRESSAI_API || "off");
       let j;
-      try { j = await getJSON(INGRESSAI_API + "/health"); }
-      catch { j = await getJSON(INGRESSAI_BASE + "/health"); }
+      try {
+        j = await getJSON(INGRESSAI_API + "/health");
+      } catch {
+        j = await getJSON(INGRESSAI_BASE + "/health");
+      }
       setDiag(dHealth, !!j?.ok, j?.ok ? "on" : "off");
       authIndicator?.classList.remove("off", "on");
       authIndicator?.classList.add(j?.ok ? "on" : "off");
@@ -498,9 +626,11 @@
     try {
       allEvents = await fetchEventsSmart();
       setDiag(dEv, true, `${allEvents.length} evt`);
+      console.debug("[vitrine] eventos carregados:", allEvents);
       buildCityChips();
       renderEvents();
-    } catch {
+    } catch (err) {
+      console.error("[vitrine] erro ao carregar eventos", err);
       setDiag(dEv, false, "—");
     }
 
