@@ -1,550 +1,793 @@
-<!doctype html>
-<html lang="pt-BR">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="format-detection" content="telephone=no" />
-  <title>IngressAI — Ingressos em minutos, direto no WhatsApp</title>
-  <meta name="description" content="Compre ingressos em minutos pelo WhatsApp. Vitrine por cidade, checkout instantâneo, repasse via Pix e QR Code antifraude." />
-  <meta name="robots" content="index,follow,max-image-preview:large" />
-  <!-- Força não-cache do HTML (o JS usa cache busting por querystring) -->
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
+/* app.js — IngressAI (frontend leve)
+   - vitrine, filtros, sheet
+   - calculadora (mobile-first): 3% plataforma (top); emissão manual 1,5% (bottom)
+   - preço com digitação livre; máscara no blur; sliders sincronizados
+   - formulário "Quero criar meu evento"
+   - máscara BRL, URL state, localStorage, skeletons, tooltips acessíveis
+   - diagnóstico de backend
+*/
+(() => {
+  "use strict";
 
-  <!-- API: o app.js lê daqui caso não use ?api= -->
-  <meta name="ingressai-api" content="https://ingressai-backend-production.up.railway.app/api" />
+  // Utilitários básicos
+  const $ = (sel, root = document) => root.querySelector(sel);
+  const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
-  <!-- OG/Twitter -->
-  <meta property="og:title" content="IngressAI — Ingressos em minutos" />
-  <meta property="og:description" content="Vitrine por cidade, checkout instantâneo, QR Code antifraude e repasse T+0." />
-  <meta property="og:type" content="website" />
-  <meta property="og:image" content="https://ingressai.chat/logo_ingressai.png" />
-  <meta property="og:site_name" content="IngressAI" />
-  <meta property="og:locale" content="pt_BR" />
-  <meta name="twitter:card" content="summary_large_image" />
+  function normalizeApi(raw) {
+    let s = String(raw || "").trim().replace(/\/+$/g, "");
+    if (!/\/api$/i.test(s)) s += "/api";
+    s = s.replace(/([^:])\/{2,}/g, "$1/");
+    return s;
+  }
 
-  <meta name="theme-color" content="#2F7DD9" />
-  <meta name="color-scheme" content="light" />
-  <link rel="icon" href="./favicon.png" type="image/png" />
-  <link rel="preload" as="image" href="./logo_ingressai.png" />
+  async function getJSON(url, opts = {}) {
+    const r = await fetch(url, {
+      method: "GET",
+      credentials: "omit",
+      mode: "cors",
+      cache: "no-store",
+      ...opts,
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status} @ ${url}`);
+    const t = await r.text();
+    return t ? JSON.parse(t) : {};
+  }
 
-  <style>
-    :root{
-      /* Escala áurea */
-      --phi:1.618;
-      --s-2:4px; --s-1:8px; --s0:12px;
-      --s1:calc(var(--s0)*var(--phi));      /* ~19px */
-      --s2:calc(var(--s1)*var(--phi));      /* ~31px */
-      --s3:calc(var(--s2)*var(--phi));      /* ~50px */
-      --s4:calc(var(--s3)*var(--phi));      /* ~81px */
-
-      --fs-0:1rem;
-      --fs--1:calc(var(--fs-0)/var(--phi));
-      --fs-1:calc(var(--fs-0)*var(--phi));
-      --fs-2:calc(var(--fs-1)*var(--phi));
-      --lh:1.45; --lh-compact:1.22;
-
-      --ink:#0b1220; --muted:#5b6b86; --bg:#f6f8fc; --card:#ffffff;
-      --blue-2:#2F7DD9; --blue-soft:#eaf3ff;
-      --shadow:0 10px 28px rgba(47,125,217,.14),0 2px 6px rgba(11,18,32,.08);
-      --shadow-soft:0 6px 18px rgba(47,125,217,.12);
-      --ring:0 0 0 2px rgba(74,147,240,.18);
-
-      --container-max:calc(680px*var(--phi));
-      --btn-h:52px; --radius-pill:999px; --t-fast:.18s; --t-med:.28s;
-
-      --ok:#157f3b; --ok-bg:#e9f7ec; --ok-bd:#cfe8d7;
-      --warn:#b64848; --warn-bg:#fff7f7; --warn-bd:#ffdede;
+  async function postJSON(url, body = {}, opts = {}) {
+    const r = await fetch(url, {
+      method: "POST",
+      credentials: "omit",
+      mode: "cors",
+      headers: {
+        "Content-Type": "application/json",
+        ...(opts.headers || {}),
+      },
+      body: JSON.stringify(body),
+      ...opts,
+    });
+    const t = await r.text();
+    const j = t ? JSON.parse(t) : {};
+    if (!r.ok) {
+      const msg = j?.error || j?.message || `HTTP ${r.status} @ ${url}`;
+      const err = new Error(msg);
+      err.response = j;
+      err.status = r.status;
+      throw err;
     }
-    *{box-sizing:border-box}
-    html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font:16px/var(--lh) -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Ubuntu,Inter,system-ui,sans-serif}
-    a{color:inherit;text-decoration:none}
-    :focus-visible{outline:none;box-shadow:var(--ring)}
-    .container{max-width:var(--container-max);margin:0 auto;padding:0 var(--s2)}
-    @media(min-width:420px){.container{padding:0 var(--s3)}}
-    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
-    .subtle{color:var(--muted)}
-    :where(section,[id]){scroll-margin-top:96px}
+    return j;
+  }
 
-    /* Header */
-    header{position:sticky;top:0;z-index:40;background:#fff;border-bottom:1px solid #e7eefb;transition:box-shadow var(--t-fast),border-color var(--t-fast),background-color var(--t-fast)}
-    header.is-scrolled{box-shadow:var(--shadow);border-color:#e1e9fb}
-    .head{display:flex;align-items:center;justify-content:space-between;padding:10px 0}
-    .brand{display:flex;align-items:center;gap:10px;font-weight:900}
-    .brand img{width:28px;height:28px}
-    .only-action{display:flex;align-items:center;gap:8px}
-    .menu-btn{appearance:none;border:1px solid #e7eefb;background:#fff;border-radius:12px;padding:.55rem .7rem;box-shadow:var(--shadow-soft);display:inline-grid;place-items:center;cursor:pointer}
-    .menu-btn:active{transform:scale(.98)}
-    .menu-icon{width:26px;height:26px;display:block;color:#2F7DD9}
+  // Helpers de moeda
+  function clampInt(v, min, max) {
+    const n = Math.max(min, Math.min(max, parseInt(v || "0", 10) || 0));
+    return n;
+  }
+  function centsToBRL(c) {
+    return (c / 100).toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    });
+  }
+  function brlToCents(raw) {
+    if (raw == null) return 0;
+    const s = String(raw)
+      .replace(/[^\d,.-]/g, "")
+      .replace(/\./g, "")
+      .replace(",", ".");
+    const n = Number(s);
+    return Number.isFinite(n) ? Math.round(n * 100) : 0;
+  }
 
-    /* Drawer */
-    .drawer{position:fixed;top:0;right:-320px;width:min(320px,90vw);height:100%;background:#fff;border-left:1px solid #e7eefb;box-shadow:-20px 0 40px rgba(11,18,32,.14);transition:right var(--t-med) cubic-bezier(.2,.7,.2,1);z-index:60;padding:16px;display:flex;flex-direction:column;gap:10px}
-    .drawer.is-open{right:0}
-    .drawer-head{display:flex;align-items:center;justify-content:space-between}
-    .drawer-title{font-weight:900;margin:0}
-    .drawer-btn{min-height:44px;padding:0 14px;border-radius:12px;border:1px solid #e7eefb;background:#fff;box-shadow:var(--shadow-soft);font-weight:800;display:inline-flex;align-items:center;gap:8px}
-    .drawer-backdrop{position:fixed;inset:0;background:rgba(11,18,32,.36);opacity:0;pointer-events:none;transition:opacity var(--t-fast);z-index:55}
-    .drawer-backdrop.is-open{opacity:1;pointer-events:auto}
+  // ===== NOVO: extrator robusto de eventos =====
 
-    .tag{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:.25rem .6rem;font:inherit;font-weight:800}
-    .tag.on{background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-bd)}
-    .tag.off{background:#fff4f4;color:#b64848;border:1px solid #ffdede}
+  // Busca recursiva por "primeiro array de objetos" dentro do JSON
+  function findFirstArrayOfObjects(obj, depth = 0) {
+    if (!obj || typeof obj !== "object" || depth > 5) return null;
 
-    .hero{padding:var(--s4) 0;opacity:calc(1 - var(--hero-p,0));transform:translateY(calc(-6px * var(--hero-p,0)));transition:opacity var(--t-fast) linear,transform var(--t-fast) linear}
-    .hero.is-hidden{opacity:0;height:0;padding:0;margin:0;overflow:hidden}
-    .hero h1{font-size:clamp(calc(1.25rem*var(--phi)),6.2vw,calc(1.25rem*var(--phi)*var(--phi)));line-height:var(--lh-compact);margin:0 0 var(--s2) 0;font-weight:850;text-align:center}
-    .hero-brand{display:grid;gap:var(--s1);place-items:center;margin-bottom:var(--s2)}
-    .badges{display:flex;gap:calc(var(--s1)*1.4);align-items:center;justify-content:center;flex-wrap:wrap;margin-top:6px}
-    .badge{display:inline-flex;align-items:center;gap:.55rem;padding:0;background:transparent;border-radius:0;box-shadow:none;font-weight:700;cursor:default;user-select:none}
-    .badge img{height:18px;width:auto;display:block}
-    .badge span{color:#445570;font-weight:700;opacity:.95}
+    if (Array.isArray(obj)) {
+      if (obj.length && typeof obj[0] === "object") return obj;
+      return null;
+    }
 
-    .btn{min-height:var(--btn-h);padding:0 var(--s2);border-radius:var(--radius-pill);border:1px solid #d6e4ff;display:inline-flex;align-items:center;justify-content:space-between;font-weight:800;gap:10px;background:#fff;color:#0b1220;transition:transform .08s,box-shadow var(--t-fast)}
-    .btn--secondary{box-shadow:var(--shadow-soft)}
-    .btn--ghost{background:#fff;border-color:#e1e8f6;box-shadow:none;color:#2d3b50}
-    .btn--sm{min-height:40px;padding:0 .9rem;font-size:1rem}
+    // primeiro passa por valores diretos
+    for (const v of Object.values(obj)) {
+      if (Array.isArray(v) && v.length && typeof v[0] === "object") return v;
+    }
 
-    .proofs{padding:var(--s2) 0 var(--s3)}
-    .features{display:grid;gap:var(--s0);grid-template-columns:repeat(2,minmax(0,1fr))}
-    @media(min-width:900px){.features{grid-template-columns:repeat(4,minmax(0,1fr))}}
-    .feature{background:#fff;border:1px solid #e5ecff;border-radius:12px;padding:calc(var(--s0)*1.25);display:flex;flex-direction:column;align-items:center;gap:var(--s0)}
-    .feature svg{stroke:currentColor;stroke-width:1.1;fill:none;stroke-linecap:round;stroke-linejoin:round;width:clamp(28px,8vw,36px);height:clamp(28px,8vw,36px)}
-    .feature .bolt{fill:currentColor;stroke:none}
-    .feature .cut{fill:var(--card);stroke:none}
-    .feature .qr-fill{fill:currentColor;stroke:none}
-    .feature .meta{display:flex;flex-direction:column;gap:calc(var(--s0)/var(--phi));align-items:center}
-    .feature strong{font-weight:800;font-size:calc(var(--fs-0)*1.02);line-height:1.2;text-align:center}
-    .feature small{color:var(--muted);font-size:calc(var(--fs--1));line-height:1.4;text-align:center}
+    // depois desce recursivamente
+    for (const v of Object.values(obj)) {
+      if (v && typeof v === "object") {
+        const found = findFirstArrayOfObjects(v, depth + 1);
+        if (found) return found;
+      }
+    }
+    return null;
+  }
 
-    .section{padding:calc(var(--s4)*1.1) 0;content-visibility:auto}
-    .section h2{font-size:clamp(calc(1rem*var(--phi)),3.8vw,calc(1.1rem*var(--phi)*var(--phi)));margin:0 0 var(--s2) 0;font-weight:800}
+  function extractEventsPayload(json) {
+    if (!json) return [];
 
-    .filters{display:grid;grid-template-columns:1fr;gap:var(--s1);margin:0 0 var(--s1) 0}
-    @media(min-width:680px){.filters{grid-template-columns:1fr max-content}}
-    .search input{width:100%;border:1px solid #e5ecff;border-radius:999px;padding:.9rem 1rem;font:inherit;box-shadow:var(--shadow-soft);font-weight:600;font-size:16px}
-    .chips{display:flex;gap:8px;align-items:center;overflow:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity}
-    .chip{appearance:none;border:1px solid #e5ecff;background:#fff;border-radius:999px;padding:.6rem .95rem;font-weight:800;color:#415577;cursor:pointer;white-space:nowrap;min-height:40px;scroll-snap-align:start}
-    .chip[aria-selected="true"]{background:var(--blue-2);color:#fff;border-color:rgba(27,95,179,.35);box-shadow:0 6px 14px rgba(47,125,217,.25)}
+    // Se já for array
+    if (Array.isArray(json)) return json;
 
-    .cards{display:grid;grid-template-columns:repeat(1,minmax(0,1fr));gap:var(--s1)}
-    @media(min-width:700px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
-    @media(min-width:1000px){.cards{grid-template-columns:repeat(3,minmax(0,1fr))}}
+    // Formatos mais comuns
+    if (Array.isArray(json.events)) return json.events;
+    if (Array.isArray(json.data?.events)) return json.data.events;
+    if (Array.isArray(json.data?.rows)) return json.data.rows;
+    if (Array.isArray(json.rows)) return json.rows;
+    if (Array.isArray(json.items)) return json.items;
+    if (Array.isArray(json.data)) return json.data;
+    if (Array.isArray(json.result)) return json.result;
+    if (Array.isArray(json.vitrine)) return json.vitrine;
+    if (Array.isArray(json.events?.rows)) return json.events.rows;
 
-    .card{background:var(--card);border-radius:calc(var(--s2));box-shadow:var(--shadow);padding:var(--s2);border:1px solid #eaf1ff;display:flex;flex-direction:column;gap:var(--s1);transition:transform .12s,box-shadow var(--t-fast);position:relative;overflow:hidden;cursor:pointer}
-    .card:hover{transform:translateY(-2px);box-shadow:0 14px 36px rgba(47,125,217,.16),0 3px 8px rgba(11,18,32,.12)}
-    .card:focus-visible{box-shadow:var(--ring),var(--shadow)}
-    .card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--s1)}
-    .card-title{font-weight:900;font-size:clamp(1rem,2.2vw,1.14rem);line-height:1.18;margin-bottom:4px}
-    .card-city{color:#2F7DD9;font-weight:800;font-size:.94rem}
-    .status-line{display:flex;align-items:center;gap:8px;margin-top:4px;font-weight:800;font-size:.86rem}
-    .status-dot{width:.6rem;height:.6rem;border-radius:999px;display:inline-block;flex:0 0 .6rem;border:1px solid rgba(0,0,0,.06)}
-    .status--soon .status-dot{background:#cfe3ff}
-    .status--low .status-dot{background:#ffdede}
-    .status--sold .status-dot{background:#dcdde3}
-    .status--soon{color:#1B5FB3}
-    .status--low{color:#b64848}
-    .status--sold{color:#6b7280}
-    .card-media{width:100%;aspect-ratio:var(--phi);border-radius:calc(var(--s1));border:1px solid #eaf1ff;background:
-      radial-gradient(600px 280px at 20% 0%,rgba(47,125,217,.12),transparent 60%),
-      linear-gradient(180deg,#fff,#f5f9ff);display:grid;place-items:center;color:#8fb5ff;font-weight:800;overflow:hidden;position:relative}
-    .card-media img{width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block}
-    .skeleton{position:relative;overflow:hidden;background:linear-gradient(90deg,#eef3ff 0%,#f6f8ff 40%,#eef3ff 80%);background-size:200% 100%;animation:s 1.4s infinite ease}
-    @keyframes s{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    // Fallback bruto: qualquer array de objetos que aparecer
+    const deep = findFirstArrayOfObjects(json);
+    if (Array.isArray(deep)) return deep;
 
-    .sheet-backdrop{position:fixed;inset:0;background:rgba(11,18,32,.36);opacity:0;pointer-events:none;transition:opacity var(--t-fast);z-index:40}
-    .sheet-backdrop.is-open{opacity:1;pointer-events:auto}
-    .sheet{position:fixed;left:0;right:0;bottom:0;height:72vh;max-height:760px;background:#fff;border-top-left-radius:24px;border-top-right-radius:24px;box-shadow:0 -24px 48px rgba(11,18,32,.16);transform:translateY(100%);transition:transform var(--t-med) cubic-bezier(.2,.7,.2,1);display:flex;flex-direction:column;padding:var(--s2);z-index:45}
-    .sheet.is-open{transform:translateY(0)}
-    .sheet h3{margin:0;font-weight:900;line-height:1.2}
-    .sheet .sheet-body{overflow:auto;display:flex;flex-direction:column;gap:10px;padding-right:4px;padding-bottom:calc(20px + env(safe-area-inset-bottom))}
-    .sheet-media{width:100%;aspect-ratio:var(--phi);border:1px solid #eaf1ff;border-radius:16px;background:
-      radial-gradient(600px 280px at 20% 0%,rgba(47,125,217,.12),transparent 60%),
-      linear-gradient(180deg,#fff,#f5f9ff);margin-top:var(--s0);margin-bottom:var(--s1);overflow:hidden;display:block}
-    .sheet-media img{width:100%;height:100%;object-fit:cover;display:block}
+    return [];
+  }
 
-    .sheet-close{position:fixed;top:calc(env(safe-area-inset-top) + 10px);right:12px;z-index:50;background:#fff;border:1px solid #e6eaf6;border-radius:12px;width:44px;height:44px;display:grid;place-items:center;box-shadow:var(--shadow-soft)}
-    .sheet-close:active{transform:scale(.98)}
+  // Entrypoint
+  window.addEventListener("DOMContentLoaded", async () => {
+    // ===== Config / API
+    const qs = new URLSearchParams(location.search);
+    const QS_API = (qs.get("api") || "").trim();
+    const META_API =
+      document
+        .querySelector('meta[name="ingressai-api"]')
+        ?.content?.trim() || "";
+    const INGRESSAI_API =
+      window.INGRESSAI_API || normalizeApi(QS_API || META_API);
+    const INGRESSAI_BASE =
+      window.INGRESSAI_BASE || INGRESSAI_API.replace(/\/api$/i, "");
+    window.INGRESSAI_API = INGRESSAI_API;
+    window.INGRESSAI_BASE = INGRESSAI_BASE;
 
-    .status-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid #e6eaf6;border-radius:999px;padding:.25rem .55rem;font-weight:800;font-size:.8rem}
-    .status-chip .dot{width:.5rem;height:.5rem;border-radius:50%}
-    .status-chip.low{color:#b64848;border-color:#ffdede;background:#fff7f7}
-    .status-chip.soon{color:#1B5FB3;border-color:#cfe3ff;background:#f3f8ff}
-    .status-chip.sold{color:#6b7280;border-color:#e3e4ea;background:#fafbfc}
+    const BOT_NUMBER = "5534999992747";
 
-    .std-card{background:#fff;border:1px solid #e5ecff;border-radius:calc(var(--s2));padding:var(--s2);box-shadow:var(--shadow-soft)}
+    // Resolve URL de mídia vinda do backend
+    // Regras:
+    // - se for http/https → usa direto
+    // - se começar com /uploads ou /media → prefixa BACKEND
+    // - se for só "arquivo.png" → assume /uploads/arquivo.png no BACKEND
+    // - se nada bater → devolve a string original (ou null)
+    function resolveMediaUrl(src) {
+      if (!src) return null;
+      const s = String(src).trim();
+      if (!s) return null;
 
-    /* ---- Calculadora / Planos (Mobile First) ---- */
-    .plan-calc{display:grid;gap:var(--s1)}
-    .calc-grid{display:grid;gap:var(--s1)}
-    .calc-row{display:grid;gap:8px}
-    @media(min-width:560px){.calc-row{grid-template-columns:1fr auto;align-items:end}}
-    .input{width:100%;border:1px solid #e5ecff;border-radius:10px;padding:.8rem 1rem;font:inherit}
-    .range-box{display:grid;grid-template-columns:1fr;gap:8px}
-    .num{font-variant-numeric:tabular-nums}
-    .kpis{display:grid;gap:8px;grid-template-columns:repeat(2,minmax(0,1fr))}
-    @media(min-width:680px){.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}}
-    .kpi{background:var(--card);border:1px solid #e5ecff;border-radius:12px;padding:10px}
-    .kpi strong{display:block;font-size:.86rem;color:#445570}
-    .kpi .val{font-weight:900;font-size:1.08rem;overflow-wrap:anywhere;line-height:1.18}
+      // URL absoluta já pronta
+      if (/^https?:\/\//i.test(s)) return s;
 
-    .i-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
-    .i-btn{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;border:1px solid #cfe3ff;background:#fff;color:#1B5FB3;font-weight:900;cursor:pointer}
-    .tip{display:none;margin-top:6px}
-    .tip.open{display:block}
-    .tip .bubble{background:#fff;border:1px solid #e5ecff;border-radius:10px;box-shadow:0 6px 18px rgba(47,125,217,.12);padding:.6rem .75rem;font-size:.9rem;color:#415577}
+      const base = INGRESSAI_BASE.replace(/\/+$/, "");
 
-    /* --- Form chips --- */
-    .chip-group{display:flex;gap:8px;flex-wrap:wrap}
-    .chip-opt{appearance:none;border:1px solid #e5ecff;background:#fff;border-radius:999px;padding:.6rem .95rem;font-weight:800;color:#415577;cursor:pointer}
-    .chip-opt[aria-checked="true"]{background:var(--blue-2);color:#fff;border-color:rgba(27,95,179,.35);box-shadow:0 6px 14px rgba(47,125,217,.25)}
+      // Caminhos típicos do backend
+      if (s.startsWith("/uploads") || s.startsWith("/media")) {
+        return base + s;
+      }
 
-    footer{background:#fff;border-top:1px solid #e7eefb;margin-top:var(--s4)}
-    .foot{max-width:var(--container-max);margin:0 auto;padding:var(--s3) var(--s3)}
-    .foot-block{display:grid;gap:var(--s2);justify-items:center;text-align:center}
-    .link-row{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-bottom:var(--s1)}
-    .link-btn{width:44px;height:44px;display:grid;place-items:center;border:1px solid #e7eefb;background:#fff;border-radius:12px;box-shadow:var(--shadow-soft);color:#0b1220;padding:0}
-    .link-btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-linecap:round;stroke-linejoin:round}
-    .legal{display:flex;flex-wrap:wrap;gap:var(--s1);justify-content:center;margin-top:calc(var(--s0)*1.2)}
-    .legal a{text-decoration:underline;font-weight:600}
-    .foot-meta{display:flex;flex-wrap:wrap;gap:10px;align-items:center;color:#667792;justify-content:center}
-    .diag{font-size:.85rem;color:#566781;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:.5rem 0}
-    @media(min-width:520px){.diag{grid-template-columns:repeat(3,minmax(0,1fr))}}
-    .diag div{background:#fff;border:1px solid #e7eefb;border-radius:8px;padding:6px 8px}
-    .diag strong{display:block}
-  </style>
-</head>
-<body>
-  <!-- HEADER -->
-  <header role="banner">
-    <div class="container head">
-      <div class="brand">
-        <img src="./logo_ingressai.png" alt="IngressAI" width="28" height="28" />
-        <span>IngressAI</span>
-      </div>
-      <div class="only-action">
-        <span class="tag off" id="auth-indicator" aria-live="polite">offline</span>
-        <button id="drawer-toggle" class="menu-btn" aria-controls="drawer" aria-expanded="false" aria-label="Abrir funções">
-          <svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="5" cy="6" r="1.6" />
-            <rect x="8.2" y="5.2" width="11" height="1.6" rx=".8" />
-            <circle cx="5" cy="12" r="1.6" />
-            <rect x="8.2" y="11.2" width="11" height="1.6" rx=".8" />
-            <circle cx="5" cy="18" r="1.6" />
-            <rect x="8.2" y="17.2" width="11" height="1.6" rx=".8" />
-          </svg>
-        </button>
-      </div>
-    </div>
-  </header>
+      // nome de arquivo simples, sem barra (ex.: "1700123123.png")
+      if (/^[0-9a-zA-Z._-]+\.(png|jpe?g|webp|gif)$/i.test(s)) {
+        return `${base}/uploads/${s}`;
+      }
 
-  <!-- DRAWER -->
-  <div class="drawer-backdrop" id="drawer-backdrop" aria-hidden="true"></div>
-  <aside class="drawer" id="drawer" aria-hidden="true" role="dialog" aria-modal="true">
-    <div class="drawer-head">
-      <h3 class="drawer-title">Funções</h3>
-      <button class="drawer-btn" id="drawer-close" type="button" aria-label="Fechar">Fechar</button>
-    </div>
-    <button class="drawer-btn" id="drawer-create" type="button">Criar evento</button>
-  </aside>
+      // Último recurso: devolve do jeito que veio (pra debugar mesmo)
+      return s;
+    }
 
-  <!-- MAIN -->
-  <main class="container" role="main">
-    <!-- HERO -->
-    <section class="hero" aria-labelledby="hero-title">
-      <div class="hero-brand">
-        <img src="./logo_ingressai.png" alt="IngressAI" width="160" height="160" />
-        <div class="badges" aria-label="Selos">
-          <span class="badge" aria-label="Powered by Meta Business Platform">
-            <img src="./meta.png" alt="Meta" width="24" height="24" />
-            <span>Powered by Meta Business Platform</span>
-          </span>
-          <span class="badge" aria-label="WhatsApp Business API">
-            <img src="./whatsapp_business.png" alt="WhatsApp Business" width="24" height="24" />
-            <span>WhatsApp Business API</span>
-          </span>
-        </div>
-      </div>
-      <h1 id="hero-title">Crie eventos com a IngressAI.</h1>
-    </section>
+    // ===== Header scroll
+    const header = $("header");
+    const toggleScrolled = () =>
+      header &&
+      (window.scrollY > 4
+        ? header.classList.add("is-scrolled")
+        : header.classList.remove("is-scrolled"));
+    window.addEventListener("scroll", toggleScrolled, { passive: true });
+    toggleScrolled();
 
-    <!-- PROVAS -->
-    <section class="proofs" aria-labelledby="proofs-title">
-      <h2 id="proofs-title" class="sr-only">Provas de valor</h2>
-      <div class="features" aria-label="Provas">
-        <div class="feature">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <rect x="3.6" y="6.6" width="16.8" height="10.8" rx="2.4" />
-            <circle class="cut" cx="3.6" cy="12" r="1" />
-            <circle class="cut" cx="20.4" cy="12" r="1" />
-            <path class="bolt" d="M12 9.4 L10.2 12 h1.55 l-.75 3.0 L14 11.2 h-1.6 z" />
-          </svg>
-          <div class="meta"><strong>Venda automatizada</strong><small>via WhatsApp</small></div>
-        </div>
-        <div class="feature">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M4 10a 8 8 0 0 1 14-2" />
-            <path d="M4 6v4h4" />
-            <path d="M20 14a 8 8 0 0 1-14 2" />
-            <path d="M20 18v-4h-4" />
-          </svg>
-          <div class="meta"><strong>Repasse imediato</strong><small>via Pix</small></div>
-        </div>
-        <div class="feature">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <rect x="3" y="3" width="7" height="7" rx="1.1" />
-            <rect class="qr-fill" x="5.6" y="5.6" width="2.8" height="2.8" rx=".35" />
-            <rect x="14" y="3" width="7" height="7" rx="1.1" />
-            <rect class="qr-fill" x="16.6" y="5.6" width="2.8" height="2.8" rx=".35" />
-            <rect x="3" y="14" width="7" height="7" rx="1.1" />
-            <rect class="qr-fill" x="5.6" y="16.6" width="2.8" height="2.8" rx=".35" />
-          </svg>
-          <div class="meta"><strong>QR Code Antifraude</strong><small>+ validador</small></div>
-        </div>
-        <div class="feature">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M9 7h11M9 12h11M9 17h11" />
-            <rect x="4" y="6" width="2.2" height="2.2" rx=".35" />
-            <rect x="4" y="11" width="2.2" height="2.2" rx=".35" />
-            <rect x="4" y="16" width="2.2" height="2.2" rx=".35" />
-          </svg>
-          <div class="meta"><strong>Dashboard</strong><small>Ingressos & acesso</small></div>
-        </div>
-      </div>
-    </section>
+    // ===== Drawer
+    const drawer = $("#drawer");
+    const drawerBackdrop = $("#drawer-backdrop");
+    const btnDrawerOpen = $("#drawer-toggle");
+    const btnDrawerClose = $("#drawer-close");
+    const btnDrawerCreate = $("#drawer-create");
+    function openDrawer() {
+      if (!drawer) return;
+      drawer.classList.add("is-open");
+      drawerBackdrop.classList.add("is-open");
+      btnDrawerOpen?.setAttribute("aria-expanded", "true");
+      drawer.setAttribute("aria-hidden", "false");
+      drawerBackdrop.setAttribute("aria-hidden", "false");
+    }
+    function closeDrawer() {
+      if (!drawer) return;
+      drawer.classList.remove("is-open");
+      drawerBackdrop.classList.remove("is-open");
+      btnDrawerOpen?.setAttribute("aria-expanded", "false");
+      drawer.setAttribute("aria-hidden", "true");
+      drawerBackdrop.setAttribute("aria-hidden", "true");
+    }
+    btnDrawerOpen?.addEventListener("click", openDrawer);
+    btnDrawerClose?.addEventListener("click", closeDrawer);
+    drawerBackdrop?.addEventListener("click", closeDrawer);
+    btnDrawerCreate?.addEventListener("click", () => {
+      closeDrawer();
+      document
+        .getElementById("organizadores")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
 
-    <!-- VITRINE -->
-    <section id="vitrine" class="section" aria-labelledby="vitrine-title" tabindex="-1">
-      <h2 id="vitrine-title">Eventos em destaque</h2>
-      <div class="filters" aria-label="Filtros">
-        <div class="search">
-          <label for="busca-eventos" class="sr-only">Buscar evento</label>
-          <input type="search" id="busca-eventos" placeholder="Buscar evento" inputmode="search" autocomplete="off" aria-describedby="vitrine-title" />
-        </div>
-        <div id="filtro-cidades" class="chips" role="tablist" aria-label="Filtrar por cidade"></div>
-      </div>
-      <div class="cards" id="lista-eventos" aria-live="polite">
-        <!-- skeletons iniciais -->
-        <article class="card">
-          <div class="card-header">
-            <div style="width:60%">
-              <div class="skeleton" style="height:14px;border-radius:8px;margin:2px 0 8px"></div>
-              <div class="skeleton" style="height:22px;border-radius:8px;margin:2px 0 8px"></div>
-              <div class="skeleton" style="height:12px;border-radius:8px;width:40%"></div>
-            </div>
-          </div>
-          <div class="card-media skeleton" style="height:auto;aspect-ratio:1.618"></div>
-        </article>
-        <article class="card">
-          <div class="card-header">
-            <div style="width:60%">
-              <div class="skeleton" style="height:14px;border-radius:8px;margin:2px 0 8px"></div>
-              <div class="skeleton" style="height:22px;border-radius:8px;margin:2px 0 8px"></div>
-              <div class="skeleton" style="height:12px;border-radius:8px;width:40%"></div>
-            </div>
-          </div>
-          <div class="card-media skeleton" style="height:auto;aspect-ratio:1.618"></div>
-        </article>
-      </div>
-    </section>
+    // ===== Vitrine
+    const listaEl = $("#lista-eventos");
+    const filtroCidadesEl = $("#filtro-cidades");
+    const buscaEl = $("#busca-eventos");
 
-    <!-- ORGANIZADORES -->
-    <section id="organizadores" class="section" aria-labelledby="orgs-title" tabindex="-1">
-      <h2 id="orgs-title">Soluções para organizadores</h2>
+    let allEvents = [];
+    let activeCity = null;
+    let searchTerm = "";
 
-      <div class="std-card" style="margin-bottom:12px">
-        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between">
-          <span class="subtle">Entre com seu WhatsApp para acessar o validador do seu evento.</span>
-          <a id="org-validator" class="btn btn--ghost btn--sm" href="#" aria-label="Abrir validador">
-            <span>Validador</span>
-            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-              <path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-          </a>
-        </div>
-      </div>
+    async function fetchEventsSmart() {
+      const endpoints = ["/events/vitrine", "/events/public", "/events", "/events/seed"];
+      for (const p of endpoints) {
+        try {
+          const url = INGRESSAI_API + p;
+          const json = await getJSON(url);
+          console.debug("[vitrine] payload bruto de", p, "=>", json);
+          const events = extractEventsPayload(json);
+          if (Array.isArray(events)) {
+            console.debug("[vitrine] usando", p, "com", events.length, "eventos");
+            return events;
+          }
+        } catch (err) {
+          console.warn("[vitrine] falha em", p, err?.message || err);
+        }
+      }
+      return [];
+    }
 
-      <!-- Calculadora -->
-      <div class="std-card" id="calc-card">
-        <div class="plan-calc">
-          <div class="calc-grid">
-            <!-- Linha preço + qtd -->
-            <div class="calc-row">
-              <div>
-                <label for="calc-price"><strong>Preço base do ingresso</strong></label>
-                <input id="calc-price" class="input" type="text" inputmode="decimal" placeholder="R$ 60,00" />
-                <div class="range-box" style="margin-top:6px">
-                  <input id="calc-price-range" type="range" min="5" max="500" step="1" value="60" aria-label="Preço (slider)" />
-                  <small class="subtle">Arraste para ajustar rapidamente (R$ 5 a R$ 500)</small>
-                </div>
-              </div>
-              <div>
-                <label for="calc-qty-n"><strong>Quantidade</strong></label>
-                <div class="range-box">
-                  <input id="calc-qty-n" class="input" type="number" min="0" max="10000" step="1" value="100" />
-                  <input id="calc-qty" type="range" min="0" max="1000" step="1" value="100" aria-label="Quantidade (slider)" />
-                </div>
-              </div>
-            </div>
+    const cityFrom = (ev) =>
+      ev.city || ev.cidade || ev.location?.city || ev.venueCity || ev.placeCity || null;
+    const dateTextFrom = (ev) =>
+      ev.dateText || ev.eventDateText || ev.date || ev.startsAt || "";
 
-            <!-- BLOCO 1: Vendas pela plataforma (3%) -->
-            <div class="i-row" style="margin-top:6px">
-              <strong>Vendas pela plataforma</strong>
-              <button type="button" class="i-btn" aria-controls="tip-plat" aria-expanded="false" aria-label="Mais informações">i</button>
-            </div>
-            <div id="tip-plat" class="tip" aria-hidden="true">
-              <div class="bubble">A taxa fixa para vendas pela plataforma é <b>3%</b> por ingresso.</div>
-            </div>
+    // ===== mediaFrom: prioriza uploads e arquivos de imagem (.png/.jpg/etc)
+    function mediaFrom(ev) {
+      if (!ev || typeof ev !== "object") return null;
 
-            <div class="kpis" aria-label="Resumo (plataforma 3%)">
-              <div class="kpi">
-                <strong>Preço base (unit.)</strong>
-                <div class="val num" id="calc-base-unit">R$ 0,00</div>
-              </div>
-              <div class="kpi">
-                <strong>Taxa do organizador (3%)</strong>
-                <div class="val num" id="calc-fee-org">R$ 0,00</div>
-              </div>
-              <div class="kpi">
-                <strong>Bruto total (base × qtd)</strong>
-                <div class="val num" id="calc-gross">R$ 0,00</div>
-              </div>
-              <div class="kpi">
-                <strong>Receita do organizador</strong>
-                <div class="val num" id="calc-net">R$ 0,00</div>
-              </div>
-            </div>
+      try {
+        const strings = Object.values(ev).filter(
+          (v) => typeof v === "string" && v.length
+        );
 
-            <hr style="border:none;border-top:1px solid #e6eaf6;margin:10px 0" />
+        // 1) qualquer campo com /uploads/ ou /media/
+        const uploaded = strings.find(
+          (s) => s.includes("/uploads/") || s.includes("/media/")
+        );
+        if (uploaded) return uploaded;
 
-            <!-- BLOCO 2: Emissão manual (1,5%) -->
-            <div class="i-row" style="margin-top:2px">
-              <strong>Emissão manual</strong>
-              <button type="button" class="i-btn" aria-controls="tip-manual" aria-expanded="false" aria-label="Mais informações">i</button>
-            </div>
-            <div id="tip-manual" class="tip" aria-hidden="true">
-              <div class="bubble">Para emissão manual de ingressos, a taxa é de <b>1,5%</b> por ingresso.</div>
-            </div>
+        // 2) qualquer campo que pareça arquivo de imagem (.png, .jpg, .jpeg, .webp, .gif)
+        const filename = strings.find((s) =>
+          /\.(png|jpe?g|webp|gif)$/i.test(s)
+        );
+        if (filename) return filename;
+      } catch {
+        // ignora erro e cai no fallback
+      }
 
-            <div class="kpis" aria-label="Resumo (emissão manual 1,5%)">
-              <div class="kpi">
-                <strong>Taxa por ingresso (1,5%)</strong>
-                <div class="val num" id="manual-fee-unit">R$ 0,00</div>
-              </div>
-              <div class="kpi">
-                <strong>Taxa total</strong>
-                <div class="val num" id="manual-fee-total">R$ 0,00</div>
-              </div>
-              <div class="kpi">
-                <strong>Líquido total (após 1,5%)</strong>
-                <div class="val num" id="manual-net-total">R$ 0,00</div>
-              </div>
-              <div class="kpi">
-                <strong>Líquido por ingresso</strong>
-                <div class="val num" id="manual-net-unit">R$ 0,00</div>
-              </div>
-            </div>
+      // 3) fallback explícito (prioriza campos ligados a capa do evento)
+      return (
+        ev.image ||
+        ev.coverUrl ||
+        ev.banner ||
+        (Array.isArray(ev.media) && ev.media[0]) ||
+        ev.imageUrl ||
+        ev.thumb ||
+        null
+      );
+    }
 
-          </div>
-        </div>
-      </div>
+    function statusChip(ev) {
+      if (ev.soldOut) return ["sold", "Esgotado"];
+      if (ev.lowStock) return ["low", "Últimos ingressos"];
+      return ["soon", "Disponível"];
+    }
 
-      <!-- Solicitação de criação -->
-      <div class="std-card" style="margin-top:12px">
-        <h3 style="margin-top:0">Quero criar meu evento</h3>
-        <form id="req-form">
-          <div style="display:grid;gap:8px;grid-template-columns:1fr">
-            <input id="req-phone" class="input" inputmode="numeric" placeholder="Seu WhatsApp (DDI+DDD+NÚMERO)" autocomplete="tel" />
-            <input id="req-title" class="input" placeholder="Nome do evento" />
-            <input id="req-name" class="input" placeholder="Seu nome" />
-            <input id="req-city" class="input" placeholder="Cidade" />
+    function imgNode(src) {
+      const url = resolveMediaUrl(src);
+      if (!url) return null;
 
-            <div>
-              <label><strong>Categoria</strong></label>
-              <div class="chip-group" role="radiogroup" aria-label="Categoria do evento">
-                <button type="button" class="chip-opt" id="cat-ath" role="radio" aria-checked="true" data-value="atleticas">Atléticas & Repúblicas</button>
-                <button type="button" class="chip-opt" id="cat-prod" role="radio" aria-checked="false" data-value="produtoras">Produtoras & Locais</button>
-              </div>
-            </div>
+      const img = document.createElement("img");
+      img.loading = "lazy";
+      img.alt = "Capa do evento";
+      img.src = url;
 
-            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-              <button id="req-send" class="btn btn--secondary btn--sm" type="button">Solicitar criação</button>
-              <span id="req-hint" class="subtle" aria-live="polite"></span>
-            </div>
-          </div>
-        </form>
-        <p class="subtle" style="margin:.5rem 0 0">Após sua aprovação no bot, o evento sobe e seu número é liberado para o Dashboard.</p>
-      </div>
+      // Se a imagem falhar, só some — sem trocar por logo
+      img.addEventListener(
+        "error",
+        () => {
+          img.remove();
+        },
+        { once: true }
+      );
+      return img;
+    }
 
-      <div id="std-card" class="std-card" style="margin-top:12px"></div>
-    </section>
+    function el(tag, attrs = {}, children = []) {
+      const node = document.createElement(tag);
+      Object.entries(attrs).forEach(([k, v]) => {
+        if (v == null) return;
+        if (k === "class") node.className = v;
+        else if (k === "html") node.innerHTML = v;
+        else node.setAttribute(k, v);
+      });
+      (Array.isArray(children) ? children : [children]).forEach((c) => {
+        if (c == null) return;
+        node.appendChild(typeof c === "string" ? document.createTextNode(c) : c);
+      });
+      return node;
+    }
 
-    <!-- SHEET -->
-    <div class="sheet-backdrop" id="sheet-backdrop" aria-hidden="true"></div>
-    <aside class="sheet" id="sheet" aria-hidden="true" role="dialog" aria-modal="true">
-      <button type="button" class="sheet-close" id="sheet-close" aria-label="Fechar">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M6 6L18 18M18 6L6 18"/>
-        </svg>
-      </button>
-      <div class="sheet-body" id="sheet-body"></div>
-    </aside>
+    function renderEvents() {
+      if (!listaEl) return;
+      const q = (searchTerm || "").trim().toLowerCase();
 
-    <!-- Diagnóstico -->
-    <div class="std-card" style="margin-top:16px">
-      <h3 style="margin-top:0">Diagnóstico</h3>
-      <div class="diag">
-        <div><strong>API</strong><span id="d-api">–</span></div>
-        <div><strong>Health</strong><span id="d-health">–</span></div>
-        <div><strong>Eventos</strong><span id="d-ev2">–</span></div>
-      </div>
-      <p class="subtle" style="margin:0">Se “API” ou “Health” ficarem off, confirme CORS no backend e o caminho do <code>app.js</code>.</p>
-    </div>
-  </main>
+      const filtered = allEvents.filter((ev) => {
+        const city = (cityFrom(ev) || "").toLowerCase();
+        const title = (ev.title || ev.name || ev.eventTitle || "").toLowerCase();
+        const hitCity = !activeCity || city === activeCity.toLowerCase();
+        const hitSearch =
+          !q ||
+          title.includes(q) ||
+          city.includes(q) ||
+          (ev.venue || ev.local || "").toLowerCase().includes(q);
+        return hitCity && hitSearch;
+      });
 
-  <!-- FOOTER -->
-  <footer role="contentinfo">
-    <div class="foot">
-      <div class="foot-block">
-        <div class="link-row" aria-label="Canais">
-          <a class="link-btn" href="mailto:contato@ingressai.chat" aria-label="Enviar e-mail">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="5" width="18" height="14" rx="2"></rect>
-              <path d="M4 6l8 6 8-6"></path>
-            </svg>
-          </a>
-          <a class="link-btn" href="https://instagram.com/ingressai" target="_blank" rel="noopener noreferrer" aria-label="Abrir Instagram">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="3" width="18" height="18" rx="4"></rect>
-              <circle cx="12" cy="12" r="5"></circle>
-              <circle cx="17" cy="7" r="1.2" fill="currentColor" stroke="none"></circle>
-            </svg>
-          </a>
-          <a class="link-btn" href="https://wa.me/5534999992747" target="_blank" rel="noopener noreferrer" aria-label="Falar no WhatsApp">
-            <svg viewBox="0 0 90 90" aria-hidden="true" focusable="false">
-              <path d="M0.576 44.596C0.573 52.456 2.626 60.129 6.53 66.892L0.201 90l23.65-6.201c6.516 3.553 13.852 5.426 21.318 5.429h0.019c24.586 0 44.601-20.009 44.612-44.597 0.004 11.917-4.633-23.122-13.055-31.552C68.321 4.65 57.121 0.005 45.188 0 20.597 0 0.585 20.005 0.575 44.595m14.083 21.132l-0.883-1.402c-3.712-5.902-5.671-12.723-5.669-19.726C8.115 24.161 24.748 7.532 45.201 7.532c9.905 0.004 19.213 3.865 26.215 10.871 7.001 7.006 10.854 16.32 10.851 26.224-0.009 20.439-16.643 37.068-37.08 37.068h-0.015c-6.655-0.004-13.181-1.79-18.872-5.168l-1.355-0.803-14.035 3.68 4.956-13.937z" fill="currentColor"/>
-              <path d="M34.038 25.95c-0.835-1.856-1.714-1.894-2.508-1.926-0.65-0.028-1.394-0.026-2.136-0.026-0.744 0-1.951 0.279-2.972 1.394-1.022 1.116-3.902 3.812-3.902 9.296 0 5.485 3.995 10.784 4.551 11.529 0.558 0.743 7.712 12.357 19.041 16.825 9.416 3.713 11.333 2.975 13.376 2.789 2.044-0.186 6.595-2.696 7.524-5.299 0.929-2.603 0.929-4.834 0.651-5.299-0.279-0.465-1.022-0.744-2.137-1.301-1.115-0.558-6.595-3.254-7.617-3.626-1.022-0.372-1.765-0.557-2.509 0.559-0.743 1.115-2.878 3.625-3.528 4.368-0.65 0.745-1.301 0.838-2.415 0.28-1.115-0.559-4.705-1.735-8.964-5.532-3.314-2.955-5.551-6.603-6.201-7.719-0.65-1.115-0.069-1.718 0.489-2.274 0.501-0.499 1.115-1.301 1.673-1.952 0.556-0.651 0.742-1.116 1.113-1.859 0.372-0.744 0.186-1.395-0.093-1.953-0.805-1.58-2.971-7.092-3.962-9.296" fill="currentColor"/>
-            </svg>
-          </a>
-        </div>
-        <div class="legal" aria-label="Links">
-          <a href="./politica.html">Política de privacidade</a>
-          <a href="./termos.html">Termos de uso</a>
-          <a href="./excluir.html">Excluir meus dados</a>
-        </div>
-        <div class="foot-meta" aria-label="Informações">
-          <strong>IngressAI</strong><span>•</span><span>CNPJ 42.948.399/0001-87</span>
-        </div>
-      </div>
-    </div>
-  </footer>
+      listaEl.innerHTML = "";
+      if (!filtered.length) {
+        listaEl.appendChild(
+          el("div", { class: "std-card" }, [
+            el("strong", {}, "Nenhum evento encontrado"),
+            el(
+              "p",
+              { class: "subtle" },
+              "Tente limpar filtros ou buscar outro termo."
+            ),
+          ])
+        );
+        return;
+      }
 
-  <!-- JSON-LD -->
-  <script type="application/ld+json">
-  {"@context":"https://schema.org","@type":"Organization","name":"IngressAI","url":"https://ingressai.chat/","logo":"https://ingressai.chat/logo_ingressai.png","sameAs":["https://instagram.com/ingressai"],"contactPoint":[{"@type":"ContactPoint","contactType":"customer support","areaServed":"BR","availableLanguage":"pt-BR"}]}
-  </script>
+      filtered.forEach((ev) => {
+        const city = cityFrom(ev);
+        const imgSrc = mediaFrom(ev);
+        const [k, label] = statusChip(ev);
 
-  <!-- app principal (com cache-busting) -->
-  <script defer src="./app.js?v=2025-11-16-03"></script>
-</body>
-</html>
+        const cardMediaChildren = [];
+        const img = imgNode(imgSrc);
+        if (img) cardMediaChildren.push(img);
+
+        const card = el(
+          "article",
+          { class: "card", tabindex: "0", role: "button" },
+          [
+            el("div", { class: "card-header" }, [
+              el("div", {}, [
+                el("div", { class: "card-city" }, city || "—"),
+                el(
+                  "div",
+                  { class: "card-title" },
+                  ev.title || ev.name || ev.eventTitle || "Evento"
+                ),
+                el("div", { class: `status-line status--${k}` }, [
+                  el("span", { class: "status-dot", "aria-hidden": "true" }),
+                  el("span", {}, label),
+                ]),
+              ]),
+            ]),
+            el("div", { class: "card-media" }, cardMediaChildren),
+          ]
+        );
+
+        card.addEventListener("click", () => openEventSheet(ev));
+        card.addEventListener("keyup", (e) => {
+          if (e.key === "Enter" || e.key === " ") openEventSheet(ev);
+        });
+        listaEl.appendChild(card);
+      });
+    }
+
+    function buildCityChips() {
+      if (!filtroCidadesEl) return;
+      const set = new Set();
+      allEvents.forEach((ev) => {
+        const c = cityFrom(ev);
+        if (c) set.add(String(c));
+      });
+
+      const cities = Array.from(set).sort((a, b) =>
+        a.localeCompare(b, "pt-BR")
+      );
+      filtroCidadesEl.innerHTML = "";
+
+      const allChip = el(
+        "button",
+        {
+          class: "chip",
+          role: "tab",
+          "aria-selected": activeCity ? "false" : "true",
+        },
+        "Todas"
+      );
+      allChip.addEventListener("click", () => {
+        activeCity = null;
+        $$('[role="tab"]', filtroCidadesEl).forEach((n) =>
+          n.setAttribute("aria-selected", "false")
+        );
+        allChip.setAttribute("aria-selected", "true");
+        renderEvents();
+      });
+      filtroCidadesEl.appendChild(allChip);
+
+      cities.forEach((city) => {
+        const chip = el(
+          "button",
+          {
+            class: "chip",
+            role: "tab",
+            "aria-selected":
+              activeCity && activeCity.toLowerCase() === city.toLowerCase()
+                ? "true"
+                : "false",
+          },
+          city
+        );
+        chip.addEventListener("click", () => {
+          activeCity = city;
+          $$('[role="tab"]', filtroCidadesEl).forEach((n) =>
+            n.setAttribute("aria-selected", "false")
+          );
+          chip.setAttribute("aria-selected", "true");
+          renderEvents();
+        });
+        filtroCidadesEl.appendChild(chip);
+      });
+    }
+
+    function openEventSheet(ev) {
+      const sheet = $("#sheet");
+      const sheetBody = $("#sheet-body");
+      const sheetBackdrop = $("#sheet-backdrop");
+      if (!sheet || !sheetBody) return;
+      sheetBody.innerHTML = "";
+
+      const city = cityFrom(ev);
+      const dateText = dateTextFrom(ev);
+      const imgSrc = mediaFrom(ev);
+
+      const head = el("div", {}, [
+        el("h3", {}, ev.title || ev.name || ev.eventTitle || "Evento"),
+        el("div", { class: "status-chip soon", style: "margin-top:6px" }, [
+          el("span", { class: "dot" }),
+          el("span", {}, city || "—"),
+        ]),
+      ]);
+
+      const mediaNode = el(
+        "div",
+        { class: "sheet-media" },
+        (() => {
+          const img = imgNode(imgSrc);
+          return img ? img : null;
+        })()
+      );
+
+      const makeWaDeepLink = (ev2) => {
+        const id = ev2.id || ev2.slug || "";
+        if (!id) return `https://wa.me/${BOT_NUMBER}`;
+        const txt = encodeURIComponent(`ingressai:start ev=${id} qty=1 autopay=1`);
+        return `https://wa.me/${BOT_NUMBER}?text=${txt}`;
+      };
+      const ctaHref = ev.whatsappLink || ev.deepLink || makeWaDeepLink(ev);
+
+      const details = el("div", {}, [
+        el("div", {}, `Quando: ${dateText || "—"}`),
+        el("div", {}, `Local: ${ev.venue || ev.local || city || "—"}`),
+      ]);
+
+      const actions = el(
+        "div",
+        { style: "display:flex;gap:8px;margin-top:8px" },
+        [
+          el(
+            "a",
+            {
+              class: "btn btn--secondary btn--sm",
+              href: ctaHref,
+              target: "_blank",
+              rel: "noopener noreferrer",
+            },
+            "Comprar no WhatsApp"
+          ),
+        ]
+      );
+
+      sheetBody.appendChild(head);
+      sheetBody.appendChild(mediaNode);
+      sheetBody.appendChild(details);
+      sheetBody.appendChild(actions);
+
+      sheet.setAttribute("aria-hidden", "false");
+      sheet.classList.add("is-open");
+      sheetBackdrop.classList.add("is-open");
+    }
+
+    function closeSheet() {
+      const sheet = $("#sheet");
+      const sheetBackdrop = $("#sheet-backdrop");
+      if (!sheet) return;
+      sheet.classList.remove("is-open");
+      sheetBackdrop?.classList.remove("is-open");
+      sheet.setAttribute("aria-hidden", "true");
+    }
+    $("#sheet-close")?.addEventListener("click", closeSheet);
+    $("#sheet-backdrop")?.addEventListener("click", closeSheet);
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeSheet();
+    });
+
+    buscaEl?.addEventListener("input", (e) => {
+      searchTerm = e.target.value || "";
+      renderEvents();
+    });
+
+    // ===== Calculadora (3% top + 1,5% manual)
+    const priceEl = $("#calc-price");
+    const priceRangeEl = $("#calc-price-range");
+    const qtyNEl = $("#calc-qty-n");
+    const qtySlider = $("#calc-qty");
+
+    const baseUnitEl = $("#calc-base-unit");
+    const feeOrgEl = $("#calc-fee-org");
+    const grossEl = $("#calc-gross");
+    const netEl = $("#calc-net");
+
+    const manualFeeUnitEl = $("#manual-fee-unit");
+    const manualFeeTotalEl = $("#manual-fee-total");
+    const manualNetTotalEl = $("#manual-net-total");
+    const manualNetUnitEl = $("#manual-net-unit");
+
+    let priceCents = brlToCents(qs.get("price")) || 6000; // R$ 60,00
+    let qty = clampInt(
+      qs.get("qty") || localStorage.getItem("ia.qty") || "100",
+      0,
+      10000
+    );
+
+    function pushState() {
+      const params = new URLSearchParams(location.search);
+      params.set("price", (priceCents / 100).toFixed(2));
+      params.set("qty", String(qty));
+      const newUrl = `${location.pathname}?${params.toString()}${
+        location.hash || ""
+      }`;
+      history.replaceState(null, "", newUrl);
+      localStorage.setItem("ia.qty", String(qty));
+    }
+
+    function recalc() {
+      // 3% (plataforma)
+      baseUnitEl.textContent = centsToBRL(priceCents);
+      const pct3 = 0.03;
+      const feeUnit3 = Math.round(priceCents * pct3);
+      const gross = priceCents * qty;
+      const net = Math.max(0, (priceCents - feeUnit3) * qty);
+      feeOrgEl.textContent = `${centsToBRL(feeUnit3)} / ingresso`;
+      grossEl.textContent = centsToBRL(gross);
+      netEl.textContent = centsToBRL(net);
+
+      // 1,5% (emissão manual)
+      const pct15 = 0.015;
+      const feeUnit15 = Math.round(priceCents * pct15);
+      const feeTotal15 = feeUnit15 * qty;
+      const manualNetTotal = Math.max(0, (priceCents - feeUnit15) * qty);
+      const manualNetUnit = Math.max(0, priceCents - feeUnit15);
+      manualFeeUnitEl.textContent = `${centsToBRL(feeUnit15)} / ingresso`;
+      manualFeeTotalEl.textContent = centsToBRL(feeTotal15);
+      manualNetTotalEl.textContent = centsToBRL(manualNetTotal);
+      manualNetUnitEl.textContent = centsToBRL(manualNetUnit);
+    }
+
+    // Prepara campos iniciais
+    if (priceEl) priceEl.value = centsToBRL(priceCents);
+    const priceRangeDefault = Math.max(
+      5,
+      Math.min(500, Math.round(priceCents / 100))
+    );
+    if (priceRangeEl) priceRangeEl.value = String(priceRangeDefault);
+    if (qtyNEl) qtyNEl.value = String(qty);
+    if (qtySlider) qtySlider.value = String(Math.min(1000, qty));
+    recalc();
+
+    // Eventos UI
+    priceEl?.addEventListener("input", (e) => {
+      priceCents = brlToCents(e.target.value);
+      const v = Math.max(5, Math.min(500, Math.round(priceCents / 100)));
+      if (priceRangeEl) priceRangeEl.value = String(v);
+      pushState();
+      recalc();
+    });
+    priceEl?.addEventListener("blur", (e) => {
+      let c = brlToCents(e.target.value);
+      const mod = c % 100;
+      if (mod === 0 && c >= 1000) c = c - 10; // .00 → .90
+      else if (mod >= 90 && mod < 99) c = c + (99 - mod); // ~.90 → .99
+      priceCents = Math.max(0, c);
+      e.target.value = centsToBRL(priceCents);
+      const v = Math.max(5, Math.min(500, Math.round(priceCents / 100)));
+      if (priceRangeEl) priceRangeEl.value = String(v);
+      pushState();
+      recalc();
+    });
+    priceRangeEl?.addEventListener("input", (e) => {
+      const reais = clampInt(e.target.value, 5, 500);
+      priceCents = reais * 100;
+      if (priceEl) priceEl.value = centsToBRL(priceCents);
+      pushState();
+      recalc();
+    });
+    qtyNEl?.addEventListener("input", (e) => {
+      const v = clampInt(e.target.value, 0, 10000);
+      e.target.value = String(v);
+      qty = v;
+      if (qtySlider) qtySlider.value = String(Math.min(1000, v));
+      pushState();
+      recalc();
+    });
+    qtySlider?.addEventListener("input", (e) => {
+      const v = clampInt(e.target.value, 0, 1000);
+      if (qtyNEl) qtyNEl.value = String(v);
+      qty = v;
+      pushState();
+      recalc();
+    });
+
+    // Tooltips acessíveis (usa aria-controls)
+    function closeAllTips(except) {
+      $$(".tip[aria-hidden='false']").forEach((n) => {
+        if (n.id !== except) {
+          n.setAttribute("aria-hidden", "true");
+          n.classList.remove("open");
+        }
+      });
+    }
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest(".i-btn");
+      if (btn) {
+        const id = btn.getAttribute("aria-controls");
+        const tip = id && document.getElementById(id);
+        if (tip) {
+          const isOpen = tip.getAttribute("aria-hidden") === "false";
+          closeAllTips(isOpen ? undefined : id);
+          tip.setAttribute("aria-hidden", isOpen ? "true" : "false");
+          tip.classList.toggle("open", !isOpen);
+        }
+      } else if (!e.target.closest(".tip")) {
+        closeAllTips();
+      }
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeAllTips();
+    });
+
+    // Form "Quero criar meu evento"
+    const reqForm = $("#req-form");
+    const reqBtn = $("#req-send");
+    const reqHint = $("#req-hint");
+    const catAth = $("#cat-ath");
+    const catProd = $("#cat-prod");
+    let reqCategory = "atleticas";
+    function setCat(which) {
+      reqCategory = which;
+      catAth?.setAttribute(
+        "aria-checked",
+        which === "atleticas" ? "true" : "false"
+      );
+      catProd?.setAttribute(
+        "aria-checked",
+        which === "produtoras" ? "true" : "false"
+      );
+    }
+    catAth?.addEventListener("click", () => setCat("atleticas"));
+    catProd?.addEventListener("click", () => setCat("produtoras"));
+
+    async function submitOrgRequest() {
+      if (!reqForm) return;
+      const phone = ($("#req-phone")?.value || "").replace(/\D+/g, "");
+      const title = $("#req-title")?.value?.trim() || "";
+      const name = $("#req-name")?.value?.trim() || "";
+      const city = $("#req-city")?.value?.trim() || "";
+      if (!phone || !title || !name || !city) {
+        if (reqHint)
+          reqHint.textContent =
+            "Preencha WhatsApp, evento, seu nome e cidade.";
+        return;
+      }
+
+      reqBtn?.setAttribute("disabled", "true");
+      if (reqHint) reqHint.textContent = "Enviando…";
+      try {
+        const payload = { phone, title, name, city, category: reqCategory };
+        const res = await postJSON(INGRESSAI_API + "/org/request", payload);
+        if (res?.ok) {
+          if (reqHint)
+            reqHint.textContent =
+              "Solicitação enviada. Você receberá o passo a passo no WhatsApp.";
+          reqForm.reset();
+          setCat("atleticas");
+        } else {
+          if (reqHint) reqHint.textContent = "Não foi possível enviar agora.";
+        }
+      } catch {
+        if (reqHint) reqHint.textContent = "Falha ao enviar. Tente novamente.";
+      } finally {
+        reqBtn?.removeAttribute("disabled");
+        setTimeout(() => reqHint && (reqHint.textContent = ""), 4500);
+      }
+    }
+    reqBtn?.addEventListener("click", submitOrgRequest);
+
+    // Diagnóstico
+    const dApi = $("#d-api");
+    const dHealth = $("#d-health");
+    const dEv = $("#d-ev2");
+    const authIndicator = $("#auth-indicator");
+    function setDiag(el, ok, extra) {
+      if (!el) return;
+      el.textContent = ok ? extra || "on" : extra || "off";
+      el.style.color = ok ? "#157f3b" : "#b64848";
+    }
+
+    try {
+      setDiag(dApi, !!INGRESSAI_API, INGRESSAI_API || "off");
+      let j;
+      try {
+        j = await getJSON(INGRESSAI_API + "/health");
+      } catch {
+        j = await getJSON(INGRESSAI_BASE + "/health");
+      }
+      setDiag(dHealth, !!j?.ok, j?.ok ? "on" : "off");
+      authIndicator?.classList.remove("off", "on");
+      authIndicator?.classList.add(j?.ok ? "on" : "off");
+      if (authIndicator) authIndicator.textContent = j?.ok ? "online" : "offline";
+    } catch {
+      setDiag(dHealth, false);
+      authIndicator?.classList.remove("off", "on");
+      authIndicator?.classList.add("off");
+      if (authIndicator) authIndicator.textContent = "offline";
+    }
+
+    try {
+      allEvents = await fetchEventsSmart();
+      setDiag(dEv, true, `${allEvents.length} evt`);
+      console.debug("[vitrine] eventos finais:", allEvents);
+      buildCityChips();
+      renderEvents();
+    } catch (err) {
+      console.error("[vitrine] erro ao carregar eventos", err);
+      setDiag(dEv, false, "—");
+    }
+
+    // Wire do Validador (HEAD + fallback)
+    try {
+      const url =
+        INGRESSAI_BASE.replace(/\/+$/, "") + "/app/validator.html";
+      const r = await fetch(url, { method: "HEAD", cache: "no-store" });
+      const ok = r.ok || r.status === 200;
+      const orgBtn = $("#org-validator");
+      if (ok && orgBtn && (!orgBtn.href || orgBtn.getAttribute("href") === "#"))
+        orgBtn.href = url;
+    } catch {}
+  });
+})();
