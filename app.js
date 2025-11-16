@@ -364,9 +364,8 @@
         const imgSrc = mediaFrom(ev);
         const [k, label] = statusChip(ev);
 
-        const cardMediaChildren = [];
         const img = imgNode(imgSrc);
-        if (img) cardMediaChildren.push(img);
+        const hasImg = !!img;
 
         const card = el(
           "article",
@@ -386,7 +385,14 @@
                 ]),
               ]),
             ]),
-            el("div", { class: "card-media" }, cardMediaChildren),
+            el(
+              "div",
+              {
+                class: "card-media" + (hasImg ? " card-media--has-img" : ""),
+                ...(hasImg ? { style: "background-image:none" } : {}),
+              },
+              hasImg ? [img] : []
+            ),
           ]
         );
 
@@ -474,13 +480,16 @@
         ]),
       ]);
 
+      const img = imgNode(imgSrc);
+      const hasImg = !!img;
+
       const mediaNode = el(
         "div",
-        { class: "sheet-media" },
-        (() => {
-          const img = imgNode(imgSrc);
-          return img ? img : null;
-        })()
+        {
+          class: "sheet-media" + (hasImg ? " sheet-media--has-img" : ""),
+          ...(hasImg ? { style: "background-image:none" } : {}),
+        },
+        hasImg ? [img] : []
       );
 
       const makeWaDeepLink = (ev2) => {
