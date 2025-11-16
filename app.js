@@ -151,6 +151,7 @@
     // - se for http/https → usa direto
     // - se começar com /uploads ou /media → prefixa BACKEND
     // - se for só "arquivo.png" → assume /uploads/arquivo.png no BACKEND
+    // - se nada bater → placeholder (sem inventar caminho)
     function resolveMediaUrl(src) {
       if (!src) return PLACEHOLDER_IMG;
       const s = String(src).trim();
@@ -164,12 +165,13 @@
         return base + s;
       }
 
-      // nome de arquivo simples, sem barra
+      // nome de arquivo simples, sem barra (ex.: "1700123123.png")
       if (/^[0-9a-zA-Z._-]+\.(png|jpe?g|webp|gif)$/i.test(s)) {
         return `${base}/uploads/${s}`;
       }
 
-      return s;
+      // não arrisca caminho estranho, cai pro placeholder
+      return PLACEHOLDER_IMG;
     }
 
     // ===== Header scroll
@@ -247,7 +249,7 @@
     const dateTextFrom = (ev) =>
       ev.dateText || ev.eventDateText || ev.date || ev.startsAt || "";
 
-    // ===== NOVO: mediaFrom mais agressivo, prioriza uploads e arquivos .png/.jpg
+    // ===== mediaFrom: prioriza uploads e arquivos de imagem (.png/.jpg/etc)
     function mediaFrom(ev) {
       if (!ev || typeof ev !== "object") return null;
 
