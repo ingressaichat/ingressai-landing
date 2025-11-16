@@ -205,25 +205,33 @@
 
     const cityFrom = (ev) => ev.city || ev.cidade || ev.location?.city || ev.venueCity || ev.placeCity || null;
     const dateTextFrom = (ev) => ev.dateText || ev.eventDateText || ev.date || ev.startsAt || "";
-    // PRIORIDADE: imageUrl (campo exposto pelo backend) e, se houver, qualquer coisa com /uploads/ ganha prioridade
+
+    // ===== NOVO: mediaFrom mais agressivo
+    // Regra:
+    // 1) Se QUALQUER campo string do evento tiver "/uploads/", usamos esse (primeiro).
+    // 2) Senão, usamos a lista explícita (imageUrl, image, coverUrl, banner, media[0], thumb).
     function mediaFrom(ev) {
-      const list = [
-        ev.imageUrl,
-        ev.image,
-        ev.coverUrl,
-        ev.banner,
-        ev.media && ev.media[0],
-        ev.thumb,
-      ].filter(Boolean);
+      if (!ev || typeof ev !== "object") return null;
 
-      if (!list.length) return null;
+      // 1) varre todos os campos string procurando "/uploads/"
+      try {
+        const allStrings = Object.values(ev).filter((v) => typeof v === "string" && v.length);
+        const uploaded = allStrings.find((s) => s.includes("/uploads/"));
+        if (uploaded) return uploaded;
+      } catch {
+        // se der qualquer erro, ignora e cai no fallback
+      }
 
-      const uploaded = list.find(
-        (s) => typeof s === "string" && s.includes("/uploads/")
-      );
-      if (uploaded) return uploaded;
+      // 2) fallback explícito
+      const explicit =
+        ev.imageUrl ||
+        ev.image ||
+        ev.coverUrl ||
+        ev.banner ||
+        (Array.isArray(ev.media) && ev.media[0]) ||
+        ev.thumb;
 
-      return list[0];
+      return explicit || null;
     }
 
     function statusChip(ev) {
