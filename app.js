@@ -228,7 +228,12 @@
     let searchTerm = "";
 
     async function fetchEventsSmart() {
-      const endpoints = ["/events/vitrine", "/events/public", "/events", "/events/seed"];
+      const endpoints = [
+        "/events/vitrine",
+        "/events/public",
+        "/events",
+        "/events/seed",
+      ];
       for (const p of endpoints) {
         try {
           const url = INGRESSAI_API + p;
@@ -236,7 +241,13 @@
           console.debug("[vitrine] payload bruto de", p, "=>", json);
           const events = extractEventsPayload(json);
           if (Array.isArray(events)) {
-            console.debug("[vitrine] usando", p, "com", events.length, "eventos");
+            console.debug(
+              "[vitrine] usando",
+              p,
+              "com",
+              events.length,
+              "eventos"
+            );
             return events;
           }
         } catch (err) {
@@ -247,7 +258,12 @@
     }
 
     const cityFrom = (ev) =>
-      ev.city || ev.cidade || ev.location?.city || ev.venueCity || ev.placeCity || null;
+      ev.city ||
+      ev.cidade ||
+      ev.location?.city ||
+      ev.venueCity ||
+      ev.placeCity ||
+      null;
     const dateTextFrom = (ev) =>
       ev.dateText || ev.eventDateText || ev.date || ev.startsAt || "";
 
@@ -299,6 +315,7 @@
 
       const img = document.createElement("img");
       img.loading = "lazy";
+      img.decoding = "async";
       img.alt = "Capa do evento";
       img.src = url;
 
@@ -306,6 +323,7 @@
       img.addEventListener(
         "error",
         () => {
+          console.warn("[vitrine][img][error]", url);
           img.remove();
         },
         { once: true }
@@ -361,15 +379,29 @@
 
       filtered.forEach((ev) => {
         const city = cityFrom(ev);
-        const imgSrc = mediaFrom(ev);
+        const rawMedia = mediaFrom(ev);
+        const resolvedMedia = resolveMediaUrl(rawMedia);
         const [k, label] = statusChip(ev);
 
-        const img = imgNode(imgSrc);
-        const hasImg = !!img;
+        console.debug(
+          "[vitrine][card]",
+          ev.id || ev.slug || ev.title || ev.name,
+          { rawMedia, resolvedMedia }
+        );
+
+        const cardMediaChildren = [];
+        const img = imgNode(rawMedia);
+        if (img) cardMediaChildren.push(img);
 
         const card = el(
           "article",
-          { class: "card", tabindex: "0", role: "button" },
+          {
+            class: "card",
+            tabindex: "0",
+            role: "button",
+            "data-media-raw": rawMedia || "",
+            "data-media-url": resolvedMedia || "",
+          },
           [
             el("div", { class: "card-header" }, [
               el("div", {}, [
@@ -385,14 +417,7 @@
                 ]),
               ]),
             ]),
-            el(
-              "div",
-              {
-                class: "card-media" + (hasImg ? " card-media--has-img" : ""),
-                ...(hasImg ? { style: "background-image:none" } : {}),
-              },
-              hasImg ? [img] : []
-            ),
+            el("div", { class: "card-media" }, cardMediaChildren),
           ]
         );
 
@@ -470,7 +495,13 @@
 
       const city = cityFrom(ev);
       const dateText = dateTextFrom(ev);
-      const imgSrc = mediaFrom(ev);
+      const rawMedia = mediaFrom(ev);
+      const resolvedMedia = resolveMediaUrl(rawMedia);
+
+      console.debug("[sheet][open]", ev.id || ev.slug || ev.title || ev.name, {
+        rawMedia,
+        resolvedMedia,
+      });
 
       const head = el("div", {}, [
         el("h3", {}, ev.title || ev.name || ev.eventTitle || "Evento"),
@@ -480,22 +511,21 @@
         ]),
       ]);
 
-      const img = imgNode(imgSrc);
-      const hasImg = !!img;
-
       const mediaNode = el(
         "div",
-        {
-          class: "sheet-media" + (hasImg ? " sheet-media--has-img" : ""),
-          ...(hasImg ? { style: "background-image:none" } : {}),
-        },
-        hasImg ? [img] : []
+        { class: "sheet-media" },
+        (() => {
+          const img = imgNode(rawMedia);
+          return img ? img : null;
+        })()
       );
 
       const makeWaDeepLink = (ev2) => {
         const id = ev2.id || ev2.slug || "";
         if (!id) return `https://wa.me/${BOT_NUMBER}`;
-        const txt = encodeURIComponent(`ingressai:start ev=${id} qty=1 autopay=1`);
+        const txt = encodeURIComponent(
+          `ingressai:start ev=${id} qty=1 autopay=1`
+        );
         return `https://wa.me/${BOT_NUMBER}?text=${txt}`;
       };
       const ctaHref = ev.whatsappLink || ev.deepLink || makeWaDeepLink(ev);
@@ -769,7 +799,8 @@
       setDiag(dHealth, !!j?.ok, j?.ok ? "on" : "off");
       authIndicator?.classList.remove("off", "on");
       authIndicator?.classList.add(j?.ok ? "on" : "off");
-      if (authIndicator) authIndicator.textContent = j?.ok ? "online" : "offline";
+      if (authIndicator)
+        authIndicator.textContent = j?.ok ? "online" : "offline";
     } catch {
       setDiag(dHealth, false);
       authIndicator?.classList.remove("off", "on");
