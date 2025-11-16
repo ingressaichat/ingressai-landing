@@ -139,6 +139,21 @@
       return img;
     }
 
+    function el(tag, attrs = {}, children = []) {
+      const node = document.createElement(tag);
+      Object.entries(attrs).forEach(([k, v]) => {
+        if (v == null) return;
+        if (k === "class") node.className = v;
+        else if (k === "html") node.innerHTML = v;
+        else node.setAttribute(k, v);
+      });
+      (Array.isArray(children) ? children : [children]).forEach((c) => {
+        if (c == null) return;
+        node.appendChild(typeof c === "string" ? document.createTextNode(c) : c);
+      });
+      return node;
+    }
+
     function renderEvents() {
       if (!listaEl) return;
       const q = (searchTerm || "").trim().toLowerCase();
@@ -185,21 +200,6 @@
         card.addEventListener("keyup", (e) => { if (e.key === "Enter" || e.key === " ") openEventSheet(ev); });
         listaEl.appendChild(card);
       });
-    }
-
-    function el(tag, attrs = {}, children = []) {
-      const node = document.createElement(tag);
-      Object.entries(attrs).forEach(([k, v]) => {
-        if (v == null) return;
-        if (k === "class") node.className = v;
-        else if (k === "html") node.innerHTML = v;
-        else node.setAttribute(k, v);
-      });
-      (Array.isArray(children) ? children : [children]).forEach((c) => {
-        if (c == null) return;
-        node.appendChild(typeof c === "string" ? document.createTextNode(c) : c);
-      });
-      return node;
     }
 
     function buildCityChips() {
@@ -292,7 +292,7 @@
     }
     $("#sheet-close")?.addEventListener("click", closeSheet);
     $("#sheet-backdrop")?.addEventListener("click", closeSheet);
-    $("#busca-eventos")?.addEventListener("input", (e) => { searchTerm = e.target.value || ""; renderEvents(); });
+    buscaEl?.addEventListener("input", (e) => { searchTerm = e.target.value || ""; renderEvents(); });
 
     // ===== Calculadora (3% top + 1,5% manual)
     const priceEl = $("#calc-price");
@@ -346,11 +346,11 @@
     }
 
     // Prepara campos iniciais
-    priceEl.value = centsToBRL(priceCents);
+    if (priceEl) priceEl.value = centsToBRL(priceCents);
     const priceRangeDefault = Math.max(5, Math.min(500, Math.round(priceCents/100)));
     if (priceRangeEl) priceRangeEl.value = String(priceRangeDefault);
-    qtyNEl.value = String(qty);
-    qtySlider.value = String(Math.min(1000, qty));
+    if (qtyNEl) qtyNEl.value = String(qty);
+    if (qtySlider) qtySlider.value = String(Math.min(1000, qty));
     recalc();
 
     // Eventos UI
