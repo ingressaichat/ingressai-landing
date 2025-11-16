@@ -70,6 +70,19 @@
     const BOT_NUMBER = "5534999992747";
     const PLACEHOLDER_IMG = "./logo_ingressai.png";
 
+    // Resolve URL de mídia vinda do backend (/uploads, /media, http…)
+    function resolveMediaUrl(src) {
+      if (!src) return PLACEHOLDER_IMG;
+      const s = String(src).trim();
+      // Já é URL absoluta
+      if (/^https?:\/\//i.test(s)) return s;
+      // Caminhos servidos pelo backend
+      if (s.startsWith("/uploads") || s.startsWith("/media")) {
+        return INGRESSAI_BASE.replace(/\/+$/, "") + s;
+      }
+      return s;
+    }
+
     // ===== Header scroll
     const header = $("header");
     const toggleScrolled = () => header && (window.scrollY > 4 ? header.classList.add("is-scrolled") : header.classList.remove("is-scrolled"));
@@ -134,7 +147,7 @@
       const img = document.createElement("img");
       img.loading = "lazy";
       img.alt = "Capa do evento";
-      img.src = src || PLACEHOLDER_IMG;
+      img.src = resolveMediaUrl(src);
       img.addEventListener("error", () => { img.src = PLACEHOLDER_IMG; }, { once:true });
       return img;
     }
