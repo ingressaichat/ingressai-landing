@@ -205,7 +205,26 @@
 
     const cityFrom = (ev) => ev.city || ev.cidade || ev.location?.city || ev.venueCity || ev.placeCity || null;
     const dateTextFrom = (ev) => ev.dateText || ev.eventDateText || ev.date || ev.startsAt || "";
-    const mediaFrom = (ev) => ev.image || ev.coverUrl || ev.banner || ev.media?.[0] || ev.thumb || null;
+    // PRIORIDADE: imageUrl (campo exposto pelo backend) e, se houver, qualquer coisa com /uploads/ ganha prioridade
+    function mediaFrom(ev) {
+      const list = [
+        ev.imageUrl,
+        ev.image,
+        ev.coverUrl,
+        ev.banner,
+        ev.media && ev.media[0],
+        ev.thumb,
+      ].filter(Boolean);
+
+      if (!list.length) return null;
+
+      const uploaded = list.find(
+        (s) => typeof s === "string" && s.includes("/uploads/")
+      );
+      if (uploaded) return uploaded;
+
+      return list[0];
+    }
 
     function statusChip(ev) {
       if (ev.soldOut) return ["sold", "Esgotado"];
@@ -214,6 +233,7 @@
     }
 
     function imgNode(src) {
+      if (!src) return null;
       const img = document.createElement("img");
       img.loading = "lazy";
       img.alt = "Capa do evento";
@@ -272,7 +292,7 @@
 
       filtered.forEach((ev) => {
         const city = cityFrom(ev);
-        const img = mediaFrom(ev);
+        const imgSrc = mediaFrom(ev);
         const [k, label] = statusChip(ev);
 
         const card = el(
@@ -296,7 +316,7 @@
             el(
               "div",
               { class: "card-media" },
-              img ? imgNode(img) : imgNode(null)
+              imgSrc ? imgNode(imgSrc) : null
             ),
           ]
         );
@@ -369,7 +389,7 @@
 
       const city = cityFrom(ev);
       const dateText = dateTextFrom(ev);
-      const img = mediaFrom(ev);
+      const imgSrc = mediaFrom(ev);
 
       const head = el("div", {}, [
         el("h3", {}, ev.title || ev.name || ev.eventTitle || "Evento"),
@@ -382,7 +402,7 @@
       const mediaNode = el(
         "div",
         { class: "sheet-media" },
-        [img ? imgNode(img) : imgNode(null)]
+        imgSrc ? imgNode(imgSrc) : null
       );
 
       const makeWaDeepLink = (ev2) => {
@@ -393,7 +413,7 @@
       };
       const ctaHref = ev.whatsappLink || ev.deepLink || makeWaDeepLink(ev);
 
-      const details = el("div", { class: "std-list" }, [
+      const details = el("div", {}, [
         el("div", {}, `Quando: ${dateText || "—"}`),
         el("div", {}, `Local: ${ev.venue || ev.local || city || "—"}`),
       ]);
@@ -431,6 +451,10 @@
     }
     $("#sheet-close")?.addEventListener("click", closeSheet);
     $("#sheet-backdrop")?.addEventListener("click", closeSheet);
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeSheet();
+    });
+
     buscaEl?.addEventListener("input", (e) => {
       searchTerm = e.target.value || "";
       renderEvents();
