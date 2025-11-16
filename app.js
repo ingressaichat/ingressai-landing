@@ -64,10 +64,35 @@
   }
 
   // ===== NOVO: extrator robusto de eventos =====
+
+  // Busca recursiva por "primeiro array de objetos" dentro do JSON
+  function findFirstArrayOfObjects(obj, depth = 0) {
+    if (!obj || typeof obj !== "object" || depth > 5) return null;
+
+    if (Array.isArray(obj)) {
+      if (obj.length && typeof obj[0] === "object") return obj;
+      return null;
+    }
+
+    // primeiro passa por valores diretos
+    for (const v of Object.values(obj)) {
+      if (Array.isArray(v) && v.length && typeof v[0] === "object") return v;
+    }
+
+    // depois desce recursivamente
+    for (const v of Object.values(obj)) {
+      if (v && typeof v === "object") {
+        const found = findFirstArrayOfObjects(v, depth + 1);
+        if (found) return found;
+      }
+    }
+    return null;
+  }
+
   function extractEventsPayload(json) {
     if (!json) return [];
 
-    // Se já for array, é direto
+    // Se já for array
     if (Array.isArray(json)) return json;
 
     // Formatos mais comuns
@@ -79,9 +104,11 @@
     if (Array.isArray(json.data)) return json.data;
     if (Array.isArray(json.result)) return json.result;
     if (Array.isArray(json.vitrine)) return json.vitrine;
-
-    // Último fallback: se tiver "events" como objeto com "rows"
     if (Array.isArray(json.events?.rows)) return json.events.rows;
+
+    // Fallback bruto: qualquer array de objetos que aparecer
+    const deep = findFirstArrayOfObjects(json);
+    if (Array.isArray(deep)) return deep;
 
     return [];
   }
@@ -104,9 +131,7 @@
     function resolveMediaUrl(src) {
       if (!src) return PLACEHOLDER_IMG;
       const s = String(src).trim();
-      // Já é URL absoluta
       if (/^https?:\/\//i.test(s)) return s;
-      // Caminhos servidos pelo backend
       if (s.startsWith("/uploads") || s.startsWith("/media")) {
         return INGRESSAI_BASE.replace(/\/+$/, "") + s;
       }
@@ -165,8 +190,9 @@
         try {
           const url = INGRESSAI_API + p;
           const json = await getJSON(url);
+          console.debug("[vitrine] payload bruto de", p, "=>", json);
           const events = extractEventsPayload(json);
-          if (Array.isArray(events) && events.length) {
+          if (Array.isArray(events)) {
             console.debug("[vitrine] usando", p, "com", events.length, "eventos");
             return events;
           }
@@ -174,12 +200,6 @@
           console.warn("[vitrine] falha em", p, err?.message || err);
         }
       }
-      // Se nenhum endpoint retornou eventos, tenta pelo menos /events "cru"
-      try {
-        const json = await getJSON(INGRESSAI_API + "/events");
-        const events = extractEventsPayload(json);
-        if (Array.isArray(events)) return events;
-      } catch {}
       return [];
     }
 
@@ -462,7 +482,7 @@
       const manualNetTotal = Math.max(0, (priceCents - feeUnit15) * qty);
       const manualNetUnit = Math.max(0, priceCents - feeUnit15);
       manualFeeUnitEl.textContent = `${centsToBRL(feeUnit15)} / ingresso`;
-      manualFeeTotalEl.textContent = centsToBRL(feeTotal15);
+      manualFeeTotalEl.textContent = centsToBRL(feTotal15);
       manualNetTotalEl.textContent = centsToBRL(manualNetTotal);
       manualNetUnitEl.textContent = centsToBRL(manualNetUnit);
     }
@@ -626,7 +646,7 @@
     try {
       allEvents = await fetchEventsSmart();
       setDiag(dEv, true, `${allEvents.length} evt`);
-      console.debug("[vitrine] eventos carregados:", allEvents);
+      console.debug("[vitrine] eventos finais:", allEvents);
       buildCityChips();
       renderEvents();
     } catch (err) {
