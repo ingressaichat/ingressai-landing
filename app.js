@@ -21,7 +21,13 @@
   }
 
   async function getJSON(url, opts = {}) {
-    const r = await fetch(url, { method: "GET", credentials: "omit", mode: "cors", cache: "no-store", ...opts });
+    const r = await fetch(url, {
+      method: "GET",
+      credentials: "omit",
+      mode: "cors",
+      cache: "no-store",
+      ...opts,
+    });
     if (!r.ok) throw new Error(`HTTP ${r.status} @ ${url}`);
     const t = await r.text();
     return t ? JSON.parse(t) : {};
@@ -32,7 +38,10 @@
       method: "POST",
       credentials: "omit",
       mode: "cors",
-      headers: { "Content-Type": "application/json", ...(opts.headers || {}) },
+      headers: {
+        "Content-Type": "application/json",
+        ...(opts.headers || {}),
+      },
       body: JSON.stringify(body),
       ...opts,
     });
@@ -54,16 +63,22 @@
     return n;
   }
   function centsToBRL(c) {
-    return (c / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    return (c / 100).toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    });
   }
   function brlToCents(raw) {
     if (raw == null) return 0;
-    const s = String(raw).replace(/[^\d,.-]/g, "").replace(/\./g, "").replace(",", ".");
+    const s = String(raw)
+      .replace(/[^\d,.-]/g, "")
+      .replace(/\./g, "")
+      .replace(",", ".");
     const n = Number(s);
     return Number.isFinite(n) ? Math.round(n * 100) : 0;
   }
 
-  // ===== extrator robusto de eventos =====
+  // ===== NOVO: extrator robusto de eventos =====
 
   // Busca recursiva por "primeiro array de objetos" dentro do JSON
   function findFirstArrayOfObjects(obj, depth = 0) {
@@ -118,41 +133,52 @@
     // ===== Config / API
     const qs = new URLSearchParams(location.search);
     const QS_API = (qs.get("api") || "").trim();
-    const META_API = document.querySelector('meta[name="ingressai-api"]')?.content?.trim() || "";
+    const META_API =
+      document
+        .querySelector('meta[name="ingressai-api"]')
+        ?.content?.trim() || "";
     const INGRESSAI_API = window.INGRESSAI_API || normalizeApi(QS_API || META_API);
-    const INGRESSAI_BASE = window.INGRESSAI_BASE || INGRESSAI_API.replace(/\/api$/i, "");
+    const INGRESSAI_BASE =
+      window.INGRESSAI_BASE || INGRESSAI_API.replace(/\/api$/i, "");
     window.INGRESSAI_API = INGRESSAI_API;
     window.INGRESSAI_BASE = INGRESSAI_BASE;
 
     const BOT_NUMBER = "5534999992747";
     const PLACEHOLDER_IMG = "./logo_ingressai.png";
 
-    // Resolve URL de mídia vinda do backend (/uploads, /media, filename, http…)
+    // Resolve URL de mídia vinda do backend
+    // Regras:
+    // - se for http/https → usa direto
+    // - se começar com /uploads ou /media → prefixa BACKEND
+    // - se for só "arquivo.png" → assume /uploads/arquivo.png no BACKEND
     function resolveMediaUrl(src) {
       if (!src) return PLACEHOLDER_IMG;
       const s = String(src).trim();
+      if (!s) return PLACEHOLDER_IMG;
 
-      // URL absoluta
       if (/^https?:\/\//i.test(s)) return s;
 
-      // Nome de arquivo simples (ex: "1700123123.png") → /uploads/<arquivo>
-      if (/^[\w.-]+\.(png|jpe?g|webp)$/i.test(s) && !s.startsWith("/")) {
-        return INGRESSAI_BASE.replace(/\/+$/, "") + "/uploads/" + s;
-      }
+      const base = INGRESSAI_BASE.replace(/\/+$/, "");
 
-      // Caminhos conhecidos de upload/media
       if (s.startsWith("/uploads") || s.startsWith("/media")) {
-        return INGRESSAI_BASE.replace(/\/+$/, "") + s;
+        return base + s;
       }
 
-      // Qualquer outra coisa: devolve como veio (caso seja um path relativo custom)
+      // nome de arquivo simples, sem barra
+      if (/^[0-9a-zA-Z._-]+\.(png|jpe?g|webp|gif)$/i.test(s)) {
+        return `${base}/uploads/${s}`;
+      }
+
       return s;
     }
 
     // ===== Header scroll
     const header = $("header");
     const toggleScrolled = () =>
-      header && (window.scrollY > 4 ? header.classList.add("is-scrolled") : header.classList.remove("is-scrolled"));
+      header &&
+      (window.scrollY > 4
+        ? header.classList.add("is-scrolled")
+        : header.classList.remove("is-scrolled"));
     window.addEventListener("scroll", toggleScrolled, { passive: true });
     toggleScrolled();
 
@@ -183,7 +209,9 @@
     drawerBackdrop?.addEventListener("click", closeDrawer);
     btnDrawerCreate?.addEventListener("click", () => {
       closeDrawer();
-      document.getElementById("organizadores")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      document
+        .getElementById("organizadores")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
 
     // ===== Vitrine
@@ -214,38 +242,45 @@
       return [];
     }
 
-    const cityFrom = (ev) => ev.city || ev.cidade || ev.location?.city || ev.venueCity || ev.placeCity || null;
-    const dateTextFrom = (ev) => ev.dateText || ev.eventDateText || ev.date || ev.startsAt || "";
+    const cityFrom = (ev) =>
+      ev.city || ev.cidade || ev.location?.city || ev.venueCity || ev.placeCity || null;
+    const dateTextFrom = (ev) =>
+      ev.dateText || ev.eventDateText || ev.date || ev.startsAt || "";
 
-    // ===== mediaFrom: prioriza campo de imagem do backend
+    // ===== NOVO: mediaFrom mais agressivo, prioriza uploads e arquivos .png/.jpg
     function mediaFrom(ev) {
       if (!ev || typeof ev !== "object") return null;
 
-      // 1) Campo canônico da API /events
-      if (typeof ev.image === "string" && ev.image.trim()) {
-        return ev.image.trim();
+      try {
+        const strings = Object.values(ev).filter(
+          (v) => typeof v === "string" && v.length
+        );
+
+        // 1) qualquer campo com /uploads/ ou /media/
+        const uploaded = strings.find(
+          (s) => s.includes("/uploads/") || s.includes("/media/")
+        );
+        if (uploaded) return uploaded;
+
+        // 2) qualquer campo que pareça arquivo de imagem (.png, .jpg, .jpeg, .webp, .gif)
+        const filename = strings.find((s) =>
+          /\.(png|jpe?g|webp|gif)$/i.test(s)
+        );
+        if (filename) return filename;
+      } catch {
+        // ignora erro e cai no fallback
       }
 
-      // 2) Campo auxiliar absoluto
-      if (typeof ev.imageUrl === "string" && ev.imageUrl.trim()) {
-        return ev.imageUrl.trim();
-      }
-
-      // 3) Outros campos que podem ser usados como capa
-      if (typeof ev.coverUrl === "string" && ev.coverUrl.trim()) {
-        return ev.coverUrl.trim();
-      }
-      if (typeof ev.banner === "string" && ev.banner.trim()) {
-        return ev.banner.trim();
-      }
-      if (Array.isArray(ev.media) && ev.media.length && typeof ev.media[0] === "string" && ev.media[0].trim()) {
-        return ev.media[0].trim();
-      }
-      if (typeof ev.thumb === "string" && ev.thumb.trim()) {
-        return ev.thumb.trim();
-      }
-
-      return null;
+      // 3) fallback explícito (prioriza campos ligados a capa do evento)
+      return (
+        ev.image ||
+        ev.coverUrl ||
+        ev.banner ||
+        (Array.isArray(ev.media) && ev.media[0]) ||
+        ev.imageUrl ||
+        ev.thumb ||
+        null
+      );
     }
 
     function statusChip(ev) {
@@ -306,7 +341,11 @@
         listaEl.appendChild(
           el("div", { class: "std-card" }, [
             el("strong", {}, "Nenhum evento encontrado"),
-            el("p", { class: "subtle" }, "Tente limpar filtros ou buscar outro termo."),
+            el(
+              "p",
+              { class: "subtle" },
+              "Tente limpar filtros ou buscar outro termo."
+            ),
           ])
         );
         return;
@@ -335,11 +374,7 @@
                 ]),
               ]),
             ]),
-            el(
-              "div",
-              { class: "card-media" },
-              imgSrc ? imgNode(imgSrc) : null
-            ),
+            el("div", { class: "card-media" }, imgSrc ? imgNode(imgSrc) : null),
           ]
         );
 
@@ -359,12 +394,18 @@
         if (c) set.add(String(c));
       });
 
-      const cities = Array.from(set).sort((a, b) => a.localeCompare(b, "pt-BR"));
+      const cities = Array.from(set).sort((a, b) =>
+        a.localeCompare(b, "pt-BR")
+      );
       filtroCidadesEl.innerHTML = "";
 
       const allChip = el(
         "button",
-        { class: "chip", role: "tab", "aria-selected": activeCity ? "false" : "true" },
+        {
+          class: "chip",
+          role: "tab",
+          "aria-selected": activeCity ? "false" : "true",
+        },
         "Todas"
       );
       allChip.addEventListener("click", () => {
@@ -440,18 +481,22 @@
         el("div", {}, `Local: ${ev.venue || ev.local || city || "—"}`),
       ]);
 
-      const actions = el("div", { style: "display:flex;gap:8px;margin-top:8px" }, [
-        el(
-          "a",
-          {
-            class: "btn btn--secondary btn--sm",
-            href: ctaHref,
-            target: "_blank",
-            rel: "noopener noreferrer",
-          },
-          "Comprar no WhatsApp"
-        ),
-      ]);
+      const actions = el(
+        "div",
+        { style: "display:flex;gap:8px;margin-top:8px" },
+        [
+          el(
+            "a",
+            {
+              class: "btn btn--secondary btn--sm",
+              href: ctaHref,
+              target: "_blank",
+              rel: "noopener noreferrer",
+            },
+            "Comprar no WhatsApp"
+          ),
+        ]
+      );
 
       sheetBody.appendChild(head);
       sheetBody.appendChild(mediaNode);
@@ -499,13 +544,19 @@
     const manualNetUnitEl = $("#manual-net-unit");
 
     let priceCents = brlToCents(qs.get("price")) || 6000; // R$ 60,00
-    let qty = clampInt(qs.get("qty") || localStorage.getItem("ia.qty") || "100", 0, 10000);
+    let qty = clampInt(
+      qs.get("qty") || localStorage.getItem("ia.qty") || "100",
+      0,
+      10000
+    );
 
     function pushState() {
       const params = new URLSearchParams(location.search);
       params.set("price", (priceCents / 100).toFixed(2));
       params.set("qty", String(qty));
-      const newUrl = `${location.pathname}?${params.toString()}${location.hash || ""}`;
+      const newUrl = `${location.pathname}?${params.toString()}${
+        location.hash || ""
+      }`;
       history.replaceState(null, "", newUrl);
       localStorage.setItem("ia.qty", String(qty));
     }
@@ -535,7 +586,10 @@
 
     // Prepara campos iniciais
     if (priceEl) priceEl.value = centsToBRL(priceCents);
-    const priceRangeDefault = Math.max(5, Math.min(500, Math.round(priceCents / 100)));
+    const priceRangeDefault = Math.max(
+      5,
+      Math.min(500, Math.round(priceCents / 100))
+    );
     if (priceRangeEl) priceRangeEl.value = String(priceRangeDefault);
     if (qtyNEl) qtyNEl.value = String(qty);
     if (qtySlider) qtySlider.value = String(Math.min(1000, qty));
@@ -621,8 +675,14 @@
     let reqCategory = "atleticas";
     function setCat(which) {
       reqCategory = which;
-      catAth?.setAttribute("aria-checked", which === "atleticas" ? "true" : "false");
-      catProd?.setAttribute("aria-checked", which === "produtoras" ? "true" : "false");
+      catAth?.setAttribute(
+        "aria-checked",
+        which === "atleticas" ? "true" : "false"
+      );
+      catProd?.setAttribute(
+        "aria-checked",
+        which === "produtoras" ? "true" : "false"
+      );
     }
     catAth?.addEventListener("click", () => setCat("atleticas"));
     catProd?.addEventListener("click", () => setCat("produtoras"));
@@ -634,7 +694,9 @@
       const name = $("#req-name")?.value?.trim() || "";
       const city = $("#req-city")?.value?.trim() || "";
       if (!phone || !title || !name || !city) {
-        if (reqHint) reqHint.textContent = "Preencha WhatsApp, evento, seu nome e cidade.";
+        if (reqHint)
+          reqHint.textContent =
+            "Preencha WhatsApp, evento, seu nome e cidade.";
         return;
       }
 
@@ -644,7 +706,9 @@
         const payload = { phone, title, name, city, category: reqCategory };
         const res = await postJSON(INGRESSAI_API + "/org/request", payload);
         if (res?.ok) {
-          if (reqHint) reqHint.textContent = "Solicitação enviada. Você receberá o passo a passo no WhatsApp.";
+          if (reqHint)
+            reqHint.textContent =
+              "Solicitação enviada. Você receberá o passo a passo no WhatsApp.";
           reqForm.reset();
           setCat("atleticas");
         } else {
@@ -666,7 +730,7 @@
     const authIndicator = $("#auth-indicator");
     function setDiag(el, ok, extra) {
       if (!el) return;
-      el.textContent = ok ? (extra || "on") : (extra || "off");
+      el.textContent = ok ? extra || "on" : extra || "off";
       el.style.color = ok ? "#157f3b" : "#b64848";
     }
 
@@ -702,11 +766,13 @@
 
     // Wire do Validador (HEAD + fallback)
     try {
-      const url = INGRESSAI_BASE.replace(/\/+$/, "") + "/app/validator.html";
+      const url =
+        INGRESSAI_BASE.replace(/\/+$/, "") + "/app/validator.html";
       const r = await fetch(url, { method: "HEAD", cache: "no-store" });
       const ok = r.ok || r.status === 200;
       const orgBtn = $("#org-validator");
-      if (ok && orgBtn && (!orgBtn.href || orgBtn.getAttribute("href") === "#")) orgBtn.href = url;
+      if (ok && orgBtn && (!orgBtn.href || orgBtn.getAttribute("href") === "#"))
+        orgBtn.href = url;
     } catch {}
   });
 })();
