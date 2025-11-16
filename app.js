@@ -1,833 +1,662 @@
-/* app.js — IngressAI (frontend leve)
-   - vitrine, filtros, sheet
-   - calculadora (mobile-first): 3% plataforma (top); emissão manual 1,5% (bottom)
-   - preço com digitação livre; máscara no blur; sliders sincronizados
-   - formulário "Quero criar meu evento"
-   - máscara BRL, URL state, localStorage, skeletons, tooltips acessíveis
-   - diagnóstico de backend
-*/
+// app.js — IngressAI landing
+// v=2025-11-16-a
 (() => {
-  "use strict";
+  const $ = (sel) => document.querySelector(sel);
+  const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
-  // Utilitários básicos
-  const $ = (sel, root = document) => root.querySelector(sel);
-  const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+  // ========= Config / API base =========
+  const metaApi = document.querySelector('meta[name="ingressai-api"]');
+  let API = (metaApi && metaApi.content) || '';
 
-  function normalizeApi(raw) {
-    let s = String(raw || "").trim().replace(/\/+$/g, "");
-    if (!/\/api$/i.test(s)) s += "/api";
-    s = s.replace(/([^:])\/{2,}/g, "$1/");
-    return s;
+  try {
+    const url = new URL(window.location.href);
+    const override = url.searchParams.get('api');
+    if (override) API = override;
+  } catch (e) {
+    // ignore
   }
 
-  async function getJSON(url, opts = {}) {
-    const r = await fetch(url, {
-      method: "GET",
-      credentials: "omit",
-      mode: "cors",
-      cache: "no-store",
-      ...opts,
+  if (!API) {
+    console.warn('[ingressai] API base não encontrada');
+  }
+  API = API.replace(/\/+$/, '');
+  const API_ROOT = API.replace(/\/api$/, '').replace(/\/+$/, '');
+
+  const state = {
+    events: [],
+    city: 'all',
+    query: '',
+  };
+
+  const elList = $('#lista-eventos');
+  const elChips = $('#filtro-cidades');
+  const elSearch = $('#busca-eventos');
+  const elApiDiag = $('#d-api');
+  const elHealthDiag = $('#d-health');
+  const elEvDiag = $('#d-ev2');
+  const elAuthIndicator = $('#auth-indicator');
+  const elSheet = $('#sheet');
+  const elSheetBody = $('#sheet-body');
+  const elSheetBackdrop = $('#sheet-backdrop');
+  const elSheetClose = $('#sheet-close');
+  const elDrawer = $('#drawer');
+  const elDrawerBackdrop = $('#drawer-backdrop');
+  const elDrawerToggle = $('#drawer-toggle');
+  const elDrawerClose = $('#drawer-close');
+  const elDrawerCreate = $('#drawer-create');
+  const elReqForm = $('#req-form');
+  const elReqSend = $('#req-send');
+  const elReqHint = $('#req-hint');
+  const elOrgValidator = $('#org-validator');
+
+  // ========= Helpers =========
+  function fmtMoneyBR(v) {
+    if (!isFinite(v)) return 'R$ 0,00';
+    return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
+
+  function normalizeImageUrl(raw) {
+    if (!raw) return null;
+    // já absoluta?
+    if (/^https?:\/\//i.test(raw)) return raw;
+    const base = API_ROOT || '';
+    const path = raw.startsWith('/') ? raw : '/' + raw;
+    return base + path;
+  }
+
+  function getEventImage(ev) {
+    const img =
+      ev.image ||
+      ev.imageUrl ||
+      ev.cover ||
+      ev.coverUrl ||
+      ev.mediaUrl ||
+      ev.banner;
+    return normalizeImageUrl(img);
+  }
+
+  async function fetchJson(path) {
+    const url = API + path;
+    const res = await fetch(url, {
+      headers: { Accept: 'application/json' },
+      credentials: 'omit',
     });
-    if (!r.ok) throw new Error(`HTTP ${r.status} @ ${url}`);
-    const t = await r.text();
-    return t ? JSON.parse(t) : {};
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(`HTTP ${res.status} em ${path} — ${text}`);
+    }
+    return res.json();
   }
 
-  async function postJSON(url, body = {}, opts = {}) {
-    const r = await fetch(url, {
-      method: "POST",
-      credentials: "omit",
-      mode: "cors",
-      headers: {
-        "Content-Type": "application/json",
-        ...(opts.headers || {}),
-      },
-      body: JSON.stringify(body),
-      ...opts,
+  function setAuth(online) {
+    if (!elAuthIndicator) return;
+    if (online) {
+      elAuthIndicator.textContent = 'online';
+      elAuthIndicator.classList.remove('off');
+      elAuthIndicator.classList.add('on');
+    } else {
+      elAuthIndicator.textContent = 'offline';
+      elAuthIndicator.classList.remove('on');
+      elAuthIndicator.classList.add('off');
+    }
+  }
+
+  // ========= Drawer =========
+  function openDrawer() {
+    if (!elDrawer) return;
+    elDrawer.classList.add('is-open');
+    elDrawerBackdrop && elDrawerBackdrop.classList.add('is-open');
+    elDrawer.setAttribute('aria-hidden', 'false');
+    elDrawerToggle && elDrawerToggle.setAttribute('aria-expanded', 'true');
+  }
+
+  function closeDrawer() {
+    if (!elDrawer) return;
+    elDrawer.classList.remove('is-open');
+    elDrawerBackdrop && elDrawerBackdrop.classList.remove('is-open');
+    elDrawer.setAttribute('aria-hidden', 'true');
+    elDrawerToggle && elDrawerToggle.setAttribute('aria-expanded', 'false');
+  }
+
+  // ========= Sheet =========
+  function openSheet(contentNode) {
+    if (!elSheet || !elSheetBody) return;
+    elSheetBody.innerHTML = '';
+    if (contentNode) elSheetBody.appendChild(contentNode);
+    elSheet.classList.add('is-open');
+    elSheetBackdrop && elSheetBackdrop.classList.add('is-open');
+    elSheet.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeSheet() {
+    if (!elSheet) return;
+    elSheet.classList.remove('is-open');
+    elSheetBackdrop && elSheetBackdrop.classList.remove('is-open');
+    elSheet.setAttribute('aria-hidden', 'true');
+    elSheetBody && (elSheetBody.innerHTML = '');
+  }
+
+  // ========= Render vitrine =========
+  function renderChips() {
+    if (!elChips) return;
+    elChips.innerHTML = '';
+
+    const btnAll = document.createElement('button');
+    btnAll.type = 'button';
+    btnAll.className = 'chip';
+    btnAll.textContent = 'Todas';
+    btnAll.setAttribute('role', 'tab');
+    btnAll.dataset.city = 'all';
+    btnAll.setAttribute('aria-selected', state.city === 'all' ? 'true' : 'false');
+    btnAll.addEventListener('click', () => {
+      state.city = 'all';
+      renderChips();
+      renderCards();
     });
-    const t = await r.text();
-    const j = t ? JSON.parse(t) : {};
-    if (!r.ok) {
-      const msg = j?.error || j?.message || `HTTP ${r.status} @ ${url}`;
-      const err = new Error(msg);
-      err.response = j;
-      err.status = r.status;
-      throw err;
-    }
-    return j;
-  }
+    elChips.appendChild(btnAll);
 
-  // Helpers de moeda
-  function clampInt(v, min, max) {
-    const n = Math.max(min, Math.min(max, parseInt(v || "0", 10) || 0));
-    return n;
-  }
-  function centsToBRL(c) {
-    return (c / 100).toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "BRL",
+    const cities = Array.from(
+      new Set(
+        state.events
+          .map((e) => (e.city || e.cidade || e.location || '').trim())
+          .filter(Boolean)
+      )
+    ).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+
+    cities.forEach((city) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'chip';
+      btn.textContent = city;
+      btn.dataset.city = city;
+      btn.setAttribute('role', 'tab');
+      btn.setAttribute(
+        'aria-selected',
+        state.city === city ? 'true' : 'false'
+      );
+      btn.addEventListener('click', () => {
+        state.city = city;
+        renderChips();
+        renderCards();
+      });
+      elChips.appendChild(btn);
     });
   }
-  function brlToCents(raw) {
-    if (raw == null) return 0;
-    const s = String(raw)
-      .replace(/[^\d,.-]/g, "")
-      .replace(/\./g, "")
-      .replace(",", ".");
-    const n = Number(s);
-    return Number.isFinite(n) ? Math.round(n * 100) : 0;
+
+  function buildStatus(ev) {
+    const statusLine = document.createElement('div');
+    statusLine.className = 'status-line';
+
+    const dot = document.createElement('span');
+    dot.className = 'status-dot';
+    statusLine.appendChild(dot);
+
+    const span = document.createElement('span');
+    let label = ev.statusLabel || ev.status || 'Disponível';
+    label = String(label || '').trim() || 'Disponível';
+    span.textContent = label;
+
+    if (/esgotad/i.test(label)) {
+      statusLine.classList.add('status--sold');
+    } else if (/últimos|pouco/i.test(label)) {
+      statusLine.classList.add('status--low');
+    } else {
+      statusLine.classList.add('status--soon');
+    }
+
+    statusLine.appendChild(span);
+    return statusLine;
   }
 
-  // ===== NOVO: extrator robusto de eventos =====
+  function buildSheetContent(ev, imgUrl) {
+    const wrap = document.createElement('div');
 
-  // Busca recursiva por "primeiro array de objetos" dentro do JSON
-  function findFirstArrayOfObjects(obj, depth = 0) {
-    if (!obj || typeof obj !== "object" || depth > 5) return null;
-
-    if (Array.isArray(obj)) {
-      if (obj.length && typeof obj[0] === "object") return obj;
-      return null;
+    if (imgUrl) {
+      const media = document.createElement('figure');
+      media.className = 'sheet-media';
+      const img = document.createElement('img');
+      img.src = imgUrl;
+      img.alt = `Imagem do evento ${ev.title || ev.name || ''}`;
+      img.loading = 'lazy';
+      media.appendChild(img);
+      wrap.appendChild(media);
     }
 
-    // primeiro passa por valores diretos
-    for (const v of Object.values(obj)) {
-      if (Array.isArray(v) && v.length && typeof v[0] === "object") return v;
+    const h3 = document.createElement('h3');
+    h3.textContent = ev.title || ev.name || 'Evento';
+    wrap.appendChild(h3);
+
+    const city = ev.city || ev.cidade;
+    const pMeta = document.createElement('p');
+    pMeta.className = 'subtle';
+    const bits = [];
+    if (city) bits.push(city);
+    if (ev.venue) bits.push(ev.venue);
+    if (ev.dateLabel) bits.push(ev.dateLabel);
+    pMeta.textContent = bits.join(' • ');
+    wrap.appendChild(pMeta);
+
+    const p = document.createElement('p');
+    p.textContent =
+      ev.description ||
+      ev.desc ||
+      'Ingressos emitidos direto no seu WhatsApp, com QR Code antifraude e repasse via Pix.';
+    wrap.appendChild(p);
+
+    const btn = document.createElement('a');
+    btn.className = 'btn btn--secondary btn--sm';
+    btn.href = `https://wa.me/${encodeURIComponent(
+      (ev.whatsapp || '5534999992747').replace(/[^\d]/g, '')
+    )}?text=${encodeURIComponent(
+      `ingressai:start ev=${ev.id || ev.slug || ev.code || ''} qty=1 autopay=1`
+    )}`;
+    btn.target = '_blank';
+    btn.rel = 'noopener noreferrer';
+    btn.textContent = 'Comprar pelo WhatsApp';
+    wrap.appendChild(btn);
+
+    return wrap;
+  }
+
+  function renderCards() {
+    if (!elList) return;
+    elList.innerHTML = '';
+
+    let evs = state.events.slice();
+
+    if (state.city !== 'all') {
+      evs = evs.filter((ev) => {
+        const city = (ev.city || ev.cidade || '').trim();
+        return city.toLowerCase() === state.city.toLowerCase();
+      });
     }
 
-    // depois desce recursivamente
-    for (const v of Object.values(obj)) {
-      if (v && typeof v === "object") {
-        const found = findFirstArrayOfObjects(v, depth + 1);
-        if (found) return found;
+    if (state.query) {
+      const q = state.query.toLowerCase();
+      evs = evs.filter((ev) => {
+        const title = (ev.title || ev.name || '').toLowerCase();
+        const city = (ev.city || ev.cidade || '').toLowerCase();
+        return title.includes(q) || city.includes(q);
+      });
+    }
+
+    if (!evs.length) {
+      const msg = document.createElement('p');
+      msg.className = 'subtle';
+      msg.textContent = 'Nenhum evento encontrado com esses filtros.';
+      elList.appendChild(msg);
+      elEvDiag && (elEvDiag.textContent = '0');
+      return;
+    }
+
+    elEvDiag && (elEvDiag.textContent = String(evs.length));
+
+    evs.forEach((ev) => {
+      const card = document.createElement('article');
+      card.className = 'card';
+      card.tabIndex = 0;
+
+      const header = document.createElement('div');
+      header.className = 'card-header';
+
+      const left = document.createElement('div');
+
+      const cityEl = document.createElement('div');
+      cityEl.className = 'card-city';
+      cityEl.textContent = ev.city || ev.cidade || '–';
+      left.appendChild(cityEl);
+
+      const titleEl = document.createElement('div');
+      titleEl.className = 'card-title';
+      titleEl.textContent = ev.title || ev.name || 'Evento';
+      left.appendChild(titleEl);
+
+      left.appendChild(buildStatus(ev));
+      header.appendChild(left);
+      card.appendChild(header);
+
+      // MEDIA COM <img>
+      const media = document.createElement('div');
+      media.className = 'card-media';
+
+      const imgUrl = getEventImage(ev);
+      if (imgUrl) {
+        const img = document.createElement('img');
+        img.src = imgUrl;
+        img.alt = `Imagem do evento ${ev.title || ev.name || ''}`;
+        img.loading = 'lazy';
+        media.appendChild(img);
       }
-    }
-    return null;
-  }
 
-  function extractEventsPayload(json) {
-    if (!json) return [];
+      card.appendChild(media);
 
-    // Se já for array
-    if (Array.isArray(json)) return json;
-
-    // Formatos mais comuns
-    if (Array.isArray(json.events)) return json.events;
-    if (Array.isArray(json.data?.events)) return json.data.events;
-    if (Array.isArray(json.data?.rows)) return json.data.rows;
-    if (Array.isArray(json.rows)) return json.rows;
-    if (Array.isArray(json.items)) return json.items;
-    if (Array.isArray(json.data)) return json.data;
-    if (Array.isArray(json.result)) return json.result;
-    if (Array.isArray(json.vitrine)) return json.vitrine;
-    if (Array.isArray(json.events?.rows)) return json.events.rows;
-
-    // Fallback bruto: qualquer array de objetos que aparecer
-    const deep = findFirstArrayOfObjects(json);
-    if (Array.isArray(deep)) return deep;
-
-    return [];
-  }
-
-  // Entrypoint
-  window.addEventListener("DOMContentLoaded", async () => {
-    // ===== Config / API
-    const qs = new URLSearchParams(location.search);
-    const QS_API = (qs.get("api") || "").trim();
-    const META_API =
-      document
-        .querySelector('meta[name="ingressai-api"]')
-        ?.content?.trim() || "";
-    const INGRESSAI_API =
-      window.INGRESSAI_API || normalizeApi(QS_API || META_API);
-    const INGRESSAI_BASE =
-      window.INGRESSAI_BASE || INGRESSAI_API.replace(/\/api$/i, "");
-    window.INGRESSAI_API = INGRESSAI_API;
-    window.INGRESSAI_BASE = INGRESSAI_BASE;
-
-    const BOT_NUMBER = "5534999992747";
-
-    // Resolve URL de mídia vinda do backend
-    // Regras:
-    // - se for http/https → usa direto
-    // - se começar com /uploads ou /media → prefixa BACKEND
-    // - se for só "arquivo.png" → assume /uploads/arquivo.png no BACKEND
-    // - se nada bater → devolve a string original (ou null)
-    function resolveMediaUrl(src) {
-      if (!src) return null;
-      const s = String(src).trim();
-      if (!s) return null;
-
-      // URL absoluta já pronta
-      if (/^https?:\/\//i.test(s)) return s;
-
-      const base = INGRESSAI_BASE.replace(/\/+$/, "");
-
-      // Caminhos típicos do backend
-      if (s.startsWith("/uploads") || s.startsWith("/media")) {
-        return base + s;
-      }
-
-      // nome de arquivo simples, sem barra (ex.: "1700123123.png")
-      if (/^[0-9a-zA-Z._-]+\.(png|jpe?g|webp|gif)$/i.test(s)) {
-        return `${base}/uploads/${s}`;
-      }
-
-      // Último recurso: devolve do jeito que veio (pra debugar mesmo)
-      return s;
-    }
-
-    // ===== Header scroll
-    const header = $("header");
-    const toggleScrolled = () =>
-      header &&
-      (window.scrollY > 4
-        ? header.classList.add("is-scrolled")
-        : header.classList.remove("is-scrolled"));
-    window.addEventListener("scroll", toggleScrolled, { passive: true });
-    toggleScrolled();
-
-    // ===== Drawer
-    const drawer = $("#drawer");
-    const drawerBackdrop = $("#drawer-backdrop");
-    const btnDrawerOpen = $("#drawer-toggle");
-    const btnDrawerClose = $("#drawer-close");
-    const btnDrawerCreate = $("#drawer-create");
-    function openDrawer() {
-      if (!drawer) return;
-      drawer.classList.add("is-open");
-      drawerBackdrop.classList.add("is-open");
-      btnDrawerOpen?.setAttribute("aria-expanded", "true");
-      drawer.setAttribute("aria-hidden", "false");
-      drawerBackdrop.setAttribute("aria-hidden", "false");
-    }
-    function closeDrawer() {
-      if (!drawer) return;
-      drawer.classList.remove("is-open");
-      drawerBackdrop.classList.remove("is-open");
-      btnDrawerOpen?.setAttribute("aria-expanded", "false");
-      drawer.setAttribute("aria-hidden", "true");
-      drawerBackdrop.setAttribute("aria-hidden", "true");
-    }
-    btnDrawerOpen?.addEventListener("click", openDrawer);
-    btnDrawerClose?.addEventListener("click", closeDrawer);
-    drawerBackdrop?.addEventListener("click", closeDrawer);
-    btnDrawerCreate?.addEventListener("click", () => {
-      closeDrawer();
-      document
-        .getElementById("organizadores")
-        ?.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-
-    // ===== Vitrine
-    const listaEl = $("#lista-eventos");
-    const filtroCidadesEl = $("#filtro-cidades");
-    const buscaEl = $("#busca-eventos");
-
-    let allEvents = [];
-    let activeCity = null;
-    let searchTerm = "";
-
-    async function fetchEventsSmart() {
-      const endpoints = [
-        "/events/vitrine",
-        "/events/public",
-        "/events",
-        "/events/seed",
-      ];
-      for (const p of endpoints) {
-        try {
-          const url = INGRESSAI_API + p;
-          const json = await getJSON(url);
-          console.debug("[vitrine] payload bruto de", p, "=>", json);
-          const events = extractEventsPayload(json);
-          if (Array.isArray(events)) {
-            console.debug(
-              "[vitrine] usando",
-              p,
-              "com",
-              events.length,
-              "eventos"
-            );
-            return events;
-          }
-        } catch (err) {
-          console.warn("[vitrine] falha em", p, err?.message || err);
+      card.addEventListener('click', () => {
+        openSheet(buildSheetContent(ev, imgUrl));
+      });
+      card.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          openSheet(buildSheetContent(ev, imgUrl));
         }
-      }
-      return [];
-    }
-
-    const cityFrom = (ev) =>
-      ev.city ||
-      ev.cidade ||
-      ev.location?.city ||
-      ev.venueCity ||
-      ev.placeCity ||
-      null;
-    const dateTextFrom = (ev) =>
-      ev.dateText || ev.eventDateText || ev.date || ev.startsAt || "";
-
-    // ===== mediaFrom: prioriza uploads e arquivos de imagem (.png/.jpg/etc)
-    function mediaFrom(ev) {
-      if (!ev || typeof ev !== "object") return null;
-
-      try {
-        const strings = Object.values(ev).filter(
-          (v) => typeof v === "string" && v.length
-        );
-
-        // 1) qualquer campo com /uploads/ ou /media/
-        const uploaded = strings.find(
-          (s) => s.includes("/uploads/") || s.includes("/media/")
-        );
-        if (uploaded) return uploaded;
-
-        // 2) qualquer campo que pareça arquivo de imagem (.png, .jpg, .jpeg, .webp, .gif)
-        const filename = strings.find((s) =>
-          /\.(png|jpe?g|webp|gif)$/i.test(s)
-        );
-        if (filename) return filename;
-      } catch {
-        // ignora erro e cai no fallback
-      }
-
-      // 3) fallback explícito (prioriza campos ligados a capa do evento)
-      return (
-        ev.image ||
-        ev.coverUrl ||
-        ev.banner ||
-        (Array.isArray(ev.media) && ev.media[0]) ||
-        ev.imageUrl ||
-        ev.thumb ||
-        null
-      );
-    }
-
-    function statusChip(ev) {
-      if (ev.soldOut) return ["sold", "Esgotado"];
-      if (ev.lowStock) return ["low", "Últimos ingressos"];
-      return ["soon", "Disponível"];
-    }
-
-    function imgNode(src) {
-      const url = resolveMediaUrl(src);
-      if (!url) return null;
-
-      const img = document.createElement("img");
-      img.loading = "lazy";
-      img.decoding = "async";
-      img.alt = "Capa do evento";
-      img.src = url;
-
-      // Se a imagem falhar, só some — sem trocar por logo
-      img.addEventListener(
-        "error",
-        () => {
-          console.warn("[vitrine][img][error]", url);
-          img.remove();
-        },
-        { once: true }
-      );
-      return img;
-    }
-
-    function el(tag, attrs = {}, children = []) {
-      const node = document.createElement(tag);
-      Object.entries(attrs).forEach(([k, v]) => {
-        if (v == null) return;
-        if (k === "class") node.className = v;
-        else if (k === "html") node.innerHTML = v;
-        else node.setAttribute(k, v);
-      });
-      (Array.isArray(children) ? children : [children]).forEach((c) => {
-        if (c == null) return;
-        node.appendChild(typeof c === "string" ? document.createTextNode(c) : c);
-      });
-      return node;
-    }
-
-    function renderEvents() {
-      if (!listaEl) return;
-      const q = (searchTerm || "").trim().toLowerCase();
-
-      const filtered = allEvents.filter((ev) => {
-        const city = (cityFrom(ev) || "").toLowerCase();
-        const title = (ev.title || ev.name || ev.eventTitle || "").toLowerCase();
-        const hitCity = !activeCity || city === activeCity.toLowerCase();
-        const hitSearch =
-          !q ||
-          title.includes(q) ||
-          city.includes(q) ||
-          (ev.venue || ev.local || "").toLowerCase().includes(q);
-        return hitCity && hitSearch;
       });
 
-      listaEl.innerHTML = "";
-      if (!filtered.length) {
-        listaEl.appendChild(
-          el("div", { class: "std-card" }, [
-            el("strong", {}, "Nenhum evento encontrado"),
-            el(
-              "p",
-              { class: "subtle" },
-              "Tente limpar filtros ou buscar outro termo."
-            ),
-          ])
-        );
-        return;
-      }
-
-      filtered.forEach((ev) => {
-        const city = cityFrom(ev);
-        const rawMedia = mediaFrom(ev);
-        const resolvedMedia = resolveMediaUrl(rawMedia);
-        const [k, label] = statusChip(ev);
-
-        console.debug(
-          "[vitrine][card]",
-          ev.id || ev.slug || ev.title || ev.name,
-          { rawMedia, resolvedMedia }
-        );
-
-        const cardMediaChildren = [];
-        const img = imgNode(rawMedia);
-        if (img) cardMediaChildren.push(img);
-
-        const card = el(
-          "article",
-          {
-            class: "card",
-            tabindex: "0",
-            role: "button",
-            "data-media-raw": rawMedia || "",
-            "data-media-url": resolvedMedia || "",
-          },
-          [
-            el("div", { class: "card-header" }, [
-              el("div", {}, [
-                el("div", { class: "card-city" }, city || "—"),
-                el(
-                  "div",
-                  { class: "card-title" },
-                  ev.title || ev.name || ev.eventTitle || "Evento"
-                ),
-                el("div", { class: `status-line status--${k}` }, [
-                  el("span", { class: "status-dot", "aria-hidden": "true" }),
-                  el("span", {}, label),
-                ]),
-              ]),
-            ]),
-            el("div", { class: "card-media" }, cardMediaChildren),
-          ]
-        );
-
-        card.addEventListener("click", () => openEventSheet(ev));
-        card.addEventListener("keyup", (e) => {
-          if (e.key === "Enter" || e.key === " ") openEventSheet(ev);
-        });
-        listaEl.appendChild(card);
-      });
-    }
-
-    function buildCityChips() {
-      if (!filtroCidadesEl) return;
-      const set = new Set();
-      allEvents.forEach((ev) => {
-        const c = cityFrom(ev);
-        if (c) set.add(String(c));
-      });
-
-      const cities = Array.from(set).sort((a, b) =>
-        a.localeCompare(b, "pt-BR")
-      );
-      filtroCidadesEl.innerHTML = "";
-
-      const allChip = el(
-        "button",
-        {
-          class: "chip",
-          role: "tab",
-          "aria-selected": activeCity ? "false" : "true",
-        },
-        "Todas"
-      );
-      allChip.addEventListener("click", () => {
-        activeCity = null;
-        $$('[role="tab"]', filtroCidadesEl).forEach((n) =>
-          n.setAttribute("aria-selected", "false")
-        );
-        allChip.setAttribute("aria-selected", "true");
-        renderEvents();
-      });
-      filtroCidadesEl.appendChild(allChip);
-
-      cities.forEach((city) => {
-        const chip = el(
-          "button",
-          {
-            class: "chip",
-            role: "tab",
-            "aria-selected":
-              activeCity && activeCity.toLowerCase() === city.toLowerCase()
-                ? "true"
-                : "false",
-          },
-          city
-        );
-        chip.addEventListener("click", () => {
-          activeCity = city;
-          $$('[role="tab"]', filtroCidadesEl).forEach((n) =>
-            n.setAttribute("aria-selected", "false")
-          );
-          chip.setAttribute("aria-selected", "true");
-          renderEvents();
-        });
-        filtroCidadesEl.appendChild(chip);
-      });
-    }
-
-    function openEventSheet(ev) {
-      const sheet = $("#sheet");
-      const sheetBody = $("#sheet-body");
-      const sheetBackdrop = $("#sheet-backdrop");
-      if (!sheet || !sheetBody) return;
-      sheetBody.innerHTML = "";
-
-      const city = cityFrom(ev);
-      const dateText = dateTextFrom(ev);
-      const rawMedia = mediaFrom(ev);
-      const resolvedMedia = resolveMediaUrl(rawMedia);
-
-      console.debug("[sheet][open]", ev.id || ev.slug || ev.title || ev.name, {
-        rawMedia,
-        resolvedMedia,
-      });
-
-      const head = el("div", {}, [
-        el("h3", {}, ev.title || ev.name || ev.eventTitle || "Evento"),
-        el("div", { class: "status-chip soon", style: "margin-top:6px" }, [
-          el("span", { class: "dot" }),
-          el("span", {}, city || "—"),
-        ]),
-      ]);
-
-      const mediaNode = el(
-        "div",
-        { class: "sheet-media" },
-        (() => {
-          const img = imgNode(rawMedia);
-          return img ? img : null;
-        })()
-      );
-
-      const makeWaDeepLink = (ev2) => {
-        const id = ev2.id || ev2.slug || "";
-        if (!id) return `https://wa.me/${BOT_NUMBER}`;
-        const txt = encodeURIComponent(
-          `ingressai:start ev=${id} qty=1 autopay=1`
-        );
-        return `https://wa.me/${BOT_NUMBER}?text=${txt}`;
-      };
-      const ctaHref = ev.whatsappLink || ev.deepLink || makeWaDeepLink(ev);
-
-      const details = el("div", {}, [
-        el("div", {}, `Quando: ${dateText || "—"}`),
-        el("div", {}, `Local: ${ev.venue || ev.local || city || "—"}`),
-      ]);
-
-      const actions = el(
-        "div",
-        { style: "display:flex;gap:8px;margin-top:8px" },
-        [
-          el(
-            "a",
-            {
-              class: "btn btn--secondary btn--sm",
-              href: ctaHref,
-              target: "_blank",
-              rel: "noopener noreferrer",
-            },
-            "Comprar no WhatsApp"
-          ),
-        ]
-      );
-
-      sheetBody.appendChild(head);
-      sheetBody.appendChild(mediaNode);
-      sheetBody.appendChild(details);
-      sheetBody.appendChild(actions);
-
-      sheet.setAttribute("aria-hidden", "false");
-      sheet.classList.add("is-open");
-      sheetBackdrop.classList.add("is-open");
-    }
-
-    function closeSheet() {
-      const sheet = $("#sheet");
-      const sheetBackdrop = $("#sheet-backdrop");
-      if (!sheet) return;
-      sheet.classList.remove("is-open");
-      sheetBackdrop?.classList.remove("is-open");
-      sheet.setAttribute("aria-hidden", "true");
-    }
-    $("#sheet-close")?.addEventListener("click", closeSheet);
-    $("#sheet-backdrop")?.addEventListener("click", closeSheet);
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") closeSheet();
+      elList.appendChild(card);
     });
+  }
 
-    buscaEl?.addEventListener("input", (e) => {
-      searchTerm = e.target.value || "";
-      renderEvents();
-    });
+  // ========= Calculadora =========
+  function setupCalc() {
+    const priceInput = $('#calc-price');
+    const priceRange = $('#calc-price-range');
+    const qtyInput = $('#calc-qty-n');
+    const qtyRange = $('#calc-qty');
 
-    // ===== Calculadora (3% top + 1,5% manual)
-    const priceEl = $("#calc-price");
-    const priceRangeEl = $("#calc-price-range");
-    const qtyNEl = $("#calc-qty-n");
-    const qtySlider = $("#calc-qty");
+    const baseUnitEl = $('#calc-base-unit');
+    const feeOrgEl = $('#calc-fee-org');
+    const grossEl = $('#calc-gross');
+    const netEl = $('#calc-net');
 
-    const baseUnitEl = $("#calc-base-unit");
-    const feeOrgEl = $("#calc-fee-org");
-    const grossEl = $("#calc-gross");
-    const netEl = $("#calc-net");
+    const manualFeeUnitEl = $('#manual-fee-unit');
+    const manualFeeTotalEl = $('#manual-fee-total');
+    const manualNetTotalEl = $('#manual-net-total');
+    const manualNetUnitEl = $('#manual-net-unit');
 
-    const manualFeeUnitEl = $("#manual-fee-unit");
-    const manualFeeTotalEl = $("#manual-fee-total");
-    const manualNetTotalEl = $("#manual-net-total");
-    const manualNetUnitEl = $("#manual-net-unit");
+    if (!priceInput || !priceRange || !qtyInput || !qtyRange) return;
 
-    let priceCents = brlToCents(qs.get("price")) || 6000; // R$ 60,00
-    let qty = clampInt(
-      qs.get("qty") || localStorage.getItem("ia.qty") || "100",
-      0,
-      10000
-    );
+    function parseBRL(str) {
+      if (!str) return 0;
+      const clean = String(str)
+        .replace(/[^\d,.-]/g, '')
+        .replace('.', '')
+        .replace(',', '.');
+      const v = parseFloat(clean);
+      return isFinite(v) ? v : 0;
+    }
 
-    function pushState() {
-      const params = new URLSearchParams(location.search);
-      params.set("price", (priceCents / 100).toFixed(2));
-      params.set("qty", String(qty));
-      const newUrl = `${location.pathname}?${params.toString()}${
-        location.hash || ""
-      }`;
-      history.replaceState(null, "", newUrl);
-      localStorage.setItem("ia.qty", String(qty));
+    function syncFromPriceInput() {
+      const v = parseBRL(priceInput.value);
+      if (!isFinite(v)) return;
+      const clamped = Math.min(Math.max(v, 5), 500);
+      priceRange.value = String(clamped.toFixed(0));
+      priceInput.value = fmtMoneyBR(clamped);
+      recalc();
+    }
+
+    function syncFromPriceRange() {
+      const v = parseFloat(priceRange.value || '0');
+      priceInput.value = fmtMoneyBR(v);
+      recalc();
+    }
+
+    function syncFromQtyInput() {
+      let v = parseInt(qtyInput.value || '0', 10);
+      if (!isFinite(v)) v = 0;
+      v = Math.min(Math.max(v, 0), 10000);
+      qtyInput.value = String(v);
+      qtyRange.value = String(Math.min(v, 1000));
+      recalc();
+    }
+
+    function syncFromQtyRange() {
+      const v = parseInt(qtyRange.value || '0', 10);
+      qtyInput.value = String(v);
+      recalc();
     }
 
     function recalc() {
-      // 3% (plataforma)
-      baseUnitEl.textContent = centsToBRL(priceCents);
-      const pct3 = 0.03;
-      const feeUnit3 = Math.round(priceCents * pct3);
-      const gross = priceCents * qty;
-      const net = Math.max(0, (priceCents - feeUnit3) * qty);
-      feeOrgEl.textContent = `${centsToBRL(feeUnit3)} / ingresso`;
-      grossEl.textContent = centsToBRL(gross);
-      netEl.textContent = centsToBRL(net);
+      const price = parseBRL(priceInput.value);
+      const qty = parseInt(qtyInput.value || '0', 10) || 0;
 
-      // 1,5% (emissão manual)
-      const pct15 = 0.015;
-      const feeUnit15 = Math.round(priceCents * pct15);
-      const feeTotal15 = feeUnit15 * qty;
-      const manualNetTotal = Math.max(0, (priceCents - feeUnit15) * qty);
-      const manualNetUnit = Math.max(0, priceCents - feeUnit15);
-      manualFeeUnitEl.textContent = `${centsToBRL(feeUnit15)} / ingresso`;
-      manualFeeTotalEl.textContent = centsToBRL(feeTotal15);
-      manualNetTotalEl.textContent = centsToBRL(manualNetTotal);
-      manualNetUnitEl.textContent = centsToBRL(manualNetUnit);
+      const gross = price * qty;
+      const feeOrg = gross * 0.03;
+      const net = gross - feeOrg;
+
+      baseUnitEl && (baseUnitEl.textContent = fmtMoneyBR(price));
+      feeOrgEl && (feeOrgEl.textContent = fmtMoneyBR(feeOrg));
+      grossEl && (grossEl.textContent = fmtMoneyBR(gross));
+      netEl && (netEl.textContent = fmtMoneyBR(net));
+
+      const manualFeeUnit = price * 0.015;
+      const manualFeeTotal = manualFeeUnit * qty;
+      const manualNetTotal = gross - manualFeeTotal;
+      const manualNetUnit = qty ? manualNetTotal / qty : 0;
+
+      manualFeeUnitEl &&
+        (manualFeeUnitEl.textContent = fmtMoneyBR(manualFeeUnit));
+      manualFeeTotalEl &&
+        (manualFeeTotalEl.textContent = fmtMoneyBR(manualFeeTotal));
+      manualNetTotalEl &&
+        (manualNetTotalEl.textContent = fmtMoneyBR(manualNetTotal));
+      manualNetUnitEl &&
+        (manualNetUnitEl.textContent = fmtMoneyBR(manualNetUnit));
     }
 
-    // Prepara campos iniciais
-    if (priceEl) priceEl.value = centsToBRL(priceCents);
-    const priceRangeDefault = Math.max(
-      5,
-      Math.min(500, Math.round(priceCents / 100))
+    priceInput.addEventListener('blur', syncFromPriceInput);
+    priceInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        syncFromPriceInput();
+      }
+    });
+    priceRange.addEventListener('input', syncFromPriceRange);
+
+    qtyInput.addEventListener('input', syncFromQtyInput);
+    qtyRange.addEventListener('input', syncFromQtyRange);
+
+    // dicas
+    $$('.i-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('aria-controls');
+        if (!id) return;
+        const tip = document.getElementById(id);
+        if (!tip) return;
+        const open = tip.classList.toggle('open');
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+    });
+
+    // inicial
+    syncFromPriceRange();
+    syncFromQtyRange();
+  }
+
+  // ========= Solicitação de criação =========
+  async function handleRequestCreate() {
+    if (!elReqForm) return;
+    const phone = $('#req-phone');
+    const title = $('#req-title');
+    const name = $('#req-name');
+    const city = $('#req-city');
+    const catBtnOn = $(
+      '.chip-opt[aria-checked="true"][data-value]'
     );
-    if (priceRangeEl) priceRangeEl.value = String(priceRangeDefault);
-    if (qtyNEl) qtyNEl.value = String(qty);
-    if (qtySlider) qtySlider.value = String(Math.min(1000, qty));
-    recalc();
 
-    // Eventos UI
-    priceEl?.addEventListener("input", (e) => {
-      priceCents = brlToCents(e.target.value);
-      const v = Math.max(5, Math.min(500, Math.round(priceCents / 100)));
-      if (priceRangeEl) priceRangeEl.value = String(v);
-      pushState();
-      recalc();
-    });
-    priceEl?.addEventListener("blur", (e) => {
-      let c = brlToCents(e.target.value);
-      const mod = c % 100;
-      if (mod === 0 && c >= 1000) c = c - 10; // .00 → .90
-      else if (mod >= 90 && mod < 99) c = c + (99 - mod); // ~.90 → .99
-      priceCents = Math.max(0, c);
-      e.target.value = centsToBRL(priceCents);
-      const v = Math.max(5, Math.min(500, Math.round(priceCents / 100)));
-      if (priceRangeEl) priceRangeEl.value = String(v);
-      pushState();
-      recalc();
-    });
-    priceRangeEl?.addEventListener("input", (e) => {
-      const reais = clampInt(e.target.value, 5, 500);
-      priceCents = reais * 100;
-      if (priceEl) priceEl.value = centsToBRL(priceCents);
-      pushState();
-      recalc();
-    });
-    qtyNEl?.addEventListener("input", (e) => {
-      const v = clampInt(e.target.value, 0, 10000);
-      e.target.value = String(v);
-      qty = v;
-      if (qtySlider) qtySlider.value = String(Math.min(1000, v));
-      pushState();
-      recalc();
-    });
-    qtySlider?.addEventListener("input", (e) => {
-      const v = clampInt(e.target.value, 0, 1000);
-      if (qtyNEl) qtyNEl.value = String(v);
-      qty = v;
-      pushState();
-      recalc();
+    const phoneVal = phone.value.replace(/[^\d]/g, '');
+    const titleVal = (title.value || '').trim();
+    const nameVal = (name.value || '').trim();
+    const cityVal = (city.value || '').trim();
+    const catVal = catBtnOn ? catBtnOn.dataset.value : 'atleticas';
+
+    if (!phoneVal || phoneVal.length < 10) {
+      elReqHint.textContent = 'Informe um WhatsApp válido (com DDD).';
+      return;
+    }
+    if (!titleVal || !cityVal) {
+      elReqHint.textContent = 'Preencha, no mínimo, nome do evento e cidade.';
+      return;
+    }
+
+    elReqHint.textContent = 'Enviando...';
+
+    const payload = {
+      phone: phoneVal,
+      title: titleVal,
+      name: nameVal,
+      city: cityVal,
+      category: catVal,
+      source: 'landing',
+    };
+
+    let ok = false;
+    try {
+      // rota principal
+      const res = await fetch(API + '/organizers/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        ok = true;
+      } else if (res.status === 404) {
+        // backcompat
+        const res2 = await fetch(API + '/org/request', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        ok = res2.ok;
+      }
+    } catch (e) {
+      console.error(e);
+    }
+
+    if (ok) {
+      elReqHint.textContent =
+        'Pronto! Confirme a mensagem que vai chegar no seu WhatsApp.';
+      try {
+        elReqForm.reset();
+      } catch (e) {
+        // ignore
+      }
+    } else {
+      elReqHint.textContent =
+        'Não consegui enviar agora. Tente novamente em alguns minutos.';
+    }
+  }
+
+  function setupRequestForm() {
+    if (!elReqForm || !elReqSend) return;
+    elReqSend.addEventListener('click', (e) => {
+      e.preventDefault();
+      handleRequestCreate();
     });
 
-    // Tooltips acessíveis (usa aria-controls)
-    function closeAllTips(except) {
-      $$(".tip[aria-hidden='false']").forEach((n) => {
-        if (n.id !== except) {
-          n.setAttribute("aria-hidden", "true");
-          n.classList.remove("open");
+    // chips categoria
+    $$('.chip-opt[data-value]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        $$('.chip-opt[data-value]').forEach((b) =>
+          b.setAttribute('aria-checked', 'false')
+        );
+        btn.setAttribute('aria-checked', 'true');
+      });
+    });
+  }
+
+  // ========= Health & validator link =========
+  async function initHealth() {
+    elApiDiag && (elApiDiag.textContent = API || '–');
+
+    if (!API) {
+      setAuth(false);
+      elHealthDiag && (elHealthDiag.textContent = '–');
+      return;
+    }
+
+    try {
+      const res = await fetch(API + '/health', {
+        headers: { Accept: 'application/json' },
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json().catch(() => ({}));
+      const status =
+        data.status || data.state || (data.ok ? 'ok' : 'online');
+      elHealthDiag && (elHealthDiag.textContent = String(status));
+      setAuth(true);
+    } catch (e) {
+      console.warn('[ingressai] health fail', e);
+      elHealthDiag && (elHealthDiag.textContent = 'off');
+      setAuth(false);
+    }
+
+    // link do validador
+    if (elOrgValidator && API_ROOT) {
+      const url = API_ROOT + '/app/validator.html';
+      elOrgValidator.href = url;
+      elOrgValidator.target = '_blank';
+      elOrgValidator.rel = 'noopener noreferrer';
+    }
+  }
+
+  // ========= Eventos (vitrine) =========
+  async function initEvents() {
+    if (!API) return;
+    try {
+      const data = await fetchJson('/events/vitrine');
+      const events = Array.isArray(data)
+        ? data
+        : Array.isArray(data.events)
+        ? data.events
+        : [];
+      state.events = events;
+      renderChips();
+      renderCards();
+    } catch (e) {
+      console.error('[ingressai] erro carregando vitrine', e);
+      if (elList) {
+        elList.innerHTML =
+          '<p class="subtle">Não consegui carregar os eventos agora. Tente recarregar a página em alguns instantes.</p>';
+      }
+      elEvDiag && (elEvDiag.textContent = '–');
+    }
+  }
+
+  function initSearch() {
+    if (!elSearch) return;
+    elSearch.addEventListener('input', () => {
+      state.query = (elSearch.value || '').trim();
+      renderCards();
+    });
+  }
+
+  // ========= Bootstrap =========
+  function initDrawer() {
+    if (elDrawerToggle) {
+      elDrawerToggle.addEventListener('click', openDrawer);
+    }
+    if (elDrawerClose) {
+      elDrawerClose.addEventListener('click', closeDrawer);
+    }
+    if (elDrawerBackdrop) {
+      elDrawerBackdrop.addEventListener('click', closeDrawer);
+    }
+    if (elDrawerCreate) {
+      elDrawerCreate.addEventListener('click', () => {
+        closeDrawer();
+        const orgSection = $('#organizadores');
+        if (orgSection) {
+          orgSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
       });
     }
-    document.addEventListener("click", (e) => {
-      const btn = e.target.closest(".i-btn");
-      if (btn) {
-        const id = btn.getAttribute("aria-controls");
-        const tip = id && document.getElementById(id);
-        if (tip) {
-          const isOpen = tip.getAttribute("aria-hidden") === "false";
-          closeAllTips(isOpen ? undefined : id);
-          tip.setAttribute("aria-hidden", isOpen ? "true" : "false");
-          tip.classList.toggle("open", !isOpen);
-        }
-      } else if (!e.target.closest(".tip")) {
-        closeAllTips();
-      }
-    });
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") closeAllTips();
-    });
+  }
 
-    // Form "Quero criar meu evento"
-    const reqForm = $("#req-form");
-    const reqBtn = $("#req-send");
-    const reqHint = $("#req-hint");
-    const catAth = $("#cat-ath");
-    const catProd = $("#cat-prod");
-    let reqCategory = "atleticas";
-    function setCat(which) {
-      reqCategory = which;
-      catAth?.setAttribute(
-        "aria-checked",
-        which === "atleticas" ? "true" : "false"
-      );
-      catProd?.setAttribute(
-        "aria-checked",
-        which === "produtoras" ? "true" : "false"
-      );
+  function initSheet() {
+    if (elSheetBackdrop) {
+      elSheetBackdrop.addEventListener('click', closeSheet);
     }
-    catAth?.addEventListener("click", () => setCat("atleticas"));
-    catProd?.addEventListener("click", () => setCat("produtoras"));
-
-    async function submitOrgRequest() {
-      if (!reqForm) return;
-      const phone = ($("#req-phone")?.value || "").replace(/\D+/g, "");
-      const title = $("#req-title")?.value?.trim() || "";
-      const name = $("#req-name")?.value?.trim() || "";
-      const city = $("#req-city")?.value?.trim() || "";
-      if (!phone || !title || !name || !city) {
-        if (reqHint)
-          reqHint.textContent =
-            "Preencha WhatsApp, evento, seu nome e cidade.";
-        return;
-      }
-
-      reqBtn?.setAttribute("disabled", "true");
-      if (reqHint) reqHint.textContent = "Enviando…";
-      try {
-        const payload = { phone, title, name, city, category: reqCategory };
-        const res = await postJSON(INGRESSAI_API + "/org/request", payload);
-        if (res?.ok) {
-          if (reqHint)
-            reqHint.textContent =
-              "Solicitação enviada. Você receberá o passo a passo no WhatsApp.";
-          reqForm.reset();
-          setCat("atleticas");
-        } else {
-          if (reqHint) reqHint.textContent = "Não foi possível enviar agora.";
-        }
-      } catch {
-        if (reqHint) reqHint.textContent = "Falha ao enviar. Tente novamente.";
-      } finally {
-        reqBtn?.removeAttribute("disabled");
-        setTimeout(() => reqHint && (reqHint.textContent = ""), 4500);
-      }
+    if (elSheetClose) {
+      elSheetClose.addEventListener('click', closeSheet);
     }
-    reqBtn?.addEventListener("click", submitOrgRequest);
+  }
 
-    // Diagnóstico
-    const dApi = $("#d-api");
-    const dHealth = $("#d-health");
-    const dEv = $("#d-ev2");
-    const authIndicator = $("#auth-indicator");
-    function setDiag(el, ok, extra) {
-      if (!el) return;
-      el.textContent = ok ? extra || "on" : extra || "off";
-      el.style.color = ok ? "#157f3b" : "#b64848";
-    }
-
-    try {
-      setDiag(dApi, !!INGRESSAI_API, INGRESSAI_API || "off");
-      let j;
-      try {
-        j = await getJSON(INGRESSAI_API + "/health");
-      } catch {
-        j = await getJSON(INGRESSAI_BASE + "/health");
-      }
-      setDiag(dHealth, !!j?.ok, j?.ok ? "on" : "off");
-      authIndicator?.classList.remove("off", "on");
-      authIndicator?.classList.add(j?.ok ? "on" : "off");
-      if (authIndicator)
-        authIndicator.textContent = j?.ok ? "online" : "offline";
-    } catch {
-      setDiag(dHealth, false);
-      authIndicator?.classList.remove("off", "on");
-      authIndicator?.classList.add("off");
-      if (authIndicator) authIndicator.textContent = "offline";
-    }
-
-    try {
-      allEvents = await fetchEventsSmart();
-      setDiag(dEv, true, `${allEvents.length} evt`);
-      console.debug("[vitrine] eventos finais:", allEvents);
-      buildCityChips();
-      renderEvents();
-    } catch (err) {
-      console.error("[vitrine] erro ao carregar eventos", err);
-      setDiag(dEv, false, "—");
-    }
-
-    // Wire do Validador (HEAD + fallback)
-    try {
-      const url =
-        INGRESSAI_BASE.replace(/\/+$/, "") + "/app/validator.html";
-      const r = await fetch(url, { method: "HEAD", cache: "no-store" });
-      const ok = r.ok || r.status === 200;
-      const orgBtn = $("#org-validator");
-      if (ok && orgBtn && (!orgBtn.href || orgBtn.getAttribute("href") === "#"))
-        orgBtn.href = url;
-    } catch {}
+  // run
+  document.addEventListener('DOMContentLoaded', () => {
+    initDrawer();
+    initSheet();
+    initSearch();
+    setupCalc();
+    setupRequestForm();
+    initHealth();
+    initEvents();
   });
 })();
