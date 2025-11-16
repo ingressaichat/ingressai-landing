@@ -21,13 +21,7 @@
   }
 
   async function getJSON(url, opts = {}) {
-    const r = await fetch(url, {
-      method: "GET",
-      credentials: "omit",
-      mode: "cors",
-      cache: "no-store",
-      ...opts,
-    });
+    const r = await fetch(url, { method: "GET", credentials: "omit", mode: "cors", cache: "no-store", ...opts });
     if (!r.ok) throw new Error(`HTTP ${r.status} @ ${url}`);
     const t = await r.text();
     return t ? JSON.parse(t) : {};
@@ -60,17 +54,11 @@
     return n;
   }
   function centsToBRL(c) {
-    return (c / 100).toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    });
+    return (c / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
   }
   function brlToCents(raw) {
     if (raw == null) return 0;
-    const s = String(raw)
-      .replace(/[^\d,.-]/g, "")
-      .replace(/\./g, "")
-      .replace(",", ".");
+    const s = String(raw).replace(/[^\d,.-]/g, "").replace(/\./g, "").replace(",", ".");
     const n = Number(s);
     return Number.isFinite(n) ? Math.round(n * 100) : 0;
   }
@@ -130,13 +118,9 @@
     // ===== Config / API
     const qs = new URLSearchParams(location.search);
     const QS_API = (qs.get("api") || "").trim();
-    const META_API =
-      document.querySelector('meta[name="ingressai-api"]')?.content?.trim() ||
-      "";
-    const INGRESSAI_API =
-      window.INGRESSAI_API || normalizeApi(QS_API || META_API);
-    const INGRESSAI_BASE =
-      window.INGRESSAI_BASE || INGRESSAI_API.replace(/\/api$/i, "");
+    const META_API = document.querySelector('meta[name="ingressai-api"]')?.content?.trim() || "";
+    const INGRESSAI_API = window.INGRESSAI_API || normalizeApi(QS_API || META_API);
+    const INGRESSAI_BASE = window.INGRESSAI_BASE || INGRESSAI_API.replace(/\/api$/i, "");
     window.INGRESSAI_API = INGRESSAI_API;
     window.INGRESSAI_BASE = INGRESSAI_BASE;
 
@@ -157,10 +141,7 @@
     // ===== Header scroll
     const header = $("header");
     const toggleScrolled = () =>
-      header &&
-      (window.scrollY > 4
-        ? header.classList.add("is-scrolled")
-        : header.classList.remove("is-scrolled"));
+      header && (window.scrollY > 4 ? header.classList.add("is-scrolled") : header.classList.remove("is-scrolled"));
     window.addEventListener("scroll", toggleScrolled, { passive: true });
     toggleScrolled();
 
@@ -191,9 +172,7 @@
     drawerBackdrop?.addEventListener("click", closeDrawer);
     btnDrawerCreate?.addEventListener("click", () => {
       closeDrawer();
-      document
-        .getElementById("organizadores")
-        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      document.getElementById("organizadores")?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
 
     // ===== Vitrine
@@ -206,12 +185,7 @@
     let searchTerm = "";
 
     async function fetchEventsSmart() {
-      const endpoints = [
-        "/events/vitrine",
-        "/events/public",
-        "/events",
-        "/events/seed",
-      ];
+      const endpoints = ["/events/vitrine", "/events/public", "/events", "/events/seed"];
       for (const p of endpoints) {
         try {
           const url = INGRESSAI_API + p;
@@ -219,13 +193,7 @@
           console.debug("[vitrine] payload bruto de", p, "=>", json);
           const events = extractEventsPayload(json);
           if (Array.isArray(events)) {
-            console.debug(
-              "[vitrine] usando",
-              p,
-              "com",
-              events.length,
-              "eventos"
-            );
+            console.debug("[vitrine] usando", p, "com", events.length, "eventos");
             return events;
           }
         } catch (err) {
@@ -235,17 +203,9 @@
       return [];
     }
 
-    const cityFrom = (ev) =>
-      ev.city ||
-      ev.cidade ||
-      ev.location?.city ||
-      ev.venueCity ||
-      ev.placeCity ||
-      null;
-    const dateTextFrom = (ev) =>
-      ev.dateText || ev.eventDateText || ev.date || ev.startsAt || "";
-    const mediaFrom = (ev) =>
-      ev.image || ev.coverUrl || ev.banner || ev.media?.[0] || ev.thumb || null;
+    const cityFrom = (ev) => ev.city || ev.cidade || ev.location?.city || ev.venueCity || ev.placeCity || null;
+    const dateTextFrom = (ev) => ev.dateText || ev.eventDateText || ev.date || ev.startsAt || "";
+    const mediaFrom = (ev) => ev.image || ev.coverUrl || ev.banner || ev.media?.[0] || ev.thumb || null;
 
     function statusChip(ev) {
       if (ev.soldOut) return ["sold", "Esgotado"];
@@ -289,20 +249,13 @@
 
       const filtered = allEvents.filter((ev) => {
         const city = (cityFrom(ev) || "").toLowerCase();
-        const title = (
-          ev.title ||
-          ev.name ||
-          ev.eventTitle ||
-          ""
-        ).toLowerCase();
+        const title = (ev.title || ev.name || ev.eventTitle || "").toLowerCase();
         const hitCity = !activeCity || city === activeCity.toLowerCase();
         const hitSearch =
           !q ||
           title.includes(q) ||
           city.includes(q) ||
-          (ev.venue || ev.local || "")
-            .toLowerCase()
-            .includes(q);
+          (ev.venue || ev.local || "").toLowerCase().includes(q);
         return hitCity && hitSearch;
       });
 
@@ -311,11 +264,7 @@
         listaEl.appendChild(
           el("div", { class: "std-card" }, [
             el("strong", {}, "Nenhum evento encontrado"),
-            el(
-              "p",
-              { class: "subtle" },
-              "Tente limpar filtros ou buscar outro termo."
-            ),
+            el("p", { class: "subtle" }, "Tente limpar filtros ou buscar outro termo."),
           ])
         );
         return;
@@ -338,17 +287,10 @@
                   { class: "card-title" },
                   ev.title || ev.name || ev.eventTitle || "Evento"
                 ),
-                el(
-                  "div",
-                  { class: `status-line status--${k}` },
-                  [
-                    el("span", {
-                      class: "status-dot",
-                      "aria-hidden": "true",
-                    }),
-                    el("span", {}, label),
-                  ]
-                ),
+                el("div", { class: `status-line status--${k}` }, [
+                  el("span", { class: "status-dot", "aria-hidden": "true" }),
+                  el("span", {}, label),
+                ]),
               ]),
             ]),
             el(
@@ -375,18 +317,12 @@
         if (c) set.add(String(c));
       });
 
-      const cities = Array.from(set).sort((a, b) =>
-        a.localeCompare(b, "pt-BR")
-      );
+      const cities = Array.from(set).sort((a, b) => a.localeCompare(b, "pt-BR"));
       filtroCidadesEl.innerHTML = "";
 
       const allChip = el(
         "button",
-        {
-          class: "chip",
-          role: "tab",
-          "aria-selected": activeCity ? "false" : "true",
-        },
+        { class: "chip", role: "tab", "aria-selected": activeCity ? "false" : "true" },
         "Todas"
       );
       allChip.addEventListener("click", () => {
@@ -437,52 +373,43 @@
 
       const head = el("div", {}, [
         el("h3", {}, ev.title || ev.name || ev.eventTitle || "Evento"),
-        el(
-          "div",
-          { class: "status-chip soon", style: "margin-top:6px" },
-          [el("span", { class: "dot" }), el("span", {}, city || "—")]
-        ),
+        el("div", { class: "status-chip soon", style: "margin-top:6px" }, [
+          el("span", { class: "dot" }),
+          el("span", {}, city || "—"),
+        ]),
       ]);
 
-      const mediaNode = el("div", { class: "sheet-media" }, [
-        img ? imgNode(img) : imgNode(null),
-      ]);
+      const mediaNode = el(
+        "div",
+        { class: "sheet-media" },
+        [img ? imgNode(img) : imgNode(null)]
+      );
 
-      const makeWaDeepLink = (ev) => {
-        const id = ev.id || ev.slug || "";
+      const makeWaDeepLink = (ev2) => {
+        const id = ev2.id || ev2.slug || "";
         if (!id) return `https://wa.me/${BOT_NUMBER}`;
-        const txt = encodeURIComponent(
-          `ingressai:start ev=${id} qty=1 autopay=1`
-        );
+        const txt = encodeURIComponent(`ingressai:start ev=${id} qty=1 autopay=1`);
         return `https://wa.me/${BOT_NUMBER}?text=${txt}`;
       };
       const ctaHref = ev.whatsappLink || ev.deepLink || makeWaDeepLink(ev);
 
       const details = el("div", { class: "std-list" }, [
         el("div", {}, `Quando: ${dateText || "—"}`),
-        el(
-          "div",
-          {},
-          `Local: ${ev.venue || ev.local || city || "—"}`
-        ),
+        el("div", {}, `Local: ${ev.venue || ev.local || city || "—"}`),
       ]);
 
-      const actions = el(
-        "div",
-        { style: "display:flex;gap:8px;margin-top:8px" },
-        [
-          el(
-            "a",
-            {
-              class: "btn btn--secondary btn--sm",
-              href: ctaHref,
-              target: "_blank",
-              rel: "noopener noreferrer",
-            },
-            "Comprar no WhatsApp"
-          ),
-        ]
-      );
+      const actions = el("div", { style: "display:flex;gap:8px;margin-top:8px" }, [
+        el(
+          "a",
+          {
+            class: "btn btn--secondary btn--sm",
+            href: ctaHref,
+            target: "_blank",
+            rel: "noopener noreferrer",
+          },
+          "Comprar no WhatsApp"
+        ),
+      ]);
 
       sheetBody.appendChild(head);
       sheetBody.appendChild(mediaNode);
@@ -526,16 +453,13 @@
     const manualNetUnitEl = $("#manual-net-unit");
 
     let priceCents = brlToCents(qs.get("price")) || 6000; // R$ 60,00
-    let qty =
-      clampInt(qs.get("qty") || localStorage.getItem("ia.qty") || "100", 0, 10000);
+    let qty = clampInt(qs.get("qty") || localStorage.getItem("ia.qty") || "100", 0, 10000);
 
     function pushState() {
       const params = new URLSearchParams(location.search);
       params.set("price", (priceCents / 100).toFixed(2));
       params.set("qty", String(qty));
-      const newUrl = `${location.pathname}?${params.toString()}${
-        location.hash || ""
-      }`;
+      const newUrl = `${location.pathname}?${params.toString()}${location.hash || ""}`;
       history.replaceState(null, "", newUrl);
       localStorage.setItem("ia.qty", String(qty));
     }
@@ -565,10 +489,7 @@
 
     // Prepara campos iniciais
     if (priceEl) priceEl.value = centsToBRL(priceCents);
-    const priceRangeDefault = Math.max(
-      5,
-      Math.min(500, Math.round(priceCents / 100))
-    );
+    const priceRangeDefault = Math.max(5, Math.min(500, Math.round(priceCents / 100)));
     if (priceRangeEl) priceRangeEl.value = String(priceRangeDefault);
     if (qtyNEl) qtyNEl.value = String(qty);
     if (qtySlider) qtySlider.value = String(Math.min(1000, qty));
@@ -654,14 +575,8 @@
     let reqCategory = "atleticas";
     function setCat(which) {
       reqCategory = which;
-      catAth?.setAttribute(
-        "aria-checked",
-        which === "atleticas" ? "true" : "false"
-      );
-      catProd?.setAttribute(
-        "aria-checked",
-        which === "produtoras" ? "true" : "false"
-      );
+      catAth?.setAttribute("aria-checked", which === "atleticas" ? "true" : "false");
+      catProd?.setAttribute("aria-checked", which === "produtoras" ? "true" : "false");
     }
     catAth?.addEventListener("click", () => setCat("atleticas"));
     catProd?.addEventListener("click", () => setCat("produtoras"));
@@ -673,9 +588,7 @@
       const name = $("#req-name")?.value?.trim() || "";
       const city = $("#req-city")?.value?.trim() || "";
       if (!phone || !title || !name || !city) {
-        if (reqHint)
-          reqHint.textContent =
-            "Preencha WhatsApp, evento, seu nome e cidade.";
+        if (reqHint) reqHint.textContent = "Preencha WhatsApp, evento, seu nome e cidade.";
         return;
       }
 
@@ -685,17 +598,14 @@
         const payload = { phone, title, name, city, category: reqCategory };
         const res = await postJSON(INGRESSAI_API + "/org/request", payload);
         if (res?.ok) {
-          if (reqHint)
-            reqHint.textContent =
-              "Solicitação enviada. Você receberá o passo a passo no WhatsApp.";
+          if (reqHint) reqHint.textContent = "Solicitação enviada. Você receberá o passo a passo no WhatsApp.";
           reqForm.reset();
           setCat("atleticas");
         } else {
           if (reqHint) reqHint.textContent = "Não foi possível enviar agora.";
         }
       } catch {
-        if (reqHint)
-          reqHint.textContent = "Falha ao enviar. Tente novamente.";
+        if (reqHint) reqHint.textContent = "Falha ao enviar. Tente novamente.";
       } finally {
         reqBtn?.removeAttribute("disabled");
         setTimeout(() => reqHint && (reqHint.textContent = ""), 4500);
@@ -710,7 +620,7 @@
     const authIndicator = $("#auth-indicator");
     function setDiag(el, ok, extra) {
       if (!el) return;
-      el.textContent = ok ? extra || "on" : extra || "off";
+      el.textContent = ok ? (extra || "on") : (extra || "off");
       el.style.color = ok ? "#157f3b" : "#b64848";
     }
 
@@ -746,15 +656,11 @@
 
     // Wire do Validador (HEAD + fallback)
     try {
-      const url =
-        INGRESSAI_BASE.replace(/\/+$/, "") + "/app/validator.html";
+      const url = INGRESSAI_BASE.replace(/\/+$/, "") + "/app/validator.html";
       const r = await fetch(url, { method: "HEAD", cache: "no-store" });
       const ok = r.ok || r.status === 200;
       const orgBtn = $("#org-validator");
-      if (ok && orgBtn && (!orgBtn.href || orgBtn.getAttribute("href") === "#"))
-        orgBtn.href = url;
-    } catch {
-      /* silencioso no validador */
-    }
+      if (ok && orgBtn && (!orgBtn.href || orgBtn.getAttribute("href") === "#")) orgBtn.href = url;
+    } catch {}
   });
 })();
