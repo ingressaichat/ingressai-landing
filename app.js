@@ -63,7 +63,7 @@
     return Number.isFinite(n) ? Math.round(n * 100) : 0;
   }
 
-  // ===== NOVO: extrator robusto de eventos =====
+  // ===== extrator robusto de eventos =====
 
   // Busca recursiva por "primeiro array de objetos" dentro do JSON
   function findFirstArrayOfObjects(obj, depth = 0) {
@@ -127,14 +127,25 @@
     const BOT_NUMBER = "5534999992747";
     const PLACEHOLDER_IMG = "./logo_ingressai.png";
 
-    // Resolve URL de mídia vinda do backend (/uploads, /media, http…)
+    // Resolve URL de mídia vinda do backend (/uploads, /media, filename, http…)
     function resolveMediaUrl(src) {
       if (!src) return PLACEHOLDER_IMG;
       const s = String(src).trim();
+
+      // URL absoluta
       if (/^https?:\/\//i.test(s)) return s;
+
+      // Nome de arquivo simples (ex: "1700123123.png") → /uploads/<arquivo>
+      if (/^[\w.-]+\.(png|jpe?g|webp)$/i.test(s) && !s.startsWith("/")) {
+        return INGRESSAI_BASE.replace(/\/+$/, "") + "/uploads/" + s;
+      }
+
+      // Caminhos conhecidos de upload/media
       if (s.startsWith("/uploads") || s.startsWith("/media")) {
         return INGRESSAI_BASE.replace(/\/+$/, "") + s;
       }
+
+      // Qualquer outra coisa: devolve como veio (caso seja um path relativo custom)
       return s;
     }
 
@@ -206,32 +217,35 @@
     const cityFrom = (ev) => ev.city || ev.cidade || ev.location?.city || ev.venueCity || ev.placeCity || null;
     const dateTextFrom = (ev) => ev.dateText || ev.eventDateText || ev.date || ev.startsAt || "";
 
-    // ===== NOVO: mediaFrom mais agressivo
-    // Regra:
-    // 1) Se QUALQUER campo string do evento tiver "/uploads/", usamos esse (primeiro).
-    // 2) Senão, usamos a lista explícita (imageUrl, image, coverUrl, banner, media[0], thumb).
+    // ===== mediaFrom: prioriza campo de imagem do backend
     function mediaFrom(ev) {
       if (!ev || typeof ev !== "object") return null;
 
-      // 1) varre todos os campos string procurando "/uploads/"
-      try {
-        const allStrings = Object.values(ev).filter((v) => typeof v === "string" && v.length);
-        const uploaded = allStrings.find((s) => s.includes("/uploads/"));
-        if (uploaded) return uploaded;
-      } catch {
-        // se der qualquer erro, ignora e cai no fallback
+      // 1) Campo canônico da API /events
+      if (typeof ev.image === "string" && ev.image.trim()) {
+        return ev.image.trim();
       }
 
-      // 2) fallback explícito
-      const explicit =
-        ev.imageUrl ||
-        ev.image ||
-        ev.coverUrl ||
-        ev.banner ||
-        (Array.isArray(ev.media) && ev.media[0]) ||
-        ev.thumb;
+      // 2) Campo auxiliar absoluto
+      if (typeof ev.imageUrl === "string" && ev.imageUrl.trim()) {
+        return ev.imageUrl.trim();
+      }
 
-      return explicit || null;
+      // 3) Outros campos que podem ser usados como capa
+      if (typeof ev.coverUrl === "string" && ev.coverUrl.trim()) {
+        return ev.coverUrl.trim();
+      }
+      if (typeof ev.banner === "string" && ev.banner.trim()) {
+        return ev.banner.trim();
+      }
+      if (Array.isArray(ev.media) && ev.media.length && typeof ev.media[0] === "string" && ev.media[0].trim()) {
+        return ev.media[0].trim();
+      }
+      if (typeof ev.thumb === "string" && ev.thumb.trim()) {
+        return ev.thumb.trim();
+      }
+
+      return null;
     }
 
     function statusChip(ev) {
