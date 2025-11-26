@@ -1,5 +1,5 @@
 // app.js — IngressAI landing
-// v=2025-11-16-a
+// v=2025-11-16-b
 (() => {
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => Array.from(document.querySelectorAll(sel));
@@ -467,11 +467,9 @@
     const title = $('#req-title');
     const name = $('#req-name');
     const city = $('#req-city');
-    const catBtnOn = $(
-      '.chip-opt[aria-checked="true"][data-value]'
-    );
+    const catBtnOn = $('.chip-opt[aria-checked="true"][data-value]');
 
-    const phoneVal = phone.value.replace(/[^\d]/g, '');
+    const phoneVal = (phone.value || '').replace(/[^\d]/g, '');
     const titleVal = (title.value || '').trim();
     const nameVal = (name.value || '').trim();
     const cityVal = (city.value || '').trim();
@@ -486,8 +484,6 @@
       return;
     }
 
-    elReqHint.textContent = 'Enviando...';
-
     const payload = {
       phone: phoneVal,
       title: titleVal,
@@ -497,19 +493,23 @@
       source: 'landing',
     };
 
+    elReqHint.textContent = 'Enviando...';
+    if (elReqSend) elReqSend.disabled = true;
+
     let ok = false;
     try {
-      // rota principal
-      const res = await fetch(API + '/organizers/request', {
+      // 1) rota padrão atual do backend
+      const res = await fetch(API + '/org/request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
+
       if (res.ok) {
         ok = true;
       } else if (res.status === 404) {
-        // backcompat
-        const res2 = await fetch(API + '/org/request', {
+        // 2) fallback para rota nova, caso exista no futuro
+        const res2 = await fetch(API + '/organizers/request', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
@@ -517,12 +517,14 @@
         ok = res2.ok;
       }
     } catch (e) {
-      console.error(e);
+      console.error('[ingressai] erro ao enviar request org', e);
+    } finally {
+      if (elReqSend) elReqSend.disabled = false;
     }
 
     if (ok) {
       elReqHint.textContent =
-        'Pronto! Confirme a mensagem que vai chegar no seu WhatsApp.';
+        'Pronto! Você vai receber uma mensagem oficial da IngressAI no WhatsApp para confirmar sua solicitação.';
       try {
         elReqForm.reset();
       } catch (e) {
