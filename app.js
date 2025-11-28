@@ -1,5 +1,5 @@
 // app.js — IngressAI landing
-// v=2025-11-16-b
+// v=2025-11-27-a
 (() => {
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => Array.from(document.querySelectorAll(sel));
@@ -73,6 +73,66 @@
       ev.mediaUrl ||
       ev.banner;
     return normalizeImageUrl(img);
+  }
+
+  function onlyDigits(s) {
+    return String(s || '').replace(/[^\d]/g, '');
+  }
+
+  function getEventId(ev) {
+    return (
+      ev.id ||
+      ev.slug ||
+      ev.code ||
+      ev.uid ||
+      ev.shortCode ||
+      ev._id ||
+      ''
+    );
+  }
+
+  function getEventOwnerPhone(ev) {
+    return onlyDigits(
+      ev.ownerPhone ||
+        ev.owner ||
+        ev.organizerPhone ||
+        ev.organizer ||
+        ev.owner_id ||
+        ''
+    );
+  }
+
+  function buildWhatsAppUrl(ev) {
+    const phone = onlyDigits(ev.whatsapp || '5534999992747') || '5534999992747';
+    const id = getEventId(ev) || '';
+    const text = `ingressai:start ev=${id} qty=1 autopay=1`;
+    return `https://wa.me/${encodeURIComponent(
+      phone
+    )}?text=${encodeURIComponent(text)}`;
+  }
+
+  function buildEventShareUrl(ev) {
+    const base = window.location.origin + window.location.pathname;
+    const url = new URL(base, window.location.href);
+
+    // preserva override de API (útil em staging / testes)
+    try {
+      const current = new URL(window.location.href);
+      const apiOverride = current.searchParams.get('api');
+      if (apiOverride) {
+        url.searchParams.set('api', apiOverride);
+      }
+    } catch {
+      // ignore
+    }
+
+    const evId = getEventId(ev);
+    if (evId) url.searchParams.set('ev', evId);
+
+    const ownerPhone = getEventOwnerPhone(ev);
+    if (ownerPhone) url.searchParams.set('org', ownerPhone);
+
+    return url.toString();
   }
 
   async function fetchJson(path) {
@@ -243,17 +303,52 @@
       'Ingressos emitidos direto no seu WhatsApp, com QR Code antifraude e repasse via Pix.';
     wrap.appendChild(p);
 
+    const btnRow = document.createElement('div');
+    btnRow.style.marginTop = '10px';
+    btnRow.style.display = 'flex';
+    btnRow.style.gap = '8px';
+    btnRow.style.flexWrap = 'wrap';
+
     const btn = document.createElement('a');
     btn.className = 'btn btn--secondary btn--sm';
-    btn.href = `https://wa.me/${encodeURIComponent(
-      (ev.whatsapp || '5534999992747').replace(/[^\d]/g, '')
-    )}?text=${encodeURIComponent(
-      `ingressai:start ev=${ev.id || ev.slug || ev.code || ''} qty=1 autopay=1`
-    )}`;
+    btn.href = buildWhatsAppUrl(ev);
     btn.target = '_blank';
     btn.rel = 'noopener noreferrer';
     btn.textContent = 'Comprar pelo WhatsApp';
-    wrap.appendChild(btn);
+    btnRow.appendChild(btn);
+
+    const shareLink = document.createElement('button');
+    shareLink.type = 'button';
+    shareLink.className = 'btn btn--ghost btn--sm';
+    shareLink.textContent = 'Compartilhar evento';
+    shareLink.addEventListener('click', async () => {
+      const shareUrl = buildEventShareUrl(ev);
+      try {
+        if (navigator.share) {
+          await navigator.share({
+            title: ev.title || 'Evento',
+            text:
+              ev.title
+                ? `Ingressos para ${ev.title} na IngressAI`
+                : 'Evento na IngressAI',
+            url: shareUrl,
+          });
+          return;
+        }
+      } catch {
+        // se o usuário cancelar o share, só ignora
+      }
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        alert('Link copiado para compartilhar ✅');
+      } catch {
+        // fallback raiz
+        window.prompt('Copie o link do evento:', shareUrl);
+      }
+    });
+    btnRow.appendChild(shareLink);
+
+    wrap.appendChild(btnRow);
 
     return wrap;
   }
@@ -330,6 +425,69 @@
 
       card.appendChild(media);
 
+      // FOOTER com CTA + compartilhar
+      const footer = document.createElement('div');
+      footer.className = 'card-footer';
+
+      const waUrl = buildWhatsAppUrl(ev);
+      const shareUrl = buildEventShareUrl(ev);
+
+      const cta = document.createElement('a');
+      cta.className = 'card-cta';
+      cta.href = waUrl;
+      cta.target = '_blank';
+      cta.rel = 'noopener noreferrer';
+      cta.innerHTML =
+        '<span>Comprar no WhatsApp</span>' +
+        '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+        '<path d="M5 12h11M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' +
+        '</svg>';
+
+      cta.addEventListener('click', (e) => {
+        // não abrir o sheet quando clicar no botão
+        e.stopPropagation();
+      });
+
+      const shareBtn = document.createElement('button');
+      shareBtn.type = 'button';
+      shareBtn.className = 'card-share';
+      shareBtn.setAttribute('aria-label', 'Compartilhar link do evento');
+      shareBtn.innerHTML =
+        '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+        '<path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' +
+        '<path d="M8 9l4-4 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' +
+        '<path d="M12 5v11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' +
+        '</svg>';
+
+      shareBtn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        try {
+          if (navigator.share) {
+            await navigator.share({
+              title: ev.title || 'Evento',
+              text:
+                ev.title
+                  ? `Ingressos para ${ev.title} na IngressAI`
+                  : 'Evento na IngressAI',
+              url: shareUrl,
+            });
+            return;
+          }
+        } catch {
+          // usuário cancelou o share: ignora e cai pro fallback
+        }
+        try {
+          await navigator.clipboard.writeText(shareUrl);
+          alert('Link copiado para compartilhar ✅');
+        } catch {
+          window.prompt('Copie o link do evento:', shareUrl);
+        }
+      });
+
+      footer.appendChild(cta);
+      footer.appendChild(shareBtn);
+      card.appendChild(footer);
+
       card.addEventListener('click', () => {
         openSheet(buildSheetContent(ev, imgUrl));
       });
@@ -342,6 +500,78 @@
 
       elList.appendChild(card);
     });
+  }
+
+  // ========= deep-link org/ev =========
+  function applyUrlFilters() {
+    let url;
+    try {
+      url = new URL(window.location.href);
+    } catch {
+      return;
+    }
+
+    const evParam = url.searchParams.get('ev') || url.searchParams.get('event');
+    const orgParam =
+      url.searchParams.get('org') ||
+      url.searchParams.get('owner') ||
+      url.searchParams.get('phone');
+
+    // filtro por organizador: mostra só eventos desse dono
+    if (orgParam) {
+      const target = onlyDigits(orgParam);
+      if (target) {
+        const filtered = state.events.filter((ev) => {
+          const owner = getEventOwnerPhone(ev);
+          return owner && owner === target;
+        });
+        if (filtered.length) {
+          state.events = filtered;
+        }
+      }
+    }
+
+    // link direto para evento específico
+    if (evParam) {
+      const idTarget = String(evParam || '').toLowerCase();
+      let foundEv = null;
+      let foundIdx = -1;
+
+      state.events.forEach((ev, idx) => {
+        const candidates = [
+          ev.id,
+          ev.slug,
+          ev.code,
+          ev.uid,
+          ev.shortCode,
+          ev._id,
+        ]
+          .map((x) => String(x || '').toLowerCase())
+          .filter(Boolean);
+        if (foundEv) return;
+        if (candidates.includes(idTarget)) {
+          foundEv = ev;
+          foundIdx = idx;
+        }
+      });
+
+      if (foundEv && foundIdx >= 0) {
+        // joga o evento pra primeira posição (melhora conversão)
+        state.events.splice(foundIdx, 1);
+        state.events.unshift(foundEv);
+
+        const city = (foundEv.city || foundEv.cidade || '').trim();
+        if (city) {
+          state.city = city;
+        }
+
+        // abre o sheet automaticamente depois do primeiro render
+        setTimeout(() => {
+          const imgUrl = getEventImage(foundEv);
+          openSheet(buildSheetContent(foundEv, imgUrl));
+        }, 600);
+      }
+    }
   }
 
   // ========= Calculadora =========
@@ -600,6 +830,10 @@
         ? data.events
         : [];
       state.events = events;
+
+      // aplica filtros vindos do link (?org= / ?ev=)
+      applyUrlFilters();
+
       renderChips();
       renderCards();
     } catch (e) {
@@ -651,7 +885,6 @@
     }
   }
 
-  // run
   document.addEventListener('DOMContentLoaded', () => {
     initDrawer();
     initSheet();
@@ -662,3 +895,4 @@
     initEvents();
   });
 })();
+
