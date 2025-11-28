@@ -1,5 +1,5 @@
 // app.js — IngressAI landing
-// v=2025-11-27-b
+// v=2025-11-27-c
 (() => {
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => Array.from(document.querySelectorAll(sel));
@@ -311,51 +311,60 @@
       'Ingressos emitidos direto no seu WhatsApp, com QR Code antifraude e repasse via Pix.';
     wrap.appendChild(p);
 
+    // Ações minimalistas: Comprar + Compartilhar
     const btnRow = document.createElement('div');
-    btnRow.style.marginTop = '10px';
-    btnRow.style.display = 'flex';
-    btnRow.style.gap = '8px';
-    btnRow.style.flexWrap = 'wrap';
+    btnRow.className = 'sheet-actions';
 
-    const btn = document.createElement('a');
-    btn.className = 'btn btn--secondary btn--sm';
-    btn.href = buildWhatsAppUrl(ev);
-    btn.target = '_blank';
-    btn.rel = 'noopener noreferrer';
-    btn.textContent = 'Comprar pelo WhatsApp';
-    btnRow.appendChild(btn);
+    const waUrl = buildWhatsAppUrl(ev);
+    const shareUrl = buildEventShareUrl(ev);
+
+    const buyBtn = document.createElement('a');
+    buyBtn.className = 'sheet-btn sheet-btn--primary';
+    buyBtn.href = waUrl;
+    buyBtn.target = '_blank';
+    buyBtn.rel = 'noopener noreferrer';
+    buyBtn.innerHTML =
+      '<span>Comprar no WhatsApp</span>' +
+      '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+      '<path d="M5 12h11M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' +
+      '</svg>';
+    btnRow.appendChild(buyBtn);
 
     const shareLink = document.createElement('button');
     shareLink.type = 'button';
-    shareLink.className = 'btn btn--ghost btn--sm';
-    shareLink.textContent = 'Compartilhar evento';
+    shareLink.className = 'sheet-btn sheet-btn--ghost';
+    shareLink.innerHTML =
+      '<span>Compartilhar evento</span>' +
+      '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+      '<path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' +
+      '<path d="M8 9l4-4 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' +
+      '<path d="M12 5v11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' +
+      '</svg>';
+
     shareLink.addEventListener('click', async () => {
-      const shareUrl = buildEventShareUrl(ev);
       try {
         if (navigator.share) {
           await navigator.share({
             title: ev.title || 'Evento',
-            text:
-              ev.title
-                ? `Ingressos para ${ev.title} na IngressAI`
-                : 'Evento na IngressAI',
+            text: ev.title
+              ? `Ingressos para ${ev.title} na IngressAI`
+              : 'Evento na IngressAI',
             url: shareUrl,
           });
           return;
         }
       } catch {
-        // se o usuário cancelar o share, só ignora
+        // usuário cancelou o share: ignora e cai pro fallback
       }
       try {
         await navigator.clipboard.writeText(shareUrl);
         alert('Link copiado para compartilhar ✅');
       } catch {
-        // fallback raiz
         window.prompt('Copie o link do evento:', shareUrl);
       }
     });
-    btnRow.appendChild(shareLink);
 
+    btnRow.appendChild(shareLink);
     wrap.appendChild(btnRow);
 
     return wrap;
@@ -433,69 +442,7 @@
 
       card.appendChild(media);
 
-      // FOOTER com CTA + compartilhar
-      const footer = document.createElement('div');
-      footer.className = 'card-footer';
-
-      const waUrl = buildWhatsAppUrl(ev);
-      const shareUrl = buildEventShareUrl(ev);
-
-      const cta = document.createElement('a');
-      cta.className = 'card-cta';
-      cta.href = waUrl;
-      cta.target = '_blank';
-      cta.rel = 'noopener noreferrer';
-      cta.innerHTML =
-        '<span>Comprar no WhatsApp</span>' +
-        '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-        '<path d="M5 12h11M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' +
-        '</svg>';
-
-      cta.addEventListener('click', (e) => {
-        // não abrir o sheet quando clicar no botão
-        e.stopPropagation();
-      });
-
-      const shareBtn = document.createElement('button');
-      shareBtn.type = 'button';
-      shareBtn.className = 'card-share';
-      shareBtn.setAttribute('aria-label', 'Compartilhar link do evento');
-      shareBtn.innerHTML =
-        '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-        '<path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' +
-        '<path d="M8 9l4-4 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' +
-        '<path d="M12 5v11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' +
-        '</svg>';
-
-      shareBtn.addEventListener('click', async (e) => {
-        e.stopPropagation();
-        try {
-          if (navigator.share) {
-            await navigator.share({
-              title: ev.title || 'Evento',
-              text:
-                ev.title
-                  ? `Ingressos para ${ev.title} na IngressAI`
-                  : 'Evento na IngressAI',
-              url: shareUrl,
-            });
-            return;
-          }
-        } catch {
-          // usuário cancelou o share: ignora e cai pro fallback
-        }
-        try {
-          await navigator.clipboard.writeText(shareUrl);
-          alert('Link copiado para compartilhar ✅');
-        } catch {
-          window.prompt('Copie o link do evento:', shareUrl);
-        }
-      });
-
-      footer.appendChild(cta);
-      footer.appendChild(shareBtn);
-      card.appendChild(footer);
-
+      // Nada de botões aqui: só abre o sheet ao clicar
       card.addEventListener('click', () => {
         openSheet(buildSheetContent(ev, imgUrl));
       });
@@ -878,6 +825,8 @@
         closeDrawer();
         const orgSection = $('#organizadores');
         if (orgSection) {
+          // só mostra quando o usuário pede pelo ícone
+          orgSection.hidden = false;
           orgSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
       });
