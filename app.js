@@ -1,5 +1,5 @@
 // app.js — IngressAI landing
-// v=2025-11-27-a
+// v=2025-11-27-b
 (() => {
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => Array.from(document.querySelectorAll(sel));
@@ -94,6 +94,7 @@
   function getEventOwnerPhone(ev) {
     return onlyDigits(
       ev.ownerPhone ||
+        ev.owner_phone ||
         ev.owner ||
         ev.organizerPhone ||
         ev.organizer ||
@@ -112,12 +113,16 @@
   }
 
   function buildEventShareUrl(ev) {
-    const base = window.location.origin + window.location.pathname;
-    const url = new URL(base, window.location.href);
+    // base "limpa" (sem fragmento) para compartilhar
+    const href = window.location.href;
+    let basePath = window.location.pathname || '/';
+    if (!basePath.startsWith('/')) basePath = '/' + basePath;
+    const base = window.location.origin + basePath;
+    const url = new URL(base, href);
 
     // preserva override de API (útil em staging / testes)
     try {
-      const current = new URL(window.location.href);
+      const current = new URL(href);
       const apiOverride = current.searchParams.get('api');
       if (apiOverride) {
         url.searchParams.set('api', apiOverride);
@@ -131,6 +136,9 @@
 
     const ownerPhone = getEventOwnerPhone(ev);
     if (ownerPhone) url.searchParams.set('org', ownerPhone);
+
+    // ancora direto na vitrine
+    url.hash = 'vitrine';
 
     return url.toString();
   }
@@ -895,4 +903,3 @@
     initEvents();
   });
 })();
-
