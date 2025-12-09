@@ -7,12 +7,15 @@
   <title>IngressAI — Ingressos em minutos, direto no WhatsApp</title>
   <meta name="description" content="Compre ingressos em minutos pelo WhatsApp. Vitrine por cidade, checkout instantâneo, repasse via Pix e QR Code antifraude." />
   <meta name="robots" content="index,follow,max-image-preview:large" />
+  <!-- Força não-cache do HTML (o JS usa cache busting por querystring) -->
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
 
+  <!-- API: o app.js lê daqui caso não use ?api= -->
   <meta name="ingressai-api" content="https://ingressai-backend-production.up.railway.app/api" />
 
+  <!-- OG/Twitter -->
   <meta property="og:title" content="IngressAI — Ingressos em minutos" />
   <meta property="og:description" content="Vitrine por cidade, checkout instantâneo, QR Code antifraude e repasse T+0." />
   <meta property="og:type" content="website" />
@@ -28,12 +31,13 @@
 
   <style>
     :root{
+      /* Escala áurea */
       --phi:1.618;
       --s-2:4px; --s-1:8px; --s0:12px;
-      --s1:calc(var(--s0)*var(--phi));
-      --s2:calc(var(--s1)*var(--phi));
-      --s3:calc(var(--s2)*var(--phi));
-      --s4:calc(var(--s3)*var(--phi));
+      --s1:calc(var(--s0)*var(--phi));      /* ~19px */
+      --s2:calc(var(--s1)*var(--phi));      /* ~31px */
+      --s3:calc(var(--s2)*var(--phi));      /* ~50px */
+      --s4:calc(var(--s3)*var(--phi));      /* ~81px */
 
       --fs-0:1rem;
       --fs--1:calc(var(--fs-0)/var(--phi));
@@ -54,19 +58,7 @@
       --warn:#b64848; --warn-bg:#fff7f7; --warn-bd:#ffdede;
     }
     *{box-sizing:border-box}
-    html,body{
-      margin:0;
-      padding:0;
-      background:var(--bg);
-      color:var(--ink);
-      font:16px/var(--lh) -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Ubuntu,Inter,system-ui,sans-serif
-    }
-    /* trava o scroll de fundo quando o sheet está aberto */
-    body.no-scroll{
-      position:fixed;
-      overflow:hidden;
-      width:100%;
-    }
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font:16px/var(--lh) -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Ubuntu,Inter,system-ui,sans-serif;height:100%}
     a{color:inherit;text-decoration:none}
     :focus-visible{outline:none;box-shadow:var(--ring)}
     .container{max-width:var(--container-max);margin:0 auto;padding:0 var(--s2)}
@@ -76,6 +68,10 @@
     :where(section,[id]){scroll-margin-top:96px}
     section[hidden]{display:none !important;}
 
+    /* trava scroll quando o sheet está aberto */
+    html.no-scroll, body.no-scroll{overflow:hidden;}
+
+    /* Header */
     header{position:sticky;top:0;z-index:40;background:#fff;border-bottom:1px solid #e7eefb;transition:box-shadow var(--t-fast),border-color var(--t-fast),background-color var(--t-fast)}
     header.is-scrolled{box-shadow:var(--shadow);border-color:#e1e9fb}
     .head{display:flex;align-items:center;justify-content:space-between;padding:10px 0}
@@ -86,6 +82,7 @@
     .menu-btn:active{transform:scale(.98)}
     .menu-icon{width:26px;height:26px;display:block;color:#2F7DD9}
 
+    /* Drawer */
     .drawer{position:fixed;top:0;right:-320px;width:min(320px,90vw);height:100%;background:#fff;border-left:1px solid #e7eefb;box-shadow:-20px 0 40px rgba(11,18,32,.14);transition:right var(--t-med) cubic-bezier(.2,.7,.2,1);z-index:60;padding:16px;display:flex;flex-direction:column;gap:10px}
     .drawer.is-open{right:0}
     .drawer-head{display:flex;align-items:center;justify-content:space-between}
@@ -159,9 +156,12 @@
     .skeleton{position:relative;overflow:hidden;background:linear-gradient(90deg,#eef3ff 0%,#f6f8ff 40%,#eef3ff 80%);background-size:200% 100%;animation:s 1.4s infinite ease}
     @keyframes s{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
+    /* Footer antigo do card removido (CTA agora só no sheet) */
+
     .sheet-backdrop{position:fixed;inset:0;background:rgba(11,18,32,.36);opacity:0;pointer-events:none;transition:opacity var(--t-fast);z-index:40}
     .sheet-backdrop.is-open{opacity:1;pointer-events:auto}
 
+    /* Sheet mobile-first (bottom sheet) */
     .sheet{
       position:fixed;
       left:0;
@@ -173,24 +173,25 @@
       border-top-left-radius:24px;
       border-top-right-radius:24px;
       box-shadow:0 -24px 48px rgba(11,18,32,.16);
-      transform:translateY(calc(100% + 40px)); /* fica totalmente fora da tela quando fechado */
+      transform:translateY(100%);
       transition:transform var(--t-med) cubic-bezier(.2,.7,.2,1);
       display:flex;
       flex-direction:column;
       padding:var(--s2);
       z-index:45;
-      overscroll-behavior:contain;
+      overflow:hidden;
     }
-    .sheet.is-open{transform:translateY(0)}
+    .sheet.is-open{transform:translateY(0);}
     .sheet h3{margin:0;font-weight:900;line-height:1.2}
     .sheet .sheet-body{
+      flex:1;
       overflow:auto;
       display:flex;
       flex-direction:column;
       gap:10px;
       padding-right:4px;
       padding-bottom:calc(20px + env(safe-area-inset-bottom));
-      overscroll-behavior:contain;
+      padding-top:calc(var(--s1)*2);
     }
     .sheet-media{width:100%;aspect-ratio:var(--phi);border:1px solid #eaf1ff;border-radius:16px;background:
       radial-gradient(600px 280px at 20% 0%,rgba(47,125,217,.12),transparent 60%),
@@ -198,15 +199,15 @@
     .sheet-media img{width:100%;height:100%;object-fit:cover;display:block}
 
     .sheet-close{
-      position:fixed;
-      top:calc(env(safe-area-inset-top) + 10px);
+      position:absolute;
+      top:12px;
       right:12px;
       z-index:50;
       background:#fff;
       border:1px solid #e6eaf6;
       border-radius:12px;
-      width:44px;
-      height:44px;
+      width:40px;
+      height:40px;
       display:grid;
       place-items:center;
       box-shadow:var(--shadow-soft);
@@ -214,6 +215,7 @@
     }
     .sheet-close:active{transform:scale(.98)}
 
+    /* Ações minimalistas dentro do sheet */
     .sheet-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:var(--s1)}
     .sheet-btn{display:inline-flex;align-items:center;justify-content:space-between;gap:8px;padding:.7rem 1.1rem;border-radius:999px;border:1px solid #e6eaf6;background:#f9fbff;font-weight:800;font-size:.94rem;cursor:pointer;white-space:nowrap}
     .sheet-btn--primary{background:linear-gradient(135deg,#ffffff,#f4f7ff);border-color:#d6e4ff;box-shadow:var(--shadow-soft)}
@@ -228,6 +230,7 @@
 
     .std-card{background:#fff;border:1px solid #e5ecff;border-radius:calc(var(--s2));padding:var(--s2);box-shadow:var(--shadow-soft)}
 
+    /* ---- Calculadora / Planos (Mobile First) ---- */
     .plan-calc{display:grid;gap:var(--s1)}
     .calc-grid{display:grid;gap:var(--s1)}
     .calc-row{display:grid;gap:8px}
@@ -247,6 +250,7 @@
     .tip.open{display:block}
     .tip .bubble{background:#fff;border:1px solid #e5ecff;border-radius:10px;box-shadow:0 6px 18px rgba(47,125,217,.12);padding:.6rem .75rem;font-size:.9rem;color:#415577}
 
+    /* --- Form chips --- */
     .chip-group{display:flex;gap:8px;flex-wrap:wrap}
     .chip-opt{appearance:none;border:1px solid #e5ecff;background:#fff;border-radius:999px;padding:.6rem .95rem;font-weight:800;color:#415577;cursor:pointer}
     .chip-opt[aria-checked="true"]{background:var(--blue-2);color:#fff;border-color:rgba(27,95,179,.35);box-shadow:0 6px 14px rgba(47,125,217,.25)}
@@ -264,35 +268,27 @@
     .diag div{background:#fff;border:1px solid #e7eefb;border-radius:8px;padding:6px 8px}
     .diag strong{display:block}
 
-    /* DESKTOP: sheet como modal central, também completamente fora da tela quando fechado */
-    @media (min-width: 700px) {
+    /* Sheet em modo “modal” no desktop */
+    @media(min-width:900px){
       .sheet{
-        top:50% !important;
-        bottom:auto !important;
-        left:50% !important;
-        right:auto !important;
-        width:min(520px, 100% - 64px) !important;
-        height:auto !important;
-        max-height:80vh !important;
-        border-radius:24px !important;
-        box-shadow:0 24px 48px rgba(11,18,32,.24) !important;
-        transform:translate(-50%, calc(100% + 40px)) !important;
+        left:50%;
+        right:auto;
+        width:min(520px, calc(100vw - 64px));
+        border-radius:24px;
+        bottom:32px;
+        height:auto;
+        max-height:80vh;
+        box-shadow:0 18px 48px rgba(11,18,32,.24);
+        transform:translate3d(-50%,120%,0);
       }
       .sheet.is-open{
-        transform:translate(-50%, -50%) !important;
-      }
-      .sheet .sheet-body{
-        padding-bottom:var(--s2);
-      }
-      .sheet-close{
-        position:absolute !important;
-        top:12px !important;
-        right:12px !important;
+        transform:translate3d(-50%,0,0);
       }
     }
   </style>
 </head>
 <body>
+  <!-- HEADER -->
   <header role="banner">
     <div class="container head">
       <div class="brand">
@@ -315,6 +311,7 @@
     </div>
   </header>
 
+  <!-- DRAWER -->
   <div class="drawer-backdrop" id="drawer-backdrop" aria-hidden="true"></div>
   <aside class="drawer" id="drawer" aria-hidden="true" role="dialog" aria-modal="true">
     <div class="drawer-head">
@@ -324,7 +321,9 @@
     <button class="drawer-btn" id="drawer-create" type="button">Criar evento</button>
   </aside>
 
+  <!-- MAIN -->
   <main class="container" role="main">
+    <!-- HERO -->
     <section class="hero" aria-labelledby="hero-title">
       <div class="hero-brand">
         <img src="./logo_ingressai.png" alt="IngressAI" width="160" height="160" />
@@ -342,6 +341,7 @@
       <h1 id="hero-title">Crie eventos com a IngressAI.</h1>
     </section>
 
+    <!-- PROVAS -->
     <section class="proofs" aria-labelledby="proofs-title">
       <h2 id="proofs-title" class="sr-only">Provas de valor</h2>
       <div class="features" aria-label="Provas">
@@ -386,6 +386,7 @@
       </div>
     </section>
 
+    <!-- VITRINE -->
     <section id="vitrine" class="section" aria-labelledby="vitrine-title" tabindex="-1">
       <h2 id="vitrine-title">Eventos em destaque</h2>
       <div class="filters" aria-label="Filtros">
@@ -396,6 +397,7 @@
         <div id="filtro-cidades" class="chips" role="tablist" aria-label="Filtrar por cidade"></div>
       </div>
       <div class="cards" id="lista-eventos" aria-live="polite">
+        <!-- skeletons iniciais -->
         <article class="card">
           <div class="card-header">
             <div style="width:60%">
@@ -419,6 +421,7 @@
       </div>
     </section>
 
+    <!-- ORGANIZADORES (escondido até clicar em "Criar evento" no drawer) -->
     <section id="organizadores" class="section" aria-labelledby="orgs-title" tabindex="-1" hidden>
       <h2 id="orgs-title">Soluções para organizadores</h2>
 
@@ -434,9 +437,11 @@
         </div>
       </div>
 
+      <!-- Calculadora -->
       <div class="std-card" id="calc-card">
         <div class="plan-calc">
           <div class="calc-grid">
+            <!-- Linha preço + qtd -->
             <div class="calc-row">
               <div>
                 <label for="calc-price"><strong>Preço base do ingresso</strong></label>
@@ -455,6 +460,7 @@
               </div>
             </div>
 
+            <!-- BLOCO 1: Vendas pela plataforma (3%) -->
             <div class="i-row" style="margin-top:6px">
               <strong>Vendas pela plataforma</strong>
               <button type="button" class="i-btn" aria-controls="tip-plat" aria-expanded="false" aria-label="Mais informações">i</button>
@@ -484,6 +490,7 @@
 
             <hr style="border:none;border-top:1px solid #e6eaf6;margin:10px 0" />
 
+            <!-- BLOCO 2: Emissão manual (1,5%) -->
             <div class="i-row" style="margin-top:2px">
               <strong>Emissão manual</strong>
               <button type="button" class="i-btn" aria-controls="tip-manual" aria-expanded="false" aria-label="Mais informações">i</button>
@@ -515,6 +522,7 @@
         </div>
       </div>
 
+      <!-- Solicitação de criação -->
       <div class="std-card" style="margin-top:12px">
         <h3 style="margin-top:0">Quero criar meu evento</h3>
         <form id="req-form">
@@ -544,6 +552,7 @@
       <div id="std-card" class="std-card" style="margin-top:12px"></div>
     </section>
 
+    <!-- SHEET -->
     <div class="sheet-backdrop" id="sheet-backdrop" aria-hidden="true"></div>
     <aside class="sheet" id="sheet" aria-hidden="true" role="dialog" aria-modal="true">
       <button type="button" class="sheet-close" id="sheet-close" aria-label="Fechar">
@@ -554,6 +563,7 @@
       <div class="sheet-body" id="sheet-body"></div>
     </aside>
 
+    <!-- Diagnóstico (apenas contagem de eventos) -->
     <div class="std-card" style="margin-top:16px">
       <h3 style="margin-top:0">Diagnóstico</h3>
       <div class="diag">
@@ -563,6 +573,7 @@
     </div>
   </main>
 
+  <!-- FOOTER -->
   <footer role="contentinfo">
     <div class="foot">
       <div class="foot-block">
@@ -599,52 +610,12 @@
     </div>
   </footer>
 
+  <!-- JSON-LD -->
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"Organization","name":"IngressAI","url":"https://ingressai.chat/","logo":"https://ingressai.chat/logo_ingressai.png","sameAs":["https://instagram.com/ingressai"],"contactPoint":[{"@type":"ContactPoint","contactType":"customer support","areaServed":"BR","availableLanguage":"pt-BR"}]}
   </script>
 
-  <!-- Observa o estado do sheet e trava/destrava o scroll do body -->
-  <script>
-    (function() {
-      const sheet = document.getElementById('sheet');
-      if (!sheet) return;
-
-      const body = document.body;
-      let lastScroll = 0;
-
-      function lockBody(lock) {
-        if (lock) {
-          if (body.classList.contains('no-scroll')) return;
-          lastScroll = window.scrollY || document.documentElement.scrollTop || 0;
-          body.classList.add('no-scroll');
-          body.style.top = `-${lastScroll}px`;
-        } else {
-          if (!body.classList.contains('no-scroll')) return;
-          body.classList.remove('no-scroll');
-          const y = lastScroll || 0;
-          body.style.top = '';
-          window.scrollTo(0, y);
-        }
-      }
-
-      const observer = new MutationObserver((mutations) => {
-        for (const m of mutations) {
-          if (m.attributeName === 'class') {
-            const open = sheet.classList.contains('is-open');
-            lockBody(open);
-          }
-        }
-      });
-
-      observer.observe(sheet, { attributes: true });
-
-      window.addEventListener('pageshow', () => {
-        const open = sheet.classList.contains('is-open');
-        lockBody(open);
-      });
-    })();
-  </script>
-
-  <script defer src="./app.js?v=2025-12-08-b"></script>
+  <!-- app principal (com cache-busting) -->
+  <script defer src="./app.js?v=2025-12-09-a"></script>
 </body>
 </html>
