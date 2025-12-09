@@ -1,5 +1,5 @@
 // app.js — IngressAI landing
-// v=2025-12-08-b
+// v=2025-12-08-c
 (() => {
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => Array.from(document.querySelectorAll(sel));
@@ -278,6 +278,7 @@
     });
   }
 
+  // ===== Status / Lote no card (sem descrição / preço) =====
   function buildStatus(ev) {
     const statusLine = document.createElement('div');
     statusLine.className = 'status-line';
@@ -288,70 +289,69 @@
 
     const span = document.createElement('span');
 
-    const batchLabelRaw =
-      ev.batchLabel ||
-      ev.loteLabel ||
-      ev.ticketBatchLabel ||
-      ev.ticketBatch ||
-      ev.loteNome ||
-      ev.lote ||
-      '';
-
-    // tenta extrair número do lote
-    let batchNumber = null;
-    // campos numéricos diretos
-    const numCandidates = [
-      ev.batchNumber,
-      ev.loteNumber,
-      ev.loteNumero,
-      ev.batch,
+    // tenta achar o número de lote em vários campos
+    const lotCandidates = [
+      ev.currentLot,
+      ev.current_lot,
+      ev.lot,
       ev.lote,
+      ev.lotNumber,
+      ev.lot_number,
+      ev.loteNumero,
+      ev.lote_numero,
+      ev.ticketLot,
+      ev.ticket_lot,
     ];
-    for (const c of numCandidates) {
-      if (batchNumber != null) break;
+
+    let batchNumber = null;
+
+    for (const c of lotCandidates) {
+      if (c == null) continue;
       const n = Number(String(c).replace(/[^\d]/g, ''));
       if (isFinite(n) && n > 0) {
         batchNumber = n;
-      }
-    }
-    // se ainda não rolou, tenta achar número dentro do label
-    if (batchNumber == null && batchLabelRaw) {
-      const m = String(batchLabelRaw).match(/(\d+)/);
-      if (m) {
-        const n = Number(m[1]);
-        if (isFinite(n) && n > 0) batchNumber = n;
+        break;
       }
     }
 
-    let label;
-    if (batchNumber != null) {
-      label = `Lote ${batchNumber}`;
-    } else {
-      label =
-        batchLabelRaw ||
-        ev.statusLabel ||
-        ev.status ||
-        'Disponível';
+    // se não encontrou, tenta extrair de descrições de lote
+    if (batchNumber == null) {
+      const labelCandidates = [
+        ev.lotDescription,
+        ev.lot_description,
+        ev.loteDescricao,
+        ev.lote_descricao,
+        ev.loteDesc,
+        ev.batchLabel,
+        ev.loteLabel,
+      ];
+      for (const raw of labelCandidates) {
+        if (!raw) continue;
+        const m = String(raw).match(/(\d+)/);
+        if (m) {
+          const n = Number(m[1]);
+          if (isFinite(n) && n > 0) {
+            batchNumber = n;
+            break;
+          }
+        }
+      }
     }
-    label = String(label || '').trim() || 'Disponível';
+
+    // default: Lote 1 pra nunca cair em "published"
+    if (batchNumber == null) batchNumber = 1;
+
+    const label = `Lote ${batchNumber}`;
     span.textContent = label;
 
-    // cor pela regra dos lotes: 1 verde, 2 amarelo, 3+ vermelho
+    // 1 = verde, 2 = amarelo, 3+ = vermelho (mapeando nas classes já usadas)
+    statusLine.classList.remove('status--soon', 'status--low', 'status--sold');
     if (batchNumber === 1) {
       statusLine.classList.add('status--soon');
     } else if (batchNumber === 2) {
       statusLine.classList.add('status--low');
-    } else if (batchNumber >= 3) {
-      statusLine.classList.add('status--sold');
     } else {
-      // fallback: heurística pelo texto
-      if (/esgotad/i.test(label)) {
-        statusLine.classList.add('status--sold');
-      } else if (/últimos|pouco|lote/i.test(label)) {
-        statusLine.classList.add('status--low');
-      } else {
-        statusLine.classList.add('status--soon');
-      }
+      statusLine.classList.add('status--sold');
     }
 
     statusLine.appendChild(span);
