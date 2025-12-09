@@ -138,6 +138,7 @@
     .card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--s1)}
     .card-title{font-weight:900;font-size:clamp(1rem,2.2vw,1.14rem);line-height:1.18;margin-bottom:4px}
     .card-city{color:#2F7DD9;font-weight:800;font-size:.94rem}
+    .card-desc{margin-top:4px;font-size:.9rem;color:var(--muted);max-height:3.1em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
     .status-line{display:flex;align-items:center;gap:8px;margin-top:4px;font-weight:800;font-size:.86rem}
     .status-dot{width:.6rem;height:.6rem;border-radius:999px;display:inline-block;flex:0 0 .6rem;border:1px solid rgba(0,0,0,.06)}
     .status--soon .status-dot{background:#cfe3ff}
@@ -335,6 +336,7 @@
       <div class="cards" id="lista-eventos" aria-live="polite">
         <!-- skeletons iniciais -->
         <article class="card">
+          <div class="card-media skeleton" style="height:auto;aspect-ratio:1.618"></div>
           <div class="card-header">
             <div style="width:60%">
               <div class="skeleton" style="height:14px;border-radius:8px;margin:2px 0 8px"></div>
@@ -342,9 +344,9 @@
               <div class="skeleton" style="height:12px;border-radius:8px;width:40%"></div>
             </div>
           </div>
-          <div class="card-media skeleton" style="height:auto;aspect-ratio:1.618"></div>
         </article>
         <article class="card">
+          <div class="card-media skeleton" style="height:auto;aspect-ratio:1.618"></div>
           <div class="card-header">
             <div style="width:60%">
               <div class="skeleton" style="height:14px;border-radius:8px;margin:2px 0 8px"></div>
@@ -352,7 +354,6 @@
               <div class="skeleton" style="height:12px;border-radius:8px;width:40%"></div>
             </div>
           </div>
-          <div class="card-media skeleton" style="height:auto;aspect-ratio:1.618"></div>
         </article>
       </div>
     </section>
@@ -552,6 +553,6 @@
   </script>
 
   <!-- app principal (com cache-busting) -->
-  <script defer src="./app.js?v=2025-11-27-03"></script>
+  <script defer src="./app.js?v=2025-12-08-01"></script>
 </body>
 </html>
