@@ -1,5 +1,5 @@
 // app.js — IngressAI landing
-// v=2025-12-08-d
+// v=2025-12-09-a
 (() => {
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => Array.from(document.querySelectorAll(sel));
@@ -28,15 +28,8 @@
     query: '',
   };
 
-  const ui = {
-    layout: 'auto', // 'compact' | 'expanded' | 'auto'
-  };
-
-  const flags = {
-    hasOrgFilter: false,
-    hasEvDeepLink: false,
-    geoTried: false,
-  };
+  // usado pra restaurar o scroll da página ao fechar o sheet
+  let scrollYBeforeSheet = 0;
 
   const elList = $('#lista-eventos');
   const elChips = $('#filtro-cidades');
@@ -89,13 +82,6 @@
     return String(s || '').replace(/[^\d]/g, '');
   }
 
-  function normalizeStr(str) {
-    return String(str || '')
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase();
-  }
-
   function getEventId(ev) {
     return (
       ev.id ||
@@ -143,10 +129,6 @@
       const apiOverride = current.searchParams.get('api');
       if (apiOverride) {
         url.searchParams.set('api', apiOverride);
-      }
-      const layoutOverride = current.searchParams.get('layout');
-      if (layoutOverride) {
-        url.searchParams.set('layout', layoutOverride);
       }
     } catch {
       // ignore
@@ -217,35 +199,19 @@
     return null;
   }
 
-  // ========= Layout (compact x expanded) =========
-  function detectLayout() {
-    let desired = 'auto';
-    try {
-      const url = new URL(window.location.href);
-      const layoutParam = url.searchParams.get('layout');
-      if (layoutParam === 'compact' || layoutParam === 'expanded') {
-        desired = layoutParam;
-      }
-    } catch {
-      // ignore
-    }
-
-    if (desired === 'auto') {
-      // telas menores: expanded; desktop: compact
-      ui.layout = window.innerWidth <= 640 ? 'expanded' : 'compact';
-    } else {
-      ui.layout = desired;
-    }
-
-    document.documentElement.setAttribute('data-layout', ui.layout);
+  // ========= Scroll lock helpers (sheet) =========
+  function lockBodyScroll() {
+    scrollYBeforeSheet = window.scrollY || window.pageYOffset || 0;
+    document.body.classList.add('no-scroll');
+    document.body.style.top = `-${scrollYBeforeSheet}px`;
   }
 
-  function debounce(fn, wait) {
-    let t;
-    return (...args) => {
-      clearTimeout(t);
-      t = setTimeout(() => fn(...args), wait);
-    };
+  function unlockBodyScroll() {
+    document.body.classList.remove('no-scroll');
+    document.body.style.top = '';
+    if (typeof scrollYBeforeSheet === 'number') {
+      window.scrollTo(0, scrollYBeforeSheet);
+    }
   }
 
   // ========= Drawer =========
@@ -273,6 +239,8 @@
     elSheet.classList.add('is-open');
     elSheetBackdrop && elSheetBackdrop.classList.add('is-open');
     elSheet.setAttribute('aria-hidden', 'false');
+    elSheetBody.scrollTop = 0;
+    lockBodyScroll();
   }
 
   function closeSheet() {
@@ -281,6 +249,7 @@
     elSheetBackdrop && elSheetBackdrop.classList.remove('is-open');
     elSheet.setAttribute('aria-hidden', 'true');
     elSheetBody && (elSheetBody.innerHTML = '');
+    unlockBodyScroll();
   }
 
   // ========= Render vitrine =========
@@ -555,14 +524,9 @@
 
     elEvDiag && (elEvDiag.textContent = String(evs.length));
 
-    const isExpanded = ui.layout === 'expanded';
-
     evs.forEach((ev) => {
       const card = document.createElement('article');
       card.className = 'card';
-      if (isExpanded) {
-        card.classList.add('card--expanded');
-      }
       card.tabIndex = 0;
 
       // MEDIA EM CIMA
@@ -580,7 +544,7 @@
 
       card.appendChild(media);
 
-      // BLOCO DE TEXTO
+      // BLOCO DE TEXTO (sem descrição, só cidade/título/lote)
       const header = document.createElement('div');
       header.className = 'card-header';
 
@@ -601,57 +565,8 @@
       header.appendChild(left);
       card.appendChild(header);
 
-      // layout expanded: meta + preço + mini CTA dentro do card
-      if (isExpanded) {
-        const meta = document.createElement('div');
-        meta.className = 'card-meta';
-
-        if (ev.dateLabel) {
-          const spanDate = document.createElement('span');
-          spanDate.textContent = ev.dateLabel;
-          meta.appendChild(spanDate);
-        }
-        if (ev.venue) {
-          const spanVenue = document.createElement('span');
-          spanVenue.textContent = ev.venue;
-          meta.appendChild(spanVenue);
-        }
-
-        const price = getEventPrice(ev);
-        if (price != null) {
-          const spanPrice = document.createElement('span');
-          spanPrice.className = 'card-price';
-          spanPrice.textContent = fmtMoneyBR(price);
-          meta.appendChild(spanPrice);
-        }
-
-        if (meta.children.length) {
-          card.appendChild(meta);
-        }
-
-        const ctaRow = document.createElement('div');
-        ctaRow.className = 'card-cta-row';
-
-        const cta = document.createElement('a');
-        cta.href = buildWhatsAppUrl(ev);
-        cta.target = '_blank';
-        cta.rel = 'noopener noreferrer';
-        cta.className = 'card-cta';
-        cta.innerHTML =
-          '<span>Comprar no WhatsApp</span>' +
-          '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-          '<path d="M5 12h11M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' +
-          '</svg>';
-
-        ctaRow.appendChild(cta);
-        card.appendChild(ctaRow);
-      }
-
       // Clique abre o sheet (com descrição + preço)
-      card.addEventListener('click', (e) => {
-        // evita abrir sheet se o clique foi no CTA interno
-        const target = e.target;
-        if (target && target.closest && target.closest('.card-cta')) return;
+      card.addEventListener('click', () => {
         openSheet(buildSheetContent(ev, imgUrl));
       });
       card.addEventListener('keypress', (e) => {
@@ -692,7 +607,6 @@
           state.events = filtered;
         }
       }
-      flags.hasOrgFilter = true;
     }
 
     // link direto para evento específico
@@ -729,63 +643,12 @@
           state.city = city;
         }
 
-        flags.hasEvDeepLink = true;
-
         // abre o sheet automaticamente depois do primeiro render
         setTimeout(() => {
           const imgUrl = getEventImage(foundEv);
           openSheet(buildSheetContent(foundEv, imgUrl));
         }, 600);
       }
-    }
-  }
-
-  // ========= Auto cidade via IP =========
-  async function tryAutoSelectCity() {
-    if (flags.geoTried) return;
-    flags.geoTried = true;
-
-    if (!state.events.length) return;
-    if (state.city !== 'all') return;
-    if (state.query) return;
-    if (flags.hasEvDeepLink || flags.hasOrgFilter) return;
-
-    try {
-      const res = await fetch('https://ipapi.co/json/');
-      if (!res.ok) return;
-      const data = await res.json().catch(() => null);
-      if (!data) return;
-      const cityRaw = (data.city || '').trim();
-      if (!cityRaw) return;
-
-      const normTarget = normalizeStr(cityRaw);
-
-      const cities = Array.from(
-        new Set(
-          state.events
-            .map((e) => (e.city || e.cidade || e.location || '').trim())
-            .filter(Boolean)
-        )
-      );
-
-      let match = null;
-      for (const c of cities) {
-        if (normalizeStr(c) === normTarget) {
-          match = c;
-          break;
-        }
-      }
-
-      if (match) {
-        state.city = match;
-        renderChips();
-        renderCards();
-        const vitrine = $('#vitrine');
-        vitrine &&
-          vitrine.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    } catch (e) {
-      console.warn('[ingressai] geo IP falhou', e);
     }
   }
 
@@ -1046,17 +909,11 @@
         : [];
       state.events = events;
 
-      // layout baseado em tela
-      detectLayout();
-
       // aplica filtros vindos do link (?org= / ?ev=)
       applyUrlFilters();
 
       renderChips();
       renderCards();
-
-      // tentativa de auto cidade via IP (best-effort)
-      tryAutoSelectCity();
     } catch (e) {
       console.error('[ingressai] erro carregando vitrine', e);
       if (elList) {
@@ -1109,18 +966,6 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    detectLayout();
-    window.addEventListener(
-      'resize',
-      debounce(() => {
-        const before = ui.layout;
-        detectLayout();
-        if (ui.layout !== before) {
-          renderCards();
-        }
-      }, 150)
-    );
-
     initDrawer();
     initSheet();
     initSearch();
