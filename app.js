@@ -1,5 +1,5 @@
 // app.js — IngressAI landing
-// v=2025-11-27-c (ajuste cards: descrição + lote + mídia em cima)
+// v=2025-12-08-a
 (() => {
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => Array.from(document.querySelectorAll(sel));
@@ -169,6 +169,17 @@
     }
   }
 
+  function getEventDescription(ev) {
+    return (
+      ev.description ||
+      ev.desc ||
+      ev.subtitle ||
+      ev.shortDescription ||
+      ev.resumo ||
+      ''
+    );
+  }
+
   // ========= Drawer =========
   function openDrawer() {
     if (!elDrawer) return;
@@ -261,21 +272,22 @@
 
     const span = document.createElement('span');
 
-    // Prioriza o lote no lugar do "published"
-    let label =
-      ev.lot ||
-      ev.lote || // só por garantia
-      ev.statusLabel ||
-      ev.status ||
-      'Disponível';
+    const batchLabel =
+      ev.batchLabel ||
+      ev.loteLabel ||
+      ev.lote ||
+      ev.ticketBatchLabel ||
+      ev.ticketBatch ||
+      ev.loteNome ||
+      '';
 
+    let label = batchLabel || ev.statusLabel || ev.status || 'Disponível';
     label = String(label || '').trim() || 'Disponível';
     span.textContent = label;
 
-    const lower = label.toLowerCase();
-    if (/esgotad/i.test(lower)) {
+    if (/esgotad/i.test(label)) {
       statusLine.classList.add('status--sold');
-    } else if (/últimos|pouco/i.test(lower)) {
+    } else if (/últimos|pouco|lote/i.test(label)) {
       statusLine.classList.add('status--low');
     } else {
       statusLine.classList.add('status--soon');
@@ -315,8 +327,7 @@
 
     const p = document.createElement('p');
     p.textContent =
-      ev.description ||
-      ev.desc ||
+      getEventDescription(ev) ||
       'Ingressos emitidos direto no seu WhatsApp, com QR Code antifraude e repasse via Pix.';
     wrap.appendChild(p);
 
@@ -351,13 +362,14 @@
       '</svg>';
 
     shareLink.addEventListener('click', async () => {
+      const shareText = ev.title
+        ? `Ingressos para ${ev.title} na IngressAI`
+        : 'Evento na IngressAI';
       try {
         if (navigator.share) {
           await navigator.share({
             title: ev.title || 'Evento',
-            text: ev.title
-              ? `Ingressos para ${ev.title} na IngressAI`
-              : 'Evento na IngressAI',
+            text: shareText,
             url: shareUrl,
           });
           return;
@@ -417,7 +429,7 @@
       card.className = 'card';
       card.tabIndex = 0;
 
-      // MEDIA EM CIMA (mobile first)
+      // MEDIA EM CIMA
       const media = document.createElement('div');
       media.className = 'card-media';
 
@@ -432,7 +444,7 @@
 
       card.appendChild(media);
 
-      // BLOCO DE TEXTO: cidade, título, descrição, lote/status
+      // BLOCO DE TEXTO (mobile-first: título + descrição + lote)
       const header = document.createElement('div');
       header.className = 'card-header';
 
@@ -448,14 +460,11 @@
       titleEl.textContent = ev.title || ev.name || 'Evento';
       left.appendChild(titleEl);
 
-      const desc =
-        ev.description ||
-        ev.desc ||
-        ''; // descrição opcional no card (prioriza do backend)
-      if (desc) {
+      const descText = getEventDescription(ev);
+      if (descText) {
         const descEl = document.createElement('div');
         descEl.className = 'card-desc';
-        descEl.textContent = desc;
+        descEl.textContent = descText;
         left.appendChild(descEl);
       }
 
@@ -463,7 +472,7 @@
       header.appendChild(left);
       card.appendChild(header);
 
-      // Abre o sheet ao clicar
+      // Nada de botões aqui: só abre o sheet ao clicar
       card.addEventListener('click', () => {
         openSheet(buildSheetContent(ev, imgUrl));
       });
