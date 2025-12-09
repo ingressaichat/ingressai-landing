@@ -1,5 +1,5 @@
 // app.js — IngressAI landing
-// v=2025-11-27-c
+// v=2025-11-27-c (ajuste cards: descrição + lote + mídia em cima)
 (() => {
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => Array.from(document.querySelectorAll(sel));
@@ -260,13 +260,22 @@
     statusLine.appendChild(dot);
 
     const span = document.createElement('span');
-    let label = ev.statusLabel || ev.status || 'Disponível';
+
+    // Prioriza o lote no lugar do "published"
+    let label =
+      ev.lot ||
+      ev.lote || // só por garantia
+      ev.statusLabel ||
+      ev.status ||
+      'Disponível';
+
     label = String(label || '').trim() || 'Disponível';
     span.textContent = label;
 
-    if (/esgotad/i.test(label)) {
+    const lower = label.toLowerCase();
+    if (/esgotad/i.test(lower)) {
       statusLine.classList.add('status--sold');
-    } else if (/últimos|pouco/i.test(label)) {
+    } else if (/últimos|pouco/i.test(lower)) {
       statusLine.classList.add('status--low');
     } else {
       statusLine.classList.add('status--soon');
@@ -408,6 +417,22 @@
       card.className = 'card';
       card.tabIndex = 0;
 
+      // MEDIA EM CIMA (mobile first)
+      const media = document.createElement('div');
+      media.className = 'card-media';
+
+      const imgUrl = getEventImage(ev);
+      if (imgUrl) {
+        const img = document.createElement('img');
+        img.src = imgUrl;
+        img.alt = `Imagem do evento ${ev.title || ev.name || ''}`;
+        img.loading = 'lazy';
+        media.appendChild(img);
+      }
+
+      card.appendChild(media);
+
+      // BLOCO DE TEXTO: cidade, título, descrição, lote/status
       const header = document.createElement('div');
       header.className = 'card-header';
 
@@ -423,26 +448,22 @@
       titleEl.textContent = ev.title || ev.name || 'Evento';
       left.appendChild(titleEl);
 
+      const desc =
+        ev.description ||
+        ev.desc ||
+        ''; // descrição opcional no card (prioriza do backend)
+      if (desc) {
+        const descEl = document.createElement('div');
+        descEl.className = 'card-desc';
+        descEl.textContent = desc;
+        left.appendChild(descEl);
+      }
+
       left.appendChild(buildStatus(ev));
       header.appendChild(left);
       card.appendChild(header);
 
-      // MEDIA COM <img>
-      const media = document.createElement('div');
-      media.className = 'card-media';
-
-      const imgUrl = getEventImage(ev);
-      if (imgUrl) {
-        const img = document.createElement('img');
-        img.src = imgUrl;
-        img.alt = `Imagem do evento ${ev.title || ev.name || ''}`;
-        img.loading = 'lazy';
-        media.appendChild(img);
-      }
-
-      card.appendChild(media);
-
-      // Nada de botões aqui: só abre o sheet ao clicar
+      // Abre o sheet ao clicar
       card.addEventListener('click', () => {
         openSheet(buildSheetContent(ev, imgUrl));
       });
@@ -852,4 +873,3 @@
     initEvents();
   });
 })();
-
