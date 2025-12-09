@@ -1,5 +1,5 @@
 // app.js — IngressAI landing
-// v=2025-12-08-a
+// v=2025-12-08-b
 (() => {
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => Array.from(document.querySelectorAll(sel));
@@ -180,6 +180,22 @@
     );
   }
 
+  function getEventPrice(ev) {
+    const candidates = [
+      ev.price,
+      ev.basePrice,
+      ev.ticketPrice,
+      ev.minPrice,
+      ev.amount,
+      ev.valor,
+    ];
+    for (const c of candidates) {
+      const n = Number(c);
+      if (isFinite(n) && n > 0) return n;
+    }
+    return null;
+  }
+
   // ========= Drawer =========
   function openDrawer() {
     if (!elDrawer) return;
@@ -272,25 +288,70 @@
 
     const span = document.createElement('span');
 
-    const batchLabel =
+    const batchLabelRaw =
       ev.batchLabel ||
       ev.loteLabel ||
-      ev.lote ||
       ev.ticketBatchLabel ||
       ev.ticketBatch ||
       ev.loteNome ||
+      ev.lote ||
       '';
 
-    let label = batchLabel || ev.statusLabel || ev.status || 'Disponível';
+    // tenta extrair número do lote
+    let batchNumber = null;
+    // campos numéricos diretos
+    const numCandidates = [
+      ev.batchNumber,
+      ev.loteNumber,
+      ev.loteNumero,
+      ev.batch,
+      ev.lote,
+    ];
+    for (const c of numCandidates) {
+      if (batchNumber != null) break;
+      const n = Number(String(c).replace(/[^\d]/g, ''));
+      if (isFinite(n) && n > 0) {
+        batchNumber = n;
+      }
+    }
+    // se ainda não rolou, tenta achar número dentro do label
+    if (batchNumber == null && batchLabelRaw) {
+      const m = String(batchLabelRaw).match(/(\d+)/);
+      if (m) {
+        const n = Number(m[1]);
+        if (isFinite(n) && n > 0) batchNumber = n;
+      }
+    }
+
+    let label;
+    if (batchNumber != null) {
+      label = `Lote ${batchNumber}`;
+    } else {
+      label =
+        batchLabelRaw ||
+        ev.statusLabel ||
+        ev.status ||
+        'Disponível';
+    }
     label = String(label || '').trim() || 'Disponível';
     span.textContent = label;
 
-    if (/esgotad/i.test(label)) {
-      statusLine.classList.add('status--sold');
-    } else if (/últimos|pouco|lote/i.test(label)) {
-      statusLine.classList.add('status--low');
-    } else {
+    // cor pela regra dos lotes: 1 verde, 2 amarelo, 3+ vermelho
+    if (batchNumber === 1) {
       statusLine.classList.add('status--soon');
+    } else if (batchNumber === 2) {
+      statusLine.classList.add('status--low');
+    } else if (batchNumber >= 3) {
+      statusLine.classList.add('status--sold');
+    } else {
+      // fallback: heurística pelo texto
+      if (/esgotad/i.test(label)) {
+        statusLine.classList.add('status--sold');
+      } else if (/últimos|pouco|lote/i.test(label)) {
+        statusLine.classList.add('status--low');
+      } else {
+        statusLine.classList.add('status--soon');
+      }
     }
 
     statusLine.appendChild(span);
@@ -325,9 +386,27 @@
     pMeta.textContent = bits.join(' • ');
     wrap.appendChild(pMeta);
 
+    // Preço minimalista (só no expandido)
+    const price = getEventPrice(ev);
+    if (price != null) {
+      const priceRow = document.createElement('p');
+      priceRow.className = 'subtle';
+      const strong = document.createElement('strong');
+      strong.textContent = 'R$:';
+      const span = document.createElement('span');
+      // tira "R$" do fmtMoneyBR pra não ficar duplicado
+      span.textContent =
+        ' ' + fmtMoneyBR(price).replace(/^R\$\s?/, '');
+      priceRow.appendChild(strong);
+      priceRow.appendChild(span);
+      wrap.appendChild(priceRow);
+    }
+
+    // Descrição só aqui (no sheet)
+    const desc = getEventDescription(ev);
     const p = document.createElement('p');
     p.textContent =
-      getEventDescription(ev) ||
+      desc ||
       'Ingressos emitidos direto no seu WhatsApp, com QR Code antifraude e repasse via Pix.';
     wrap.appendChild(p);
 
@@ -444,7 +523,7 @@
 
       card.appendChild(media);
 
-      // BLOCO DE TEXTO (mobile-first: título + descrição + lote)
+      // BLOCO DE TEXTO (sem descrição, só cidade/título/lote)
       const header = document.createElement('div');
       header.className = 'card-header';
 
@@ -460,19 +539,12 @@
       titleEl.textContent = ev.title || ev.name || 'Evento';
       left.appendChild(titleEl);
 
-      const descText = getEventDescription(ev);
-      if (descText) {
-        const descEl = document.createElement('div');
-        descEl.className = 'card-desc';
-        descEl.textContent = descText;
-        left.appendChild(descEl);
-      }
-
+      // status / lote
       left.appendChild(buildStatus(ev));
       header.appendChild(left);
       card.appendChild(header);
 
-      // Nada de botões aqui: só abre o sheet ao clicar
+      // Clique abre o sheet (com descrição + preço)
       card.addEventListener('click', () => {
         openSheet(buildSheetContent(ev, imgUrl));
       });
