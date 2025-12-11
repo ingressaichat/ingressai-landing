@@ -1,5 +1,10 @@
 // app.js — IngressAI landing
-// v=2025-12-09-a
+// v=2025-12-09-b (fix: mídia + sintaxe + estabilidade)
+// - Corrige fechamento de renderChips()
+// - Remove referência inválida a `img` em buildSheetContent()
+// - Garante skeleton + placeholder para mídia nos cards fechados
+// - Mantém toda a estrutura e IDs originais da landing
+
 (() => {
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => Array.from(document.querySelectorAll(sel));
@@ -212,8 +217,6 @@
     return null;
   }
 
-  // Landing vitrine supports only images (thumbnails) to ensure consistent rendering.
-
   // ========= Scroll lock helpers (sheet) =========
   function lockBodyScroll() {
     scrollYBeforeSheet = window.scrollY || window.pageYOffset || 0;
@@ -247,6 +250,12 @@
   }
 
   // ========= Sheet =========
+  function sheetKeyHandler(e) {
+    if (e.key === 'Escape' || e.key === 'Esc') {
+      closeSheet();
+    }
+  }
+
   function openSheet(contentNode, triggerEl) {
     if (!elSheet || !elSheetBody) return;
     elSheetBody.innerHTML = '';
@@ -259,20 +268,24 @@
     elSheet.setAttribute('aria-hidden', 'false');
     elSheetBody.scrollTop = 0;
     lockBodyScroll();
+
     // foco e aria-expanded
     lastSheetTrigger = triggerEl || null;
     if (lastSheetTrigger && typeof lastSheetTrigger.setAttribute === 'function') {
       lastSheetTrigger.setAttribute('aria-expanded', 'true');
     }
-    if (lastSheetTrigger && typeof lastSheetTrigger.classList !== 'undefined') {
-      try { lastSheetTrigger.classList.add('card--open'); } catch (e) {}
+    if (lastSheetTrigger && lastSheetTrigger.classList) {
+      try {
+        lastSheetTrigger.classList.add('card--open');
+      } catch (e) {
+        // ignore
+      }
     }
-    // no visual previews: only images used in the vitrine
-    // no-op: only images are used in the vitrine
-    // foco no close button se existir
+
+    // foco no botão de fechar
     const closeBtn = document.getElementById('sheet-close');
     if (closeBtn) closeBtn.focus();
-    // Esc fecha o sheet
+
     document.addEventListener('keydown', sheetKeyHandler);
   }
 
@@ -284,26 +297,30 @@
       elSheetBackdrop.setAttribute('aria-hidden', 'true');
     }
     elSheet.setAttribute('aria-hidden', 'true');
-    elSheetBody && (elSheetBody.innerHTML = '');
+    if (elSheetBody) elSheetBody.innerHTML = '';
     unlockBodyScroll();
-    // no-op: sheet displays images only
 
-    // remove visual state class BEFORE resetting lastSheetTrigger
-    try { if (lastSheetTrigger && lastSheetTrigger.classList) lastSheetTrigger.classList.remove('card--open'); } catch (e) {}
+    // remove visual state class BEFORE reset
+    try {
+      if (lastSheetTrigger && lastSheetTrigger.classList) {
+        lastSheetTrigger.classList.remove('card--open');
+      }
+    } catch (e) {
+      // ignore
+    }
+
     if (lastSheetTrigger && typeof lastSheetTrigger.focus === 'function') {
-      try { lastSheetTrigger.focus(); } catch (e) {}
+      try {
+        lastSheetTrigger.focus();
+      } catch (e) {
+        // ignore
+      }
     }
     if (lastSheetTrigger && typeof lastSheetTrigger.setAttribute === 'function') {
       lastSheetTrigger.setAttribute('aria-expanded', 'false');
     }
     lastSheetTrigger = null;
     document.removeEventListener('keydown', sheetKeyHandler);
-  }
-
-  function sheetKeyHandler(e) {
-    if (e.key === 'Escape' || e.key === 'Esc') {
-      closeSheet();
-    }
   }
 
   // ========= Render vitrine =========
@@ -348,6 +365,7 @@
       });
       elChips.appendChild(btn);
     });
+  }
 
   // ===== Status / Lote no card (sem descrição / preço) =====
   function buildStatus(ev) {
@@ -360,7 +378,6 @@
 
     const span = document.createElement('span');
 
-    // tenta achar o número de lote em vários campos
     const lotCandidates = [
       ev.currentLot,
       ev.current_lot,
@@ -385,7 +402,6 @@
       }
     }
 
-    // se não encontrou, tenta extrair de descrições de lote
     if (batchNumber == null) {
       const labelCandidates = [
         ev.lotDescription,
@@ -409,13 +425,12 @@
       }
     }
 
-    // default: Lote 1 pra nunca cair em "published"
+    // default: Lote 1 pra nunca cair em "sem status"
     if (batchNumber == null) batchNumber = 1;
 
     const label = `Lote ${batchNumber}`;
     span.textContent = label;
 
-    // 1 = verde, 2 = amarelo, 3+ = vermelho (mapeando nas classes já usadas)
     statusLine.classList.remove('status--soon', 'status--low', 'status--sold');
     if (batchNumber === 1) {
       statusLine.classList.add('status--soon');
@@ -451,6 +466,7 @@
     const h3 = document.createElement('h3');
     h3.textContent = ev.title || ev.name || 'Evento';
     wrap.appendChild(h3);
+
     const city = ev.city || ev.cidade;
     const pMeta = document.createElement('p');
     pMeta.className = 'subtle';
@@ -467,10 +483,8 @@
       const priceRow = document.createElement('p');
       priceRow.className = 'subtle';
       const strong = document.createElement('strong');
-              // media skeleton handled at creation time
       strong.textContent = 'R$:';
       const span = document.createElement('span');
-      // tira "R$" do fmtMoneyBR pra não ficar duplicado
       span.textContent =
         ' ' + fmtMoneyBR(price).replace(/^R\$\s?/, '');
       priceRow.appendChild(strong);
@@ -480,9 +494,6 @@
 
     // Descrição só aqui (no sheet)
     const desc = getEventDescription(ev);
-            if (img) {
-              img.style.objectFit = 'cover';
-            }
     const p = document.createElement('p');
     p.textContent =
       desc ||
@@ -582,6 +593,12 @@
 
     elEvDiag && (elEvDiag.textContent = String(evs.length));
 
+    const placeholderData =
+      'data:image/svg+xml;utf8,' +
+      encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800"><rect width="100%" height="100%" fill="#f6f8fc"/><g fill="#cfe3ff"><rect x="120" y="120" width="960" height="560" rx="16"/></g><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Inter,Arial,Helvetica,sans-serif" font-size="36" fill="#6b7280">Imagem indisponível</text></svg>'
+      );
+
     evs.forEach((ev) => {
       const card = document.createElement('article');
       card.className = 'card';
@@ -590,12 +607,10 @@
       // MEDIA EM CIMA
       const media = document.createElement('div');
       media.className = 'card-media';
+      media.classList.add('skeleton');
 
       const imgUrl = getEventImage(ev);
-      // placeholder data URI for cases with no image
-      const placeholderData = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800"><rect width="100%" height="100%" fill="#f6f8fc"/><g fill="#cfe3ff"><rect x="120" y="120" width="960" height="560" rx="16"/></g><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Inter,Arial,Helvetica,sans-serif" font-size="36" fill="#6b7280">Imagem indisponível</text></svg>');
-      // start with skeleton until media loads
-      media.classList.add('skeleton');
+
       if (imgUrl) {
         const img = document.createElement('img');
         img.src = imgUrl;
@@ -637,7 +652,6 @@
       titleEl.textContent = ev.title || ev.name || 'Evento';
       left.appendChild(titleEl);
 
-      // status / lote
       left.appendChild(buildStatus(ev));
       header.appendChild(left);
       card.appendChild(header);
@@ -761,6 +775,34 @@
       return isFinite(v) ? v : 0;
     }
 
+    function recalc() {
+      const price = parseBRL(priceInput.value);
+      const qty = parseInt(qtyInput.value || '0', 10) || 0;
+
+      const gross = price * qty;
+      const feeOrg = gross * 0.03;
+      const net = gross - feeOrg;
+
+      baseUnitEl && (baseUnitEl.textContent = fmtMoneyBR(price));
+      feeOrgEl && (feeOrgEl.textContent = fmtMoneyBR(feeOrg));
+      grossEl && (grossEl.textContent = fmtMoneyBR(gross));
+      netEl && (netEl.textContent = fmtMoneyBR(net));
+
+      const manualFeeUnit = price * 0.015;
+      const manualFeeTotal = manualFeeUnit * qty;
+      const manualNetTotal = gross - manualFeeTotal;
+      const manualNetUnit = qty ? manualNetTotal / qty : 0;
+
+      manualFeeUnitEl &&
+        (manualFeeUnitEl.textContent = fmtMoneyBR(manualFeeUnit));
+      manualFeeTotalEl &&
+        (manualFeeTotalEl.textContent = fmtMoneyBR(manualFeeTotal));
+      manualNetTotalEl &&
+        (manualNetTotalEl.textContent = fmtMoneyBR(manualNetTotal));
+      manualNetUnitEl &&
+        (manualNetUnitEl.textContent = fmtMoneyBR(manualNetUnit));
+    }
+
     function syncFromPriceInput() {
       const v = parseBRL(priceInput.value);
       if (!isFinite(v)) return;
@@ -789,34 +831,6 @@
       const v = parseInt(qtyRange.value || '0', 10);
       qtyInput.value = String(v);
       recalc();
-    }
-
-    function recalc() {
-      const price = parseBRL(priceInput.value);
-      const qty = parseInt(qtyInput.value || '0', 10) || 0;
-
-      const gross = price * qty;
-      const feeOrg = gross * 0.03;
-      const net = gross - feeOrg;
-
-      baseUnitEl && (baseUnitEl.textContent = fmtMoneyBR(price));
-      feeOrgEl && (feeOrgEl.textContent = fmtMoneyBR(feeOrg));
-      grossEl && (grossEl.textContent = fmtMoneyBR(gross));
-      netEl && (netEl.textContent = fmtMoneyBR(net));
-
-      const manualFeeUnit = price * 0.015;
-      const manualFeeTotal = manualFeeUnit * qty;
-      const manualNetTotal = gross - manualFeeTotal;
-      const manualNetUnit = qty ? manualNetTotal / qty : 0;
-
-      manualFeeUnitEl &&
-        (manualFeeUnitEl.textContent = fmtMoneyBR(manualFeeUnit));
-      manualFeeTotalEl &&
-        (manualFeeTotalEl.textContent = fmtMoneyBR(manualFeeTotal));
-      manualNetTotalEl &&
-        (manualNetTotalEl.textContent = fmtMoneyBR(manualNetTotal));
-      manualNetUnitEl &&
-        (manualNetUnitEl.textContent = fmtMoneyBR(manualNetUnit));
     }
 
     priceInput.addEventListener('blur', syncFromPriceInput);
@@ -856,19 +870,23 @@
     const name = $('#req-name');
     const city = $('#req-city');
 
-    const phoneVal = (phone.value || '').replace(/[^\d]/g, '');
-      const catBtnOn = $('.chip-opt[aria-checked="true"][data-value]');
-    const titleVal = (title.value || '').trim();
-    const nameVal = (name.value || '').trim();
-    const cityVal = (city.value || '').trim();
+    const phoneVal = (phone && phone.value || '').replace(/[^\d]/g, '');
+    const catBtnOn = $('.chip-opt[aria-checked="true"][data-value]');
+    const titleVal = (title && title.value || '').trim();
+    const nameVal = (name && name.value || '').trim();
+    const cityVal = (city && city.value || '').trim();
     const catVal = catBtnOn ? catBtnOn.dataset.value : 'atleticas';
 
     if (!phoneVal || phoneVal.length < 10) {
-      elReqHint.textContent = 'Informe um WhatsApp válido (com DDD).';
+      if (elReqHint) {
+        elReqHint.textContent = 'Informe um WhatsApp válido (com DDD).';
+      }
       return;
     }
     if (!titleVal || !cityVal) {
-      elReqHint.textContent = 'Preencha, no mínimo, nome do evento e cidade.';
+      if (elReqHint) {
+        elReqHint.textContent = 'Preencha, no mínimo, nome do evento e cidade.';
+      }
       return;
     }
 
@@ -881,7 +899,7 @@
       source: 'landing',
     };
 
-    elReqHint.textContent = 'Enviando...';
+    if (elReqHint) elReqHint.textContent = 'Enviando...';
     if (elReqSend) elReqSend.disabled = true;
 
     let ok = false;
@@ -911,16 +929,20 @@
     }
 
     if (ok) {
-      elReqHint.textContent =
-        'Pronto! Você vai receber uma mensagem oficial da IngressAI no WhatsApp para confirmar sua solicitação.';
+      if (elReqHint) {
+        elReqHint.textContent =
+          'Pronto! Você vai receber uma mensagem oficial da IngressAI no WhatsApp para confirmar sua solicitação.';
+      }
       try {
         elReqForm.reset();
       } catch (e) {
         // ignore
       }
     } else {
-      elReqHint.textContent =
-        'Não consegui enviar agora. Tente novamente em alguns minutos.';
+      if (elReqHint) {
+        elReqHint.textContent =
+          'Não consegui enviar agora. Tente novamente em alguns minutos.';
+      }
     }
   }
 
@@ -1028,7 +1050,6 @@
         closeDrawer();
         const orgSection = $('#organizadores');
         if (orgSection) {
-          // só mostra quando o usuário pede pelo ícone
           orgSection.hidden = false;
           orgSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
@@ -1048,11 +1069,10 @@
   document.addEventListener('DOMContentLoaded', () => {
     initDrawer();
     initSheet();
-    initSearch();
     setupCalc();
     setupRequestForm();
     initHealth();
     initEvents();
+    initSearch();
   });
-  }
 })();
