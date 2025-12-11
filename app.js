@@ -480,9 +480,6 @@
 
     // Descrição só aqui (no sheet)
     const desc = getEventDescription(ev);
-            if (img) {
-              img.style.objectFit = 'cover';
-            }
     const p = document.createElement('p');
     p.textContent =
       desc ||
@@ -583,6 +580,7 @@
     elEvDiag && (elEvDiag.textContent = String(evs.length));
 
     evs.forEach((ev) => {
+      try {
       const card = document.createElement('article');
       card.className = 'card';
       card.tabIndex = 0;
@@ -649,14 +647,17 @@
       card.addEventListener('click', () => {
         openSheet(buildSheetContent(ev, imgUrl), card);
       });
-      card.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
           e.preventDefault();
-          openSheet(buildSheetContent(ev, imgUrl), card);
+          try { openSheet(buildSheetContent(ev, imgUrl), card); } catch (err) { console.error('[ingressai] openSheet fail', err); }
         }
       });
 
       elList.appendChild(card);
+      } catch (err) {
+        console.error('[ingressai] error rendering event card', err, ev);
+      }
     });
   }
 
