@@ -1,8 +1,8 @@
 // app.js — IngressAI landing
-// v=2025-12-11-mediafix
+// v=2025-12-11-mediafix-b
 // - Corrige fechamento de renderChips()
 // - Remove referência inválida a `img` em buildSheetContent()
-// - Diferencia mídia real x placeholder nos cards (cover vs contain)
+// - Tratamento inteligente de proporção da mídia no card fechado (cover vs contain)
 
 (() => {
   const $ = (sel) => document.querySelector(sel);
@@ -604,9 +604,33 @@
         img.alt = `Imagem do evento ${ev.title || ev.name || ''}`;
         img.loading = 'lazy';
         img.decoding = 'async';
+        img.style.width = '100%';
+        img.style.height = '100%';
         img.style.objectFit = 'cover';
         img.style.objectPosition = 'center center';
-        img.addEventListener('load', () => media.classList.remove('skeleton'));
+
+        img.addEventListener('load', () => {
+          media.classList.remove('skeleton');
+          // escolhe cover x contain baseado na proporção real da arte
+          try {
+            const w = img.naturalWidth || 0;
+            const h = img.naturalHeight || 0;
+            const ratio = h > 0 ? w / h : 0;
+
+            // ~16:9 → cover bonito; muito quadrado/vertical → contain com respiro
+            if (ratio && ratio > 1.3 && ratio < 2.1) {
+              img.style.objectFit = 'cover';
+              img.style.padding = '0';
+            } else {
+              img.style.objectFit = 'contain';
+              img.style.padding = '16px';
+            }
+          } catch (e) {
+            // se der qualquer erro, mantém cover padrão
+            img.style.objectFit = 'cover';
+          }
+        });
+
         img.addEventListener('error', () => {
           // se a imagem real falhar, cai pro placeholder
           media.innerHTML = '';
@@ -615,6 +639,8 @@
           ph.alt = 'Imagem do evento ainda não cadastrada';
           ph.loading = 'lazy';
           ph.decoding = 'async';
+          ph.style.width = '100%';
+          ph.style.height = '100%';
           ph.style.objectFit = 'contain';
           ph.style.objectPosition = 'center center';
           ph.style.padding = '16px';
@@ -624,6 +650,7 @@
           media.appendChild(ph);
           isPlaceholder = true;
         });
+
         media.appendChild(img);
       } else {
         const img = document.createElement('img');
@@ -631,6 +658,8 @@
         img.alt = 'Imagem do evento ainda não cadastrada';
         img.loading = 'lazy';
         img.decoding = 'async';
+        img.style.width = '100%';
+        img.style.height = '100%';
         img.style.objectFit = 'contain';
         img.style.objectPosition = 'center center';
         img.style.padding = '16px';
