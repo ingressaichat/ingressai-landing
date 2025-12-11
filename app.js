@@ -1,9 +1,8 @@
 // app.js — IngressAI landing
-// v=2025-12-09-b (fix: mídia + sintaxe + estabilidade)
+// v=2025-12-11-mediafix
 // - Corrige fechamento de renderChips()
 // - Remove referência inválida a `img` em buildSheetContent()
-// - Garante skeleton + placeholder para mídia nos cards fechados
-// - Mantém toda a estrutura e IDs originais da landing
+// - Diferencia mídia real x placeholder nos cards (cover vs contain)
 
 (() => {
   const $ = (sel) => document.querySelector(sel);
@@ -134,14 +133,12 @@
   }
 
   function buildEventShareUrl(ev) {
-    // base "limpa" (sem fragmento) para compartilhar
     const href = window.location.href;
     let basePath = window.location.pathname || '/';
     if (!basePath.startsWith('/')) basePath = '/' + basePath;
     const base = window.location.origin + basePath;
     const url = new URL(base, href);
 
-    // preserva override de API (útil em staging / testes)
     try {
       const current = new URL(href);
       const apiOverride = current.searchParams.get('api');
@@ -158,9 +155,7 @@
     const ownerPhone = getEventOwnerPhone(ev);
     if (ownerPhone) url.searchParams.set('org', ownerPhone);
 
-    // ancora direto na vitrine
     url.hash = 'vitrine';
-
     return url.toString();
   }
 
@@ -269,7 +264,6 @@
     elSheetBody.scrollTop = 0;
     lockBodyScroll();
 
-    // foco e aria-expanded
     lastSheetTrigger = triggerEl || null;
     if (lastSheetTrigger && typeof lastSheetTrigger.setAttribute === 'function') {
       lastSheetTrigger.setAttribute('aria-expanded', 'true');
@@ -282,7 +276,6 @@
       }
     }
 
-    // foco no botão de fechar
     const closeBtn = document.getElementById('sheet-close');
     if (closeBtn) closeBtn.focus();
 
@@ -300,7 +293,6 @@
     if (elSheetBody) elSheetBody.innerHTML = '';
     unlockBodyScroll();
 
-    // remove visual state class BEFORE reset
     try {
       if (lastSheetTrigger && lastSheetTrigger.classList) {
         lastSheetTrigger.classList.remove('card--open');
@@ -367,7 +359,7 @@
     });
   }
 
-  // ===== Status / Lote no card (sem descrição / preço) =====
+  // ===== Status / Lote no card =====
   function buildStatus(ev) {
     const statusLine = document.createElement('div');
     statusLine.className = 'status-line';
@@ -425,7 +417,6 @@
       }
     }
 
-    // default: Lote 1 pra nunca cair em "sem status"
     if (batchNumber == null) batchNumber = 1;
 
     const label = `Lote ${batchNumber}`;
@@ -477,7 +468,6 @@
     pMeta.textContent = bits.join(' • ');
     wrap.appendChild(pMeta);
 
-    // Preço minimalista (só no expandido)
     const price = getEventPrice(ev);
     if (price != null) {
       const priceRow = document.createElement('p');
@@ -492,7 +482,6 @@
       wrap.appendChild(priceRow);
     }
 
-    // Descrição só aqui (no sheet)
     const desc = getEventDescription(ev);
     const p = document.createElement('p');
     p.textContent =
@@ -500,7 +489,6 @@
       'Ingressos emitidos direto no seu WhatsApp, com QR Code antifraude e repasse via Pix.';
     wrap.appendChild(p);
 
-    // Ações minimalistas: Comprar + Compartilhar
     const btnRow = document.createElement('div');
     btnRow.className = 'sheet-actions';
 
@@ -527,7 +515,6 @@
       '<svg viewBox="0 0 24 24" aria-hidden="true">' +
       '<path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' +
       '<path d="M8 9l4-4 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' +
-      '<path d="M12 5v11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' +
       '</svg>';
 
     shareLink.addEventListener('click', async () => {
@@ -544,7 +531,7 @@
           return;
         }
       } catch {
-        // usuário cancelou o share: ignora e cai pro fallback
+        // usuário cancelou o share
       }
       try {
         await navigator.clipboard.writeText(shareUrl);
@@ -596,7 +583,7 @@
     const placeholderData =
       'data:image/svg+xml;utf8,' +
       encodeURIComponent(
-        '<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800"><rect width="100%" height="100%" fill="#f6f8fc"/><g fill="#cfe3ff"><rect x="120" y="120" width="960" height="560" rx="16"/></g><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Inter,Arial,Helvetica,sans-serif" font-size="36" fill="#6b7280">Imagem indisponível</text></svg>'
+        '<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800"><rect width="100%" height="100%" fill="#f6f8fc"/><g fill="#cfe3ff"><rect x="200" y="220" width="800" height="360" rx="80"/><rect x="280" y="300" width="120" height="120" rx="32"/><rect x="520" y="300" width="160" height="120" rx="32"/><rect x="760" y="300" width="160" height="120" rx="32"/></g><text x="50%" y="65%" dominant-baseline="middle" text-anchor="middle" font-family="Inter,Arial,Helvetica,sans-serif" font-size="32" fill="#6b7280">Imagem do evento ainda não cadastrada</text></svg>'
       );
 
     evs.forEach((ev) => {
@@ -604,12 +591,12 @@
       card.className = 'card';
       card.tabIndex = 0;
 
-      // MEDIA EM CIMA
       const media = document.createElement('div');
       media.className = 'card-media';
       media.classList.add('skeleton');
 
       const imgUrl = getEventImage(ev);
+      let isPlaceholder = false;
 
       if (imgUrl) {
         const img = document.createElement('img');
@@ -620,23 +607,40 @@
         img.style.objectFit = 'cover';
         img.style.objectPosition = 'center center';
         img.addEventListener('load', () => media.classList.remove('skeleton'));
-        img.addEventListener('error', () => media.classList.remove('skeleton'));
+        img.addEventListener('error', () => {
+          // se a imagem real falhar, cai pro placeholder
+          media.innerHTML = '';
+          const ph = document.createElement('img');
+          ph.src = placeholderData;
+          ph.alt = 'Imagem do evento ainda não cadastrada';
+          ph.loading = 'lazy';
+          ph.decoding = 'async';
+          ph.style.objectFit = 'contain';
+          ph.style.objectPosition = 'center center';
+          ph.style.padding = '16px';
+          ph.addEventListener('load', () =>
+            media.classList.remove('skeleton')
+          );
+          media.appendChild(ph);
+          isPlaceholder = true;
+        });
         media.appendChild(img);
       } else {
         const img = document.createElement('img');
         img.src = placeholderData;
-        img.alt = 'Imagem indisponível';
+        img.alt = 'Imagem do evento ainda não cadastrada';
         img.loading = 'lazy';
         img.decoding = 'async';
-        img.style.objectFit = 'cover';
+        img.style.objectFit = 'contain';
         img.style.objectPosition = 'center center';
+        img.style.padding = '16px';
         img.addEventListener('load', () => media.classList.remove('skeleton'));
         media.appendChild(img);
+        isPlaceholder = true;
       }
 
       card.appendChild(media);
 
-      // BLOCO DE TEXTO (sem descrição, só cidade/título/lote)
       const header = document.createElement('div');
       header.className = 'card-header';
 
@@ -656,17 +660,18 @@
       header.appendChild(left);
       card.appendChild(header);
 
-      // Clique abre o sheet (com descrição + preço)
       card.setAttribute('aria-controls', 'sheet');
       card.setAttribute('role', 'button');
       card.setAttribute('aria-expanded', 'false');
       card.addEventListener('click', () => {
-        openSheet(buildSheetContent(ev, imgUrl), card);
+        const finalImgUrl = isPlaceholder ? null : getEventImage(ev);
+        openSheet(buildSheetContent(ev, finalImgUrl), card);
       });
       card.addEventListener('keypress', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          openSheet(buildSheetContent(ev, imgUrl), card);
+          const finalImgUrl = isPlaceholder ? null : getEventImage(ev);
+          openSheet(buildSheetContent(ev, finalImgUrl), card);
         }
       });
 
@@ -689,7 +694,6 @@
       url.searchParams.get('owner') ||
       url.searchParams.get('phone');
 
-    // filtro por organizador: mostra só eventos desse dono
     if (orgParam) {
       const target = onlyDigits(orgParam);
       if (target) {
@@ -703,7 +707,6 @@
       }
     }
 
-    // link direto para evento específico
     if (evParam) {
       const idTarget = String(evParam || '').toLowerCase();
       let foundEv = null;
@@ -728,7 +731,6 @@
       });
 
       if (foundEv && foundIdx >= 0) {
-        // joga o evento pra primeira posição (melhora conversão)
         state.events.splice(foundIdx, 1);
         state.events.unshift(foundEv);
 
@@ -737,10 +739,9 @@
           state.city = city;
         }
 
-        // abre o sheet automaticamente depois do primeiro render
         setTimeout(() => {
           const imgUrl = getEventImage(foundEv);
-          openSheet(buildSheetContent(foundEv, imgUrl));
+          openSheet(buildSheetContent(foundEv, imgUrl), null);
         }, 600);
       }
     }
@@ -845,7 +846,6 @@
     qtyInput.addEventListener('input', syncFromQtyInput);
     qtyRange.addEventListener('input', syncFromQtyRange);
 
-    // dicas
     $$('.i-btn').forEach((btn) => {
       btn.addEventListener('click', () => {
         const id = btn.getAttribute('aria-controls');
@@ -857,12 +857,10 @@
       });
     });
 
-    // inicial
     syncFromPriceRange();
     syncFromQtyRange();
   }
 
-  // ========= Solicitação de criação =========
   async function handleRequestCreate() {
     if (!elReqForm) return;
     const phone = $('#req-phone');
@@ -904,7 +902,6 @@
 
     let ok = false;
     try {
-      // 1) rota padrão atual do backend
       const res = await fetch(API + '/org/request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -914,7 +911,6 @@
       if (res.ok) {
         ok = true;
       } else if (res.status === 404) {
-        // 2) fallback para rota nova, caso exista no futuro
         const res2 = await fetch(API + '/organizers/request', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -953,7 +949,6 @@
       handleRequestCreate();
     });
 
-    // chips categoria
     $$('.chip-opt[data-value]').forEach((btn) => {
       btn.addEventListener('click', () => {
         $$('.chip-opt[data-value]').forEach((b) =>
@@ -964,7 +959,6 @@
     });
   }
 
-  // ========= Health & validator link =========
   async function initHealth() {
     elApiDiag && (elApiDiag.textContent = API || '–');
 
@@ -990,7 +984,6 @@
       setAuth(false);
     }
 
-    // link do validador
     if (elOrgValidator && API_ROOT) {
       const url = API_ROOT + '/app/validator.html';
       elOrgValidator.href = url;
@@ -999,7 +992,6 @@
     }
   }
 
-  // ========= Eventos (vitrine) =========
   async function initEvents() {
     if (!API) return;
     try {
@@ -1011,7 +1003,6 @@
         : [];
       state.events = events;
 
-      // aplica filtros vindos do link (?org= / ?ev=)
       applyUrlFilters();
 
       renderChips();
@@ -1034,7 +1025,6 @@
     });
   }
 
-  // ========= Bootstrap =========
   function initDrawer() {
     if (elDrawerToggle) {
       elDrawerToggle.addEventListener('click', openDrawer);
