@@ -64,7 +64,7 @@
     if (!raw) return null;
     // já absoluta?
     if (/^https?:\/\//i.test(raw)) return raw;
-    const base = API_ROOT || '';
+    const base = API_ROOT || (typeof window !== 'undefined' ? window.location.origin : '');
     const path = raw.startsWith('/') ? raw : '/' + raw;
     return base + path;
   }
@@ -76,7 +76,13 @@
       ev.cover ||
       ev.coverUrl ||
       ev.mediaUrl ||
-      ev.banner;
+      ev.media ||
+      ev.banner ||
+      ev.thumb ||
+      ev.thumbnail ||
+      ev.video ||
+      ev.videoUrl ||
+      ev.file;
     return normalizeImageUrl(img);
   }
 
@@ -445,10 +451,16 @@
       if (isVideoUrl(imgUrl)) {
         const video = document.createElement('video');
         video.src = imgUrl;
+        const poster = normalizeImageUrl(ev.image || ev.cover || ev.thumbnail || ev.thumb || ev.banner);
+        if (poster) video.setAttribute('poster', poster);
+        // prefer a poster from a thumbnail / image fields
+        const poster = normalizeImageUrl(ev.image || ev.cover || ev.thumbnail || ev.thumb || ev.banner);
+        if (poster) video.setAttribute('poster', poster);
         video.controls = true;
         video.playsInline = true;
         video.preload = 'metadata';
         video.setAttribute('aria-label', `Vídeo do evento ${ev.title || ev.name || ''}`);
+        video.decoding = 'async';
         media.appendChild(video);
       } else {
         const img = document.createElement('img');
@@ -601,6 +613,7 @@
       media.className = 'card-media';
 
       const imgUrl = getEventImage(ev);
+      console.debug('[ingressai] renderCards media:', { id: getEventId(ev), imgUrl, isVideo: isVideoUrl(imgUrl) });
       if (!imgUrl) media.classList.add('skeleton');
       if (imgUrl) {
         if (isVideoUrl(imgUrl)) {
@@ -608,10 +621,17 @@
           video.src = imgUrl;
           video.muted = true;
           video.autoplay = true;
+          video.setAttribute('autoplay', '');
+          video.setAttribute('muted', '');
           video.loop = true;
+          video.setAttribute('loop', '');
           video.playsInline = true;
+          video.setAttribute('playsinline', '');
           video.preload = 'metadata';
           video.setAttribute('aria-hidden', 'true');
+          video.style.objectFit = 'cover';
+          video.decoding = 'async';
+          try { video.play().catch(() => {}); } catch (e) {}
           media.appendChild(video);
           const overlay = document.createElement('div');
           overlay.className = 'video-overlay';
@@ -622,6 +642,7 @@
           img.src = imgUrl;
           img.alt = `Imagem do evento ${ev.title || ev.name || ''}`;
           img.loading = 'lazy';
+          img.decoding = 'async';
           media.appendChild(img);
         }
       }
