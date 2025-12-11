@@ -62,8 +62,15 @@
 
   function normalizeImageUrl(raw) {
     if (!raw) return null;
+    raw = String(raw || '').trim();
+    // data / blob URIs should be returned as-is
+    if (/^data:/i.test(raw) || /^blob:/i.test(raw)) return raw;
     // já absoluta?
     if (/^https?:\/\//i.test(raw)) return raw;
+    // protocol-relative (//example.com/path)
+    if (/^\/\//.test(raw) && typeof window !== 'undefined') {
+      return window.location.protocol + raw;
+    }
     const base = API_ROOT || (typeof window !== 'undefined' ? window.location.origin : '');
     const path = raw.startsWith('/') ? raw : '/' + raw;
     return base + path;
@@ -453,9 +460,6 @@
         video.src = imgUrl;
         const poster = normalizeImageUrl(ev.image || ev.cover || ev.thumbnail || ev.thumb || ev.banner);
         if (poster) video.setAttribute('poster', poster);
-        // prefer a poster from a thumbnail / image fields
-        const poster = normalizeImageUrl(ev.image || ev.cover || ev.thumbnail || ev.thumb || ev.banner);
-        if (poster) video.setAttribute('poster', poster);
         video.controls = true;
         video.playsInline = true;
         video.preload = 'metadata';
@@ -475,7 +479,7 @@
     const h3 = document.createElement('h3');
     h3.textContent = ev.title || ev.name || 'Evento';
     wrap.appendChild(h3);
-
+        media.classList.add('skeleton'); // always start with skeleton and remove on successful load
     const city = ev.city || ev.cidade;
     const pMeta = document.createElement('p');
     pMeta.className = 'subtle';
@@ -492,6 +496,9 @@
       const priceRow = document.createElement('p');
       priceRow.className = 'subtle';
       const strong = document.createElement('strong');
+            // when video can play, remove skeleton
+            video.addEventListener('loadeddata', () => media.classList.remove('skeleton'));
+            video.addEventListener('error', () => media.classList.remove('skeleton'));
       strong.textContent = 'R$:';
       const span = document.createElement('span');
       // tira "R$" do fmtMoneyBR pra não ficar duplicado
@@ -504,6 +511,9 @@
 
     // Descrição só aqui (no sheet)
     const desc = getEventDescription(ev);
+            img.style.objectFit = 'cover'; // set object-fit for images
+            img.addEventListener('load', () => media.classList.remove('skeleton'));
+            img.addEventListener('error', () => media.classList.remove('skeleton'));
     const p = document.createElement('p');
     p.textContent =
       desc ||
@@ -614,11 +624,14 @@
 
       const imgUrl = getEventImage(ev);
       console.debug('[ingressai] renderCards media:', { id: getEventId(ev), imgUrl, isVideo: isVideoUrl(imgUrl) });
-      if (!imgUrl) media.classList.add('skeleton');
+      // start with skeleton until media loads
+      media.classList.add('skeleton');
       if (imgUrl) {
         if (isVideoUrl(imgUrl)) {
           const video = document.createElement('video');
           video.src = imgUrl;
+          const poster = normalizeImageUrl(ev.image || ev.cover || ev.thumbnail || ev.thumb || ev.banner);
+          if (poster) video.setAttribute('poster', poster);
           video.muted = true;
           video.autoplay = true;
           video.setAttribute('autoplay', '');
@@ -632,6 +645,8 @@
           video.style.objectFit = 'cover';
           video.decoding = 'async';
           try { video.play().catch(() => {}); } catch (e) {}
+          video.addEventListener('loadeddata', () => media.classList.remove('skeleton'));
+          video.addEventListener('error', () => media.classList.remove('skeleton'));
           media.appendChild(video);
           const overlay = document.createElement('div');
           overlay.className = 'video-overlay';
@@ -643,6 +658,10 @@
           img.alt = `Imagem do evento ${ev.title || ev.name || ''}`;
           img.loading = 'lazy';
           img.decoding = 'async';
+          img.style.objectFit = 'cover';
+          img.style.objectPosition = 'center center';
+          img.addEventListener('load', () => media.classList.remove('skeleton'));
+          img.addEventListener('error', () => media.classList.remove('skeleton'));
           media.appendChild(img);
         }
       }
