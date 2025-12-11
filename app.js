@@ -30,6 +30,8 @@
 
   // usado pra restaurar o scroll da página ao fechar o sheet
   let scrollYBeforeSheet = 0;
+  // último elemento que abriu o sheet (pra devolver o foco)
+  let lastSheetTrigger = null;
 
   const elList = $('#lista-eventos');
   const elChips = $('#filtro-cidades');
@@ -199,6 +201,11 @@
     return null;
   }
 
+  function isVideoUrl(u) {
+    if (!u) return false;
+    return /\.(mp4|webm|ogg|mov)(?:\?|$)/i.test(String(u));
+  }
+
   // ========= Scroll lock helpers (sheet) =========
   function lockBodyScroll() {
     scrollYBeforeSheet = window.scrollY || window.pageYOffset || 0;
@@ -232,24 +239,74 @@
   }
 
   // ========= Sheet =========
-  function openSheet(contentNode) {
+  function openSheet(contentNode, triggerEl) {
     if (!elSheet || !elSheetBody) return;
     elSheetBody.innerHTML = '';
     if (contentNode) elSheetBody.appendChild(contentNode);
     elSheet.classList.add('is-open');
-    elSheetBackdrop && elSheetBackdrop.classList.add('is-open');
+    if (elSheetBackdrop) {
+      elSheetBackdrop.classList.add('is-open');
+      elSheetBackdrop.setAttribute('aria-hidden', 'false');
+    }
     elSheet.setAttribute('aria-hidden', 'false');
     elSheetBody.scrollTop = 0;
     lockBodyScroll();
+    // foco e aria-expanded
+    lastSheetTrigger = triggerEl || null;
+    if (lastSheetTrigger && typeof lastSheetTrigger.setAttribute === 'function') {
+      lastSheetTrigger.setAttribute('aria-expanded', 'true');
+    }
+    if (lastSheetTrigger && typeof lastSheetTrigger.classList !== 'undefined') {
+      try { lastSheetTrigger.classList.add('card--open'); } catch (e) {}
+    }
+    // pause any preview videos inside the trigger card
+    try {
+      if (lastSheetTrigger) {
+        const cv = lastSheetTrigger.querySelectorAll('video');
+        cv.forEach((v) => { try { v.pause(); } catch (e) {} });
+      }
+    } catch (e) {}
+    // foco no close button se existir
+    const closeBtn = document.getElementById('sheet-close');
+    if (closeBtn) closeBtn.focus();
+    // Esc fecha o sheet
+    document.addEventListener('keydown', sheetKeyHandler);
   }
 
   function closeSheet() {
     if (!elSheet) return;
     elSheet.classList.remove('is-open');
-    elSheetBackdrop && elSheetBackdrop.classList.remove('is-open');
+    if (elSheetBackdrop) {
+      elSheetBackdrop.classList.remove('is-open');
+      elSheetBackdrop.setAttribute('aria-hidden', 'true');
+    }
     elSheet.setAttribute('aria-hidden', 'true');
     elSheetBody && (elSheetBody.innerHTML = '');
     unlockBodyScroll();
+    // pause any playing videos inside the sheet
+    try {
+      const videos = (elSheetBody || document).querySelectorAll('video');
+      videos.forEach((v) => {
+        try { v.pause(); } catch (e) {}
+      });
+    } catch (e) {}
+
+    // remove visual state class BEFORE resetting lastSheetTrigger
+    try { if (lastSheetTrigger && lastSheetTrigger.classList) lastSheetTrigger.classList.remove('card--open'); } catch (e) {}
+    if (lastSheetTrigger && typeof lastSheetTrigger.focus === 'function') {
+      try { lastSheetTrigger.focus(); } catch (e) {}
+    }
+    if (lastSheetTrigger && typeof lastSheetTrigger.setAttribute === 'function') {
+      lastSheetTrigger.setAttribute('aria-expanded', 'false');
+    }
+    lastSheetTrigger = null;
+    document.removeEventListener('keydown', sheetKeyHandler);
+  }
+
+  function sheetKeyHandler(e) {
+    if (e.key === 'Escape' || e.key === 'Esc') {
+      closeSheet();
+    }
   }
 
   // ========= Render vitrine =========
@@ -385,11 +442,21 @@
     if (imgUrl) {
       const media = document.createElement('figure');
       media.className = 'sheet-media';
-      const img = document.createElement('img');
-      img.src = imgUrl;
-      img.alt = `Imagem do evento ${ev.title || ev.name || ''}`;
-      img.loading = 'lazy';
-      media.appendChild(img);
+      if (isVideoUrl(imgUrl)) {
+        const video = document.createElement('video');
+        video.src = imgUrl;
+        video.controls = true;
+        video.playsInline = true;
+        video.preload = 'metadata';
+        video.setAttribute('aria-label', `Vídeo do evento ${ev.title || ev.name || ''}`);
+        media.appendChild(video);
+      } else {
+        const img = document.createElement('img');
+        img.src = imgUrl;
+        img.alt = `Imagem do evento ${ev.title || ev.name || ''}`;
+        img.loading = 'lazy';
+        media.appendChild(img);
+      }
       wrap.appendChild(media);
     }
 
@@ -534,12 +601,29 @@
       media.className = 'card-media';
 
       const imgUrl = getEventImage(ev);
+      if (!imgUrl) media.classList.add('skeleton');
       if (imgUrl) {
-        const img = document.createElement('img');
-        img.src = imgUrl;
-        img.alt = `Imagem do evento ${ev.title || ev.name || ''}`;
-        img.loading = 'lazy';
-        media.appendChild(img);
+        if (isVideoUrl(imgUrl)) {
+          const video = document.createElement('video');
+          video.src = imgUrl;
+          video.muted = true;
+          video.autoplay = true;
+          video.loop = true;
+          video.playsInline = true;
+          video.preload = 'metadata';
+          video.setAttribute('aria-hidden', 'true');
+          media.appendChild(video);
+          const overlay = document.createElement('div');
+          overlay.className = 'video-overlay';
+          overlay.setAttribute('aria-hidden', 'true');
+          media.appendChild(overlay);
+        } else {
+          const img = document.createElement('img');
+          img.src = imgUrl;
+          img.alt = `Imagem do evento ${ev.title || ev.name || ''}`;
+          img.loading = 'lazy';
+          media.appendChild(img);
+        }
       }
 
       card.appendChild(media);
@@ -566,13 +650,16 @@
       card.appendChild(header);
 
       // Clique abre o sheet (com descrição + preço)
+      card.setAttribute('aria-controls', 'sheet');
+      card.setAttribute('role', 'button');
+      card.setAttribute('aria-expanded', 'false');
       card.addEventListener('click', () => {
-        openSheet(buildSheetContent(ev, imgUrl));
+        openSheet(buildSheetContent(ev, imgUrl), card);
       });
       card.addEventListener('keypress', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          openSheet(buildSheetContent(ev, imgUrl));
+          openSheet(buildSheetContent(ev, imgUrl), card);
         }
       });
 
@@ -775,9 +862,9 @@
     const title = $('#req-title');
     const name = $('#req-name');
     const city = $('#req-city');
-    const catBtnOn = $('.chip-opt[aria-checked="true"][data-value]');
 
     const phoneVal = (phone.value || '').replace(/[^\d]/g, '');
+      const catBtnOn = $('.chip-opt[aria-checked="true"][data-value]');
     const titleVal = (title.value || '').trim();
     const nameVal = (name.value || '').trim();
     const cityVal = (city.value || '').trim();
