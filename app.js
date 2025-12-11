@@ -87,8 +87,6 @@
       ev.banner ||
       ev.thumb ||
       ev.thumbnail ||
-      ev.video ||
-      ev.videoUrl ||
       ev.file;
     return normalizeImageUrl(img);
   }
@@ -214,10 +212,7 @@
     return null;
   }
 
-  function isVideoUrl(u) {
-    if (!u) return false;
-    return /\.(mp4|webm|ogg|mov)(?:\?|$)/i.test(String(u));
-  }
+  // Landing vitrine supports only images (thumbnails) to ensure consistent rendering.
 
   // ========= Scroll lock helpers (sheet) =========
   function lockBodyScroll() {
@@ -272,13 +267,8 @@
     if (lastSheetTrigger && typeof lastSheetTrigger.classList !== 'undefined') {
       try { lastSheetTrigger.classList.add('card--open'); } catch (e) {}
     }
-    // pause any preview videos inside the trigger card
-    try {
-      if (lastSheetTrigger) {
-        const cv = lastSheetTrigger.querySelectorAll('video');
-        cv.forEach((v) => { try { v.pause(); } catch (e) {} });
-      }
-    } catch (e) {}
+    // no visual previews: only images used in the vitrine
+    // no-op: only images are used in the vitrine
     // foco no close button se existir
     const closeBtn = document.getElementById('sheet-close');
     if (closeBtn) closeBtn.focus();
@@ -296,13 +286,7 @@
     elSheet.setAttribute('aria-hidden', 'true');
     elSheetBody && (elSheetBody.innerHTML = '');
     unlockBodyScroll();
-    // pause any playing videos inside the sheet
-    try {
-      const videos = (elSheetBody || document).querySelectorAll('video');
-      videos.forEach((v) => {
-        try { v.pause(); } catch (e) {}
-      });
-    } catch (e) {}
+    // no-op: sheet displays images only
 
     // remove visual state class BEFORE resetting lastSheetTrigger
     try { if (lastSheetTrigger && lastSheetTrigger.classList) lastSheetTrigger.classList.remove('card--open'); } catch (e) {}
@@ -356,10 +340,7 @@
       btn.textContent = city;
       btn.dataset.city = city;
       btn.setAttribute('role', 'tab');
-      btn.setAttribute(
-        'aria-selected',
-        state.city === city ? 'true' : 'false'
-      );
+      btn.setAttribute('aria-selected', state.city === city ? 'true' : 'false');
       btn.addEventListener('click', () => {
         state.city = city;
         renderChips();
@@ -367,7 +348,6 @@
       });
       elChips.appendChild(btn);
     });
-  }
 
   // ===== Status / Lote no card (sem descrição / preço) =====
   function buildStatus(ev) {
@@ -455,31 +435,22 @@
     if (imgUrl) {
       const media = document.createElement('figure');
       media.className = 'sheet-media';
-      if (isVideoUrl(imgUrl)) {
-        const video = document.createElement('video');
-        video.src = imgUrl;
-        const poster = normalizeImageUrl(ev.image || ev.cover || ev.thumbnail || ev.thumb || ev.banner);
-        if (poster) video.setAttribute('poster', poster);
-        video.controls = true;
-        video.playsInline = true;
-        video.preload = 'metadata';
-        video.setAttribute('aria-label', `Vídeo do evento ${ev.title || ev.name || ''}`);
-        video.decoding = 'async';
-        media.appendChild(video);
-      } else {
-        const img = document.createElement('img');
-        img.src = imgUrl;
-        img.alt = `Imagem do evento ${ev.title || ev.name || ''}`;
-        img.loading = 'lazy';
-        media.appendChild(img);
-      }
+      media.classList.add('skeleton');
+      const img = document.createElement('img');
+      img.src = imgUrl;
+      img.alt = `Imagem do evento ${ev.title || ev.name || ''}`;
+      img.loading = 'lazy';
+      img.decoding = 'async';
+      img.style.objectFit = 'cover';
+      img.addEventListener('load', () => media.classList.remove('skeleton'));
+      img.addEventListener('error', () => media.classList.remove('skeleton'));
+      media.appendChild(img);
       wrap.appendChild(media);
     }
 
     const h3 = document.createElement('h3');
     h3.textContent = ev.title || ev.name || 'Evento';
     wrap.appendChild(h3);
-        media.classList.add('skeleton'); // always start with skeleton and remove on successful load
     const city = ev.city || ev.cidade;
     const pMeta = document.createElement('p');
     pMeta.className = 'subtle';
@@ -496,9 +467,7 @@
       const priceRow = document.createElement('p');
       priceRow.className = 'subtle';
       const strong = document.createElement('strong');
-            // when video can play, remove skeleton
-            video.addEventListener('loadeddata', () => media.classList.remove('skeleton'));
-            video.addEventListener('error', () => media.classList.remove('skeleton'));
+              // media skeleton handled at creation time
       strong.textContent = 'R$:';
       const span = document.createElement('span');
       // tira "R$" do fmtMoneyBR pra não ficar duplicado
@@ -511,9 +480,9 @@
 
     // Descrição só aqui (no sheet)
     const desc = getEventDescription(ev);
-            img.style.objectFit = 'cover'; // set object-fit for images
-            img.addEventListener('load', () => media.classList.remove('skeleton'));
-            img.addEventListener('error', () => media.classList.remove('skeleton'));
+            if (img) {
+              img.style.objectFit = 'cover';
+            }
     const p = document.createElement('p');
     p.textContent =
       desc ||
@@ -623,47 +592,31 @@
       media.className = 'card-media';
 
       const imgUrl = getEventImage(ev);
-      console.debug('[ingressai] renderCards media:', { id: getEventId(ev), imgUrl, isVideo: isVideoUrl(imgUrl) });
+      // placeholder data URI for cases with no image
+      const placeholderData = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800"><rect width="100%" height="100%" fill="#f6f8fc"/><g fill="#cfe3ff"><rect x="120" y="120" width="960" height="560" rx="16"/></g><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Inter,Arial,Helvetica,sans-serif" font-size="36" fill="#6b7280">Imagem indisponível</text></svg>');
       // start with skeleton until media loads
       media.classList.add('skeleton');
       if (imgUrl) {
-        if (isVideoUrl(imgUrl)) {
-          const video = document.createElement('video');
-          video.src = imgUrl;
-          const poster = normalizeImageUrl(ev.image || ev.cover || ev.thumbnail || ev.thumb || ev.banner);
-          if (poster) video.setAttribute('poster', poster);
-          video.muted = true;
-          video.autoplay = true;
-          video.setAttribute('autoplay', '');
-          video.setAttribute('muted', '');
-          video.loop = true;
-          video.setAttribute('loop', '');
-          video.playsInline = true;
-          video.setAttribute('playsinline', '');
-          video.preload = 'metadata';
-          video.setAttribute('aria-hidden', 'true');
-          video.style.objectFit = 'cover';
-          video.decoding = 'async';
-          try { video.play().catch(() => {}); } catch (e) {}
-          video.addEventListener('loadeddata', () => media.classList.remove('skeleton'));
-          video.addEventListener('error', () => media.classList.remove('skeleton'));
-          media.appendChild(video);
-          const overlay = document.createElement('div');
-          overlay.className = 'video-overlay';
-          overlay.setAttribute('aria-hidden', 'true');
-          media.appendChild(overlay);
-        } else {
-          const img = document.createElement('img');
-          img.src = imgUrl;
-          img.alt = `Imagem do evento ${ev.title || ev.name || ''}`;
-          img.loading = 'lazy';
-          img.decoding = 'async';
-          img.style.objectFit = 'cover';
-          img.style.objectPosition = 'center center';
-          img.addEventListener('load', () => media.classList.remove('skeleton'));
-          img.addEventListener('error', () => media.classList.remove('skeleton'));
-          media.appendChild(img);
-        }
+        const img = document.createElement('img');
+        img.src = imgUrl;
+        img.alt = `Imagem do evento ${ev.title || ev.name || ''}`;
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        img.style.objectFit = 'cover';
+        img.style.objectPosition = 'center center';
+        img.addEventListener('load', () => media.classList.remove('skeleton'));
+        img.addEventListener('error', () => media.classList.remove('skeleton'));
+        media.appendChild(img);
+      } else {
+        const img = document.createElement('img');
+        img.src = placeholderData;
+        img.alt = 'Imagem indisponível';
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        img.style.objectFit = 'cover';
+        img.style.objectPosition = 'center center';
+        img.addEventListener('load', () => media.classList.remove('skeleton'));
+        media.appendChild(img);
       }
 
       card.appendChild(media);
@@ -1101,4 +1054,5 @@
     initHealth();
     initEvents();
   });
+  }
 })();
