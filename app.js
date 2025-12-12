@@ -700,9 +700,12 @@
       card.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
           e.preventDefault();
-          try { openSheet(buildSheetContent(ev, imgUrl), card); } catch (err) { console.error('[ingressai] openSheet fail', err); }
           const finalImgUrl = isPlaceholder ? null : getEventImage(ev);
-          openSheet(buildSheetContent(ev, finalImgUrl), card);
+          try {
+            openSheet(buildSheetContent(ev, finalImgUrl), card);
+          } catch (err) {
+            console.error('[ingressai] openSheet fail', err);
+          }
         }
       });
 
@@ -979,22 +982,27 @@
       handleRequestCreate();
     });
 
-    // Hero CTA button: scroll to calculator and focus phone input
+    // Hero CTA button: revelar seção, rolar até a calculadora e focar o input
     const calcBtn = document.getElementById('calc-btn');
     if (calcBtn) {
       calcBtn.addEventListener('click', () => {
         try {
+          const orgSection = document.getElementById('organizadores');
+          if (orgSection && orgSection.hidden) {
+            orgSection.hidden = false;
+          }
+
           const card = document.getElementById('calc-card');
           if (card) {
             card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            // visual highlight for a short time
             card.classList.add('calc-highlight');
-            setTimeout(() => card.classList.remove('calc-highlight'), 1800);
+            setTimeout(() => card.classList.remove('calc-highlight'), 2000);
           }
+
           setTimeout(() => {
-            const p = document.getElementById('req-phone');
-            if (p) p.focus();
-          }, 450);
+            const priceInput = document.getElementById('calc-price');
+            if (priceInput) priceInput.focus();
+          }, 500);
         } catch (e) {
           console.error('[ingressai] calc-btn click error', e);
         }
@@ -1155,11 +1163,39 @@
       setupRequestForm();
       initHealth();
       initEvents();
+      // run lightweight diagnostics to help debug 'landing off'
+      try { runDiagnostics(); } catch (e) { /* ignore */ }
     } catch (e) {
       console.error('[ingressai] erro no init', e);
       showGlobalError('Falha ao inicializar a aplicação — confira o console.', e && e.message ? e.message : e);
     }
   });
+
+  function runDiagnostics() {
+    try {
+      const list = [];
+      list.push({ ok: Boolean(API), msg: API ? `API base: ${API}` : 'API base não definida' });
+      list.push({ ok: Boolean(elList), msg: 'Elemento vitrine: ' + (elList ? 'presente' : 'ausente') });
+      list.push({ ok: Boolean(elReqForm), msg: 'Form solicitação: ' + (elReqForm ? 'presente' : 'ausente') });
+      list.push({ ok: (Array.isArray(state.events) && state.events.length > 0), msg: `Eventos carregados: ${state.events.length || 0}` });
+
+      const failed = list.filter((i) => !i.ok).map((i) => i.msg);
+      const summary = list.map((i) => `${i.ok ? '✓' : '✖'} ${i.msg}`).join(' — ');
+
+      // small diagnostic box bottom-left
+      const diag = document.createElement('div');
+      diag.id = 'diag-box';
+      diag.style.cssText = 'position:fixed;left:12px;bottom:12px;background:#fff;border:1px solid #e6eefb;padding:10px;border-radius:8px;box-shadow:var(--shadow);font-size:13px;z-index:9998;max-width:320px';
+      diag.innerHTML = `<strong style="display:block;margin-bottom:6px">Diagnóstico (rápido)</strong><div style="font-size:13px;line-height:1.25">${summary}</div>`;
+      document.body.appendChild(diag);
+
+      if (failed.length) {
+        showGlobalError('Falhas detectadas na inicialização — abra o console para detalhes.', failed.join(' | '));
+      }
+    } catch (e) {
+      console.error('[ingressai] runDiagnostics fail', e);
+    }
+  }
 
   // single DOMContentLoaded handler above (with try/catch)
 })();
