@@ -1,5 +1,9 @@
 // app.js — IngressAI landing
-// v=2025-12-09-a
+// v=2025-12-11-mediafix-b
+// - Corrige fechamento de renderChips()
+// - Remove referência inválida a `img` em buildSheetContent()
+// - Tratamento inteligente de proporção da mídia no card fechado (cover vs contain)
+
 (() => {
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => Array.from(document.querySelectorAll(sel));
@@ -129,14 +133,12 @@
   }
 
   function buildEventShareUrl(ev) {
-    // base "limpa" (sem fragmento) para compartilhar
     const href = window.location.href;
     let basePath = window.location.pathname || '/';
     if (!basePath.startsWith('/')) basePath = '/' + basePath;
     const base = window.location.origin + basePath;
     const url = new URL(base, href);
 
-    // preserva override de API (útil em staging / testes)
     try {
       const current = new URL(href);
       const apiOverride = current.searchParams.get('api');
@@ -153,9 +155,7 @@
     const ownerPhone = getEventOwnerPhone(ev);
     if (ownerPhone) url.searchParams.set('org', ownerPhone);
 
-    // ancora direto na vitrine
     url.hash = 'vitrine';
-
     return url.toString();
   }
 
@@ -212,8 +212,6 @@
     return null;
   }
 
-  // Landing vitrine supports only images (thumbnails) to ensure consistent rendering.
-
   // ========= Scroll lock helpers (sheet) =========
   function lockBodyScroll() {
     scrollYBeforeSheet = window.scrollY || window.pageYOffset || 0;
@@ -247,6 +245,12 @@
   }
 
   // ========= Sheet =========
+  function sheetKeyHandler(e) {
+    if (e.key === 'Escape' || e.key === 'Esc') {
+      closeSheet();
+    }
+  }
+
   function openSheet(contentNode, triggerEl) {
     if (!elSheet || !elSheetBody) return;
     elSheetBody.innerHTML = '';
@@ -259,20 +263,22 @@
     elSheet.setAttribute('aria-hidden', 'false');
     elSheetBody.scrollTop = 0;
     lockBodyScroll();
-    // foco e aria-expanded
+
     lastSheetTrigger = triggerEl || null;
     if (lastSheetTrigger && typeof lastSheetTrigger.setAttribute === 'function') {
       lastSheetTrigger.setAttribute('aria-expanded', 'true');
     }
-    if (lastSheetTrigger && typeof lastSheetTrigger.classList !== 'undefined') {
-      try { lastSheetTrigger.classList.add('card--open'); } catch (e) {}
+    if (lastSheetTrigger && lastSheetTrigger.classList) {
+      try {
+        lastSheetTrigger.classList.add('card--open');
+      } catch (e) {
+        // ignore
+      }
     }
-    // no visual previews: only images used in the vitrine
-    // no-op: only images are used in the vitrine
-    // foco no close button se existir
+
     const closeBtn = document.getElementById('sheet-close');
     if (closeBtn) closeBtn.focus();
-    // Esc fecha o sheet
+
     document.addEventListener('keydown', sheetKeyHandler);
   }
 
@@ -284,26 +290,29 @@
       elSheetBackdrop.setAttribute('aria-hidden', 'true');
     }
     elSheet.setAttribute('aria-hidden', 'true');
-    elSheetBody && (elSheetBody.innerHTML = '');
+    if (elSheetBody) elSheetBody.innerHTML = '';
     unlockBodyScroll();
-    // no-op: sheet displays images only
 
-    // remove visual state class BEFORE resetting lastSheetTrigger
-    try { if (lastSheetTrigger && lastSheetTrigger.classList) lastSheetTrigger.classList.remove('card--open'); } catch (e) {}
+    try {
+      if (lastSheetTrigger && lastSheetTrigger.classList) {
+        lastSheetTrigger.classList.remove('card--open');
+      }
+    } catch (e) {
+      // ignore
+    }
+
     if (lastSheetTrigger && typeof lastSheetTrigger.focus === 'function') {
-      try { lastSheetTrigger.focus(); } catch (e) {}
+      try {
+        lastSheetTrigger.focus();
+      } catch (e) {
+        // ignore
+      }
     }
     if (lastSheetTrigger && typeof lastSheetTrigger.setAttribute === 'function') {
       lastSheetTrigger.setAttribute('aria-expanded', 'false');
     }
     lastSheetTrigger = null;
     document.removeEventListener('keydown', sheetKeyHandler);
-  }
-
-  function sheetKeyHandler(e) {
-    if (e.key === 'Escape' || e.key === 'Esc') {
-      closeSheet();
-    }
   }
 
   // ========= Render vitrine =========
@@ -348,8 +357,9 @@
       });
       elChips.appendChild(btn);
     });
+  }
 
-  // ===== Status / Lote no card (sem descrição / preço) =====
+  // ===== Status / Lote no card =====
   function buildStatus(ev) {
     const statusLine = document.createElement('div');
     statusLine.className = 'status-line';
@@ -360,7 +370,6 @@
 
     const span = document.createElement('span');
 
-    // tenta achar o número de lote em vários campos
     const lotCandidates = [
       ev.currentLot,
       ev.current_lot,
@@ -385,7 +394,6 @@
       }
     }
 
-    // se não encontrou, tenta extrair de descrições de lote
     if (batchNumber == null) {
       const labelCandidates = [
         ev.lotDescription,
@@ -409,13 +417,11 @@
       }
     }
 
-    // default: Lote 1 pra nunca cair em "published"
     if (batchNumber == null) batchNumber = 1;
 
     const label = `Lote ${batchNumber}`;
     span.textContent = label;
 
-    // 1 = verde, 2 = amarelo, 3+ = vermelho (mapeando nas classes já usadas)
     statusLine.classList.remove('status--soon', 'status--low', 'status--sold');
     if (batchNumber === 1) {
       statusLine.classList.add('status--soon');
@@ -451,6 +457,7 @@
     const h3 = document.createElement('h3');
     h3.textContent = ev.title || ev.name || 'Evento';
     wrap.appendChild(h3);
+
     const city = ev.city || ev.cidade;
     const pMeta = document.createElement('p');
     pMeta.className = 'subtle';
@@ -461,16 +468,13 @@
     pMeta.textContent = bits.join(' • ');
     wrap.appendChild(pMeta);
 
-    // Preço minimalista (só no expandido)
     const price = getEventPrice(ev);
     if (price != null) {
       const priceRow = document.createElement('p');
       priceRow.className = 'subtle';
       const strong = document.createElement('strong');
-              // media skeleton handled at creation time
       strong.textContent = 'R$:';
       const span = document.createElement('span');
-      // tira "R$" do fmtMoneyBR pra não ficar duplicado
       span.textContent =
         ' ' + fmtMoneyBR(price).replace(/^R\$\s?/, '');
       priceRow.appendChild(strong);
@@ -478,7 +482,6 @@
       wrap.appendChild(priceRow);
     }
 
-    // Descrição só aqui (no sheet)
     const desc = getEventDescription(ev);
     const p = document.createElement('p');
     p.textContent =
@@ -486,7 +489,6 @@
       'Ingressos emitidos direto no seu WhatsApp, com QR Code antifraude e repasse via Pix.';
     wrap.appendChild(p);
 
-    // Ações minimalistas: Comprar + Compartilhar
     const btnRow = document.createElement('div');
     btnRow.className = 'sheet-actions';
 
@@ -513,7 +515,6 @@
       '<svg viewBox="0 0 24 24" aria-hidden="true">' +
       '<path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' +
       '<path d="M8 9l4-4 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' +
-      '<path d="M12 5v11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' +
       '</svg>';
 
     shareLink.addEventListener('click', async () => {
@@ -530,7 +531,7 @@
           return;
         }
       } catch {
-        // usuário cancelou o share: ignora e cai pro fallback
+        // usuário cancelou o share
       }
       try {
         await navigator.clipboard.writeText(shareUrl);
@@ -579,47 +580,97 @@
 
     elEvDiag && (elEvDiag.textContent = String(evs.length));
 
+    const placeholderData =
+      'data:image/svg+xml;utf8,' +
+      encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800"><rect width="100%" height="100%" fill="#f6f8fc"/><g fill="#cfe3ff"><rect x="200" y="220" width="800" height="360" rx="80"/><rect x="280" y="300" width="120" height="120" rx="32"/><rect x="520" y="300" width="160" height="120" rx="32"/><rect x="760" y="300" width="160" height="120" rx="32"/></g><text x="50%" y="65%" dominant-baseline="middle" text-anchor="middle" font-family="Inter,Arial,Helvetica,sans-serif" font-size="32" fill="#6b7280">Imagem do evento ainda não cadastrada</text></svg>'
+      );
+
     evs.forEach((ev) => {
       try {
       const card = document.createElement('article');
       card.className = 'card';
       card.tabIndex = 0;
 
-      // MEDIA EM CIMA
       const media = document.createElement('div');
       media.className = 'card-media';
+      media.classList.add('skeleton');
 
       const imgUrl = getEventImage(ev);
-      // placeholder data URI for cases with no image
-      const placeholderData = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800"><rect width="100%" height="100%" fill="#f6f8fc"/><g fill="#cfe3ff"><rect x="120" y="120" width="960" height="560" rx="16"/></g><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Inter,Arial,Helvetica,sans-serif" font-size="36" fill="#6b7280">Imagem indisponível</text></svg>');
-      // start with skeleton until media loads
-      media.classList.add('skeleton');
+      let isPlaceholder = false;
+
       if (imgUrl) {
         const img = document.createElement('img');
         img.src = imgUrl;
         img.alt = `Imagem do evento ${ev.title || ev.name || ''}`;
         img.loading = 'lazy';
         img.decoding = 'async';
+        img.style.width = '100%';
+        img.style.height = '100%';
         img.style.objectFit = 'cover';
         img.style.objectPosition = 'center center';
-        img.addEventListener('load', () => media.classList.remove('skeleton'));
-        img.addEventListener('error', () => media.classList.remove('skeleton'));
+
+        img.addEventListener('load', () => {
+          media.classList.remove('skeleton');
+          // escolhe cover x contain baseado na proporção real da arte
+          try {
+            const w = img.naturalWidth || 0;
+            const h = img.naturalHeight || 0;
+            const ratio = h > 0 ? w / h : 0;
+
+            // ~16:9 → cover bonito; muito quadrado/vertical → contain com respiro
+            if (ratio && ratio > 1.3 && ratio < 2.1) {
+              img.style.objectFit = 'cover';
+              img.style.padding = '0';
+            } else {
+              img.style.objectFit = 'contain';
+              img.style.padding = '16px';
+            }
+          } catch (e) {
+            // se der qualquer erro, mantém cover padrão
+            img.style.objectFit = 'cover';
+          }
+        });
+
+        img.addEventListener('error', () => {
+          // se a imagem real falhar, cai pro placeholder
+          media.innerHTML = '';
+          const ph = document.createElement('img');
+          ph.src = placeholderData;
+          ph.alt = 'Imagem do evento ainda não cadastrada';
+          ph.loading = 'lazy';
+          ph.decoding = 'async';
+          ph.style.width = '100%';
+          ph.style.height = '100%';
+          ph.style.objectFit = 'contain';
+          ph.style.objectPosition = 'center center';
+          ph.style.padding = '16px';
+          ph.addEventListener('load', () =>
+            media.classList.remove('skeleton')
+          );
+          media.appendChild(ph);
+          isPlaceholder = true;
+        });
+
         media.appendChild(img);
       } else {
         const img = document.createElement('img');
         img.src = placeholderData;
-        img.alt = 'Imagem indisponível';
+        img.alt = 'Imagem do evento ainda não cadastrada';
         img.loading = 'lazy';
         img.decoding = 'async';
-        img.style.objectFit = 'cover';
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = 'contain';
         img.style.objectPosition = 'center center';
+        img.style.padding = '16px';
         img.addEventListener('load', () => media.classList.remove('skeleton'));
         media.appendChild(img);
+        isPlaceholder = true;
       }
 
       card.appendChild(media);
 
-      // BLOCO DE TEXTO (sem descrição, só cidade/título/lote)
       const header = document.createElement('div');
       header.className = 'card-header';
 
@@ -635,22 +686,23 @@
       titleEl.textContent = ev.title || ev.name || 'Evento';
       left.appendChild(titleEl);
 
-      // status / lote
       left.appendChild(buildStatus(ev));
       header.appendChild(left);
       card.appendChild(header);
 
-      // Clique abre o sheet (com descrição + preço)
       card.setAttribute('aria-controls', 'sheet');
       card.setAttribute('role', 'button');
       card.setAttribute('aria-expanded', 'false');
       card.addEventListener('click', () => {
-        openSheet(buildSheetContent(ev, imgUrl), card);
+        const finalImgUrl = isPlaceholder ? null : getEventImage(ev);
+        openSheet(buildSheetContent(ev, finalImgUrl), card);
       });
       card.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
           e.preventDefault();
           try { openSheet(buildSheetContent(ev, imgUrl), card); } catch (err) { console.error('[ingressai] openSheet fail', err); }
+          const finalImgUrl = isPlaceholder ? null : getEventImage(ev);
+          openSheet(buildSheetContent(ev, finalImgUrl), card);
         }
       });
 
@@ -676,7 +728,6 @@
       url.searchParams.get('owner') ||
       url.searchParams.get('phone');
 
-    // filtro por organizador: mostra só eventos desse dono
     if (orgParam) {
       const target = onlyDigits(orgParam);
       if (target) {
@@ -690,7 +741,6 @@
       }
     }
 
-    // link direto para evento específico
     if (evParam) {
       const idTarget = String(evParam || '').toLowerCase();
       let foundEv = null;
@@ -715,7 +765,6 @@
       });
 
       if (foundEv && foundIdx >= 0) {
-        // joga o evento pra primeira posição (melhora conversão)
         state.events.splice(foundIdx, 1);
         state.events.unshift(foundEv);
 
@@ -724,10 +773,9 @@
           state.city = city;
         }
 
-        // abre o sheet automaticamente depois do primeiro render
         setTimeout(() => {
           const imgUrl = getEventImage(foundEv);
-          openSheet(buildSheetContent(foundEv, imgUrl));
+          openSheet(buildSheetContent(foundEv, imgUrl), null);
         }, 600);
       }
     }
@@ -760,6 +808,34 @@
         .replace(',', '.');
       const v = parseFloat(clean);
       return isFinite(v) ? v : 0;
+    }
+
+    function recalc() {
+      const price = parseBRL(priceInput.value);
+      const qty = parseInt(qtyInput.value || '0', 10) || 0;
+
+      const gross = price * qty;
+      const feeOrg = gross * 0.03;
+      const net = gross - feeOrg;
+
+      baseUnitEl && (baseUnitEl.textContent = fmtMoneyBR(price));
+      feeOrgEl && (feeOrgEl.textContent = fmtMoneyBR(feeOrg));
+      grossEl && (grossEl.textContent = fmtMoneyBR(gross));
+      netEl && (netEl.textContent = fmtMoneyBR(net));
+
+      const manualFeeUnit = price * 0.015;
+      const manualFeeTotal = manualFeeUnit * qty;
+      const manualNetTotal = gross - manualFeeTotal;
+      const manualNetUnit = qty ? manualNetTotal / qty : 0;
+
+      manualFeeUnitEl &&
+        (manualFeeUnitEl.textContent = fmtMoneyBR(manualFeeUnit));
+      manualFeeTotalEl &&
+        (manualFeeTotalEl.textContent = fmtMoneyBR(manualFeeTotal));
+      manualNetTotalEl &&
+        (manualNetTotalEl.textContent = fmtMoneyBR(manualNetTotal));
+      manualNetUnitEl &&
+        (manualNetUnitEl.textContent = fmtMoneyBR(manualNetUnit));
     }
 
     function syncFromPriceInput() {
@@ -826,7 +902,6 @@
     qtyInput.addEventListener('input', syncFromQtyInput);
     qtyRange.addEventListener('input', syncFromQtyRange);
 
-    // dicas
     $$('.i-btn').forEach((btn) => {
       btn.addEventListener('click', () => {
         const id = btn.getAttribute('aria-controls');
@@ -838,12 +913,10 @@
       });
     });
 
-    // inicial
     syncFromPriceRange();
     syncFromQtyRange();
   }
 
-  // ========= Solicitação de criação =========
   async function handleRequestCreate() {
     if (!elReqForm) return;
     const phone = $('#req-phone');
@@ -867,7 +940,9 @@
       return;
     }
     if (!titleVal || !cityVal) {
-      elReqHint.textContent = 'Preencha, no mínimo, nome do evento e cidade.';
+      if (elReqHint) {
+        elReqHint.textContent = 'Preencha, no mínimo, nome do evento e cidade.';
+      }
       return;
     }
 
@@ -880,12 +955,11 @@
       source: 'landing',
     };
 
-    elReqHint.textContent = 'Enviando...';
+    if (elReqHint) elReqHint.textContent = 'Enviando...';
     if (elReqSend) elReqSend.disabled = true;
 
     let ok = false;
     try {
-      // 1) rota padrão atual do backend
       const res = await fetch(API + '/org/request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -895,7 +969,6 @@
       if (res.ok) {
         ok = true;
       } else if (res.status === 404) {
-        // 2) fallback para rota nova, caso exista no futuro
         const res2 = await fetch(API + '/organizers/request', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -910,16 +983,20 @@
     }
 
     if (ok) {
-      elReqHint.textContent =
-        'Pronto! Você vai receber uma mensagem oficial da IngressAI no WhatsApp para confirmar sua solicitação.';
+      if (elReqHint) {
+        elReqHint.textContent =
+          'Pronto! Você vai receber uma mensagem oficial da IngressAI no WhatsApp para confirmar sua solicitação.';
+      }
       try {
         elReqForm.reset();
       } catch (e) {
         // ignore
       }
     } else {
-      elReqHint.textContent =
-        'Não consegui enviar agora. Tente novamente em alguns minutos.';
+      if (elReqHint) {
+        elReqHint.textContent =
+          'Não consegui enviar agora. Tente novamente em alguns minutos.';
+      }
     }
   }
 
@@ -963,7 +1040,6 @@
     });
   }
 
-  // ========= Health & validator link =========
   async function initHealth() {
     elApiDiag && (elApiDiag.textContent = API || '–');
 
@@ -989,7 +1065,6 @@
       setAuth(false);
     }
 
-    // link do validador
     if (elOrgValidator && API_ROOT) {
       const url = API_ROOT + '/app/validator.html';
       elOrgValidator.href = url;
@@ -998,7 +1073,6 @@
     }
   }
 
-  // ========= Eventos (vitrine) =========
   async function initEvents() {
     if (!API) return;
     try {
@@ -1010,7 +1084,6 @@
         : [];
       state.events = events;
 
-      // aplica filtros vindos do link (?org= / ?ev=)
       applyUrlFilters();
 
       renderChips();
@@ -1033,7 +1106,6 @@
     });
   }
 
-  // ========= Bootstrap =========
   function initDrawer() {
     if (elDrawerToggle) {
       elDrawerToggle.addEventListener('click', openDrawer);
@@ -1049,7 +1121,6 @@
         closeDrawer();
         const orgSection = $('#organizadores');
         if (orgSection) {
-          // só mostra quando o usuário pede pelo ícone
           orgSection.hidden = false;
           orgSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
@@ -1069,10 +1140,10 @@
   document.addEventListener('DOMContentLoaded', () => {
     initDrawer();
     initSheet();
-    initSearch();
     setupCalc();
     setupRequestForm();
     initHealth();
     initEvents();
+    initSearch();
   });
 })();
