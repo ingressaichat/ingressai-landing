@@ -846,7 +846,6 @@
       priceInput.value = fmtMoneyBR(clamped);
       recalc();
     }
-    }
 
     function syncFromQtyInput() {
       let v = parseInt(qtyInput.value || '0', 10);
@@ -861,33 +860,6 @@
       const v = parseInt(qtyRange.value || '0', 10);
       qtyInput.value = String(v);
       recalc();
-    }
-    function recalc() {
-      const price = parseBRL(priceInput.value);
-      const qty = parseInt(qtyInput.value || '0', 10) || 0;
-
-      const gross = price * qty;
-      const feeOrg = gross * 0.03;
-      const net = gross - feeOrg;
-
-      baseUnitEl && (baseUnitEl.textContent = fmtMoneyBR(price));
-      feeOrgEl && (feeOrgEl.textContent = fmtMoneyBR(feeOrg));
-      grossEl && (grossEl.textContent = fmtMoneyBR(gross));
-      netEl && (netEl.textContent = fmtMoneyBR(net));
-
-      const manualFeeUnit = price * 0.015;
-      const manualFeeTotal = manualFeeUnit * qty;
-      const manualNetTotal = gross - manualFeeTotal;
-      const manualNetUnit = qty ? manualNetTotal / qty : 0;
-
-      manualFeeUnitEl &&
-        (manualFeeUnitEl.textContent = fmtMoneyBR(manualFeeUnit));
-      manualFeeTotalEl &&
-        (manualFeeTotalEl.textContent = fmtMoneyBR(manualFeeTotal));
-      manualNetTotalEl &&
-        (manualNetTotalEl.textContent = fmtMoneyBR(manualNetTotal));
-      manualNetUnitEl &&
-        (manualNetUnitEl.textContent = fmtMoneyBR(manualNetUnit));
     }
 
     priceInput.addEventListener('blur', syncFromPriceInput);
@@ -1136,14 +1108,58 @@
       elSheetClose.addEventListener('click', closeSheet);
     }
   }
+  function showGlobalError(message, details) {
+    try {
+      const existing = document.getElementById('global-error-banner');
+      if (existing) existing.remove();
+      const el = document.createElement('div');
+      el.id = 'global-error-banner';
+      el.style.cssText = 'background:#ffecec;border:1px solid #f5c2c2;color:#6b2020;padding:10px;font-weight:700;text-align:center;position:fixed;left:0;right:0;top:56px;z-index:9999';
+      el.textContent = message || 'Ocorreu um erro na aplicação.';
+      if (details) {
+        const small = document.createElement('div');
+        small.style.cssText = 'font-weight:400;font-size:13px;margin-top:6px;opacity:.9';
+        small.textContent = String(details).slice(0, 240);
+        el.appendChild(small);
+      }
+      const btn = document.createElement('button');
+      btn.textContent = 'Fechar';
+      btn.style.cssText = 'margin-left:12px;padding:.25rem .6rem;border-radius:8px;border:1px solid rgba(0,0,0,.06);background:#fff';
+      btn.addEventListener('click', () => el.remove());
+      el.appendChild(btn);
+      document.body.appendChild(el);
+    } catch (e) {
+      console.error('[ingressai] showGlobalError fail', e);
+    }
+  }
+
+  window.addEventListener('error', (ev) => {
+    try {
+      console.error('[ingressai] Uncaught error', ev.error || ev.message || ev);
+      showGlobalError('Erro não tratado no JavaScript — veja o console do navegador.', ev.error || ev.message);
+    } catch (e) {}
+  });
+  window.addEventListener('unhandledrejection', (ev) => {
+    try {
+      console.error('[ingressai] Unhandled promise rejection', ev.reason);
+      showGlobalError('Rejeição de promessa não tratada — veja o console do navegador.', ev.reason);
+    } catch (e) {}
+  });
 
   document.addEventListener('DOMContentLoaded', () => {
-    initDrawer();
-    initSheet();
-    setupCalc();
-    setupRequestForm();
-    initHealth();
-    initEvents();
-    initSearch();
+    try {
+      initDrawer();
+      initSheet();
+      initSearch();
+      setupCalc();
+      setupRequestForm();
+      initHealth();
+      initEvents();
+    } catch (e) {
+      console.error('[ingressai] erro no init', e);
+      showGlobalError('Falha ao inicializar a aplicação — confira o console.', e && e.message ? e.message : e);
+    }
   });
+
+  // single DOMContentLoaded handler above (with try/catch)
 })();
