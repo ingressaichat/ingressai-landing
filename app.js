@@ -807,7 +807,7 @@
       if (!str) return 0;
       const clean = String(str)
         .replace(/[^\d,.-]/g, '')
-        .replace('.', '')
+        .replace(/\./g, '')
         .replace(',', '.');
       const v = parseFloat(clean);
       return isFinite(v) ? v : 0;
@@ -906,19 +906,34 @@
     const name = $('#req-name');
     const city = $('#req-city');
 
-      let phoneVal = (phone.value || '').replace(/[^\d]/g, '');
-      // normalize: if user provided DDD+number (10-11 digits) without country code, prepend '55'
-      if (phoneVal && !phoneVal.startsWith('55') && (phoneVal.length === 10 || phoneVal.length === 11)) {
-        phoneVal = '55' + phoneVal;
+    if (!phone || !title || !name || !city) {
+      if (elReqHint) {
+        elReqHint.textContent =
+          'Formulário indisponível no momento. Atualize a página e tente novamente.';
       }
-      const catBtnOn = $('.chip-opt[aria-checked="true"][data-value]');
+      console.warn('[ingressai] campos do formulário de solicitação ausentes');
+      return;
+    }
+
+    let phoneVal = (phone.value || '').replace(/[^\d]/g, '');
+    // normalize: if user provided DDD+number (10-11 digits) without country code, prepend '55'
+    if (
+      phoneVal &&
+      !phoneVal.startsWith('55') &&
+      (phoneVal.length === 10 || phoneVal.length === 11)
+    ) {
+      phoneVal = '55' + phoneVal;
+    }
+    const catBtnOn = $('.chip-opt[aria-checked="true"][data-value]');
     const titleVal = (title.value || '').trim();
     const nameVal = (name.value || '').trim();
     const cityVal = (city.value || '').trim();
     const catVal = catBtnOn ? catBtnOn.dataset.value : 'atleticas';
 
-      if (!phoneVal || phoneVal.length < 10) {
+    if (!phoneVal || phoneVal.length < 10) {
+      if (elReqHint) {
         elReqHint.textContent = 'Informe um WhatsApp válido (ex: 34991231234).';
+      }
       return;
     }
     if (!titleVal || !cityVal) {
@@ -1170,39 +1185,10 @@
       setupRequestForm();
       initHealth();
       initEvents();
-      // run lightweight diagnostics to help debug 'landing off'
-      try { runDiagnostics(); } catch (e) { /* ignore */ }
     } catch (e) {
       console.error('[ingressai] erro no init', e);
       showGlobalError('Falha ao inicializar a aplicação — confira o console.', e && e.message ? e.message : e);
     }
   });
-
-  function runDiagnostics() {
-    try {
-      const list = [];
-      list.push({ ok: Boolean(API), msg: API ? `API base: ${API}` : 'API base não definida' });
-      list.push({ ok: Boolean(elList), msg: 'Elemento vitrine: ' + (elList ? 'presente' : 'ausente') });
-      list.push({ ok: Boolean(elReqForm), msg: 'Form solicitação: ' + (elReqForm ? 'presente' : 'ausente') });
-      list.push({ ok: (Array.isArray(state.events) && state.events.length > 0), msg: `Eventos carregados: ${state.events.length || 0}` });
-
-      const failed = list.filter((i) => !i.ok).map((i) => i.msg);
-      const summary = list.map((i) => `${i.ok ? '✓' : '✖'} ${i.msg}`).join(' — ');
-
-      // small diagnostic box bottom-left
-      const diag = document.createElement('div');
-      diag.id = 'diag-box';
-      diag.style.cssText = 'position:fixed;left:12px;bottom:12px;background:#fff;border:1px solid #e6eefb;padding:10px;border-radius:8px;box-shadow:var(--shadow);font-size:13px;z-index:9998;max-width:320px';
-      diag.innerHTML = `<strong style="display:block;margin-bottom:6px">Diagnóstico (rápido)</strong><div style="font-size:13px;line-height:1.25">${summary}</div>`;
-      document.body.appendChild(diag);
-
-      if (failed.length) {
-        showGlobalError('Falhas detectadas na inicialização — abra o console para detalhes.', failed.join(' | '));
-      }
-    } catch (e) {
-      console.error('[ingressai] runDiagnostics fail', e);
-    }
-  }
-
   // single DOMContentLoaded handler above (with try/catch)
 })();
