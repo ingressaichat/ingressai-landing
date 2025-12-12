@@ -587,6 +587,7 @@
       );
 
     evs.forEach((ev) => {
+      try {
       const card = document.createElement('article');
       card.className = 'card';
       card.tabIndex = 0;
@@ -696,15 +697,19 @@
         const finalImgUrl = isPlaceholder ? null : getEventImage(ev);
         openSheet(buildSheetContent(ev, finalImgUrl), card);
       });
-      card.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
           e.preventDefault();
+          try { openSheet(buildSheetContent(ev, imgUrl), card); } catch (err) { console.error('[ingressai] openSheet fail', err); }
           const finalImgUrl = isPlaceholder ? null : getEventImage(ev);
           openSheet(buildSheetContent(ev, finalImgUrl), card);
         }
       });
 
       elList.appendChild(card);
+      } catch (err) {
+        console.error('[ingressai] error rendering event card', err, ev);
+      }
     });
   }
 
@@ -841,11 +846,6 @@
       priceInput.value = fmtMoneyBR(clamped);
       recalc();
     }
-
-    function syncFromPriceRange() {
-      const v = parseFloat(priceRange.value || '0');
-      priceInput.value = fmtMoneyBR(v);
-      recalc();
     }
 
     function syncFromQtyInput() {
@@ -861,6 +861,33 @@
       const v = parseInt(qtyRange.value || '0', 10);
       qtyInput.value = String(v);
       recalc();
+    }
+    function recalc() {
+      const price = parseBRL(priceInput.value);
+      const qty = parseInt(qtyInput.value || '0', 10) || 0;
+
+      const gross = price * qty;
+      const feeOrg = gross * 0.03;
+      const net = gross - feeOrg;
+
+      baseUnitEl && (baseUnitEl.textContent = fmtMoneyBR(price));
+      feeOrgEl && (feeOrgEl.textContent = fmtMoneyBR(feeOrg));
+      grossEl && (grossEl.textContent = fmtMoneyBR(gross));
+      netEl && (netEl.textContent = fmtMoneyBR(net));
+
+      const manualFeeUnit = price * 0.015;
+      const manualFeeTotal = manualFeeUnit * qty;
+      const manualNetTotal = gross - manualFeeTotal;
+      const manualNetUnit = qty ? manualNetTotal / qty : 0;
+
+      manualFeeUnitEl &&
+        (manualFeeUnitEl.textContent = fmtMoneyBR(manualFeeUnit));
+      manualFeeTotalEl &&
+        (manualFeeTotalEl.textContent = fmtMoneyBR(manualFeeTotal));
+      manualNetTotalEl &&
+        (manualNetTotalEl.textContent = fmtMoneyBR(manualNetTotal));
+      manualNetUnitEl &&
+        (manualNetUnitEl.textContent = fmtMoneyBR(manualNetUnit));
     }
 
     priceInput.addEventListener('blur', syncFromPriceInput);
@@ -897,17 +924,19 @@
     const name = $('#req-name');
     const city = $('#req-city');
 
-    const phoneVal = (phone && phone.value || '').replace(/[^\d]/g, '');
-    const catBtnOn = $('.chip-opt[aria-checked="true"][data-value]');
-    const titleVal = (title && title.value || '').trim();
-    const nameVal = (name && name.value || '').trim();
-    const cityVal = (city && city.value || '').trim();
+      let phoneVal = (phone.value || '').replace(/[^\d]/g, '');
+      // normalize: if user provided DDD+number (10-11 digits) without country code, prepend '55'
+      if (phoneVal && !phoneVal.startsWith('55') && (phoneVal.length === 10 || phoneVal.length === 11)) {
+        phoneVal = '55' + phoneVal;
+      }
+      const catBtnOn = $('.chip-opt[aria-checked="true"][data-value]');
+    const titleVal = (title.value || '').trim();
+    const nameVal = (name.value || '').trim();
+    const cityVal = (city.value || '').trim();
     const catVal = catBtnOn ? catBtnOn.dataset.value : 'atleticas';
 
-    if (!phoneVal || phoneVal.length < 10) {
-      if (elReqHint) {
-        elReqHint.textContent = 'Informe um WhatsApp válido (com DDD).';
-      }
+      if (!phoneVal || phoneVal.length < 10) {
+        elReqHint.textContent = 'Informe um WhatsApp válido (ex: 34991231234).';
       return;
     }
     if (!titleVal || !cityVal) {
@@ -978,6 +1007,29 @@
       handleRequestCreate();
     });
 
+    // Hero CTA button: scroll to calculator and focus phone input
+    const calcBtn = document.getElementById('calc-btn');
+    if (calcBtn) {
+      calcBtn.addEventListener('click', () => {
+        try {
+          const card = document.getElementById('calc-card');
+          if (card) {
+            card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // visual highlight for a short time
+            card.classList.add('calc-highlight');
+            setTimeout(() => card.classList.remove('calc-highlight'), 1800);
+          }
+          setTimeout(() => {
+            const p = document.getElementById('req-phone');
+            if (p) p.focus();
+          }, 450);
+        } catch (e) {
+          console.error('[ingressai] calc-btn click error', e);
+        }
+      });
+    }
+
+    // chips categoria
     $$('.chip-opt[data-value]').forEach((btn) => {
       btn.addEventListener('click', () => {
         $$('.chip-opt[data-value]').forEach((b) =>
