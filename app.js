@@ -865,6 +865,13 @@
       recalc();
     }
 
+    function syncFromPriceRange() {
+      const v = parseFloat(priceRange.value || '0');
+      if (!isFinite(v)) return;
+      priceInput.value = fmtMoneyBR(v);
+      recalc();
+    }
+
     priceInput.addEventListener('blur', syncFromPriceInput);
     priceInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
