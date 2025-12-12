@@ -770,11 +770,6 @@
       priceInput.value = fmtMoneyBR(clamped);
       recalc();
     }
-
-    function syncFromPriceRange() {
-      const v = parseFloat(priceRange.value || '0');
-      priceInput.value = fmtMoneyBR(v);
-      recalc();
     }
 
     function syncFromQtyInput() {
@@ -791,7 +786,6 @@
       qtyInput.value = String(v);
       recalc();
     }
-
     function recalc() {
       const price = parseBRL(priceInput.value);
       const qty = parseInt(qtyInput.value || '0', 10) || 0;
@@ -857,15 +851,19 @@
     const name = $('#req-name');
     const city = $('#req-city');
 
-    const phoneVal = (phone.value || '').replace(/[^\d]/g, '');
+      let phoneVal = (phone.value || '').replace(/[^\d]/g, '');
+      // normalize: if user provided DDD+number (10-11 digits) without country code, prepend '55'
+      if (phoneVal && !phoneVal.startsWith('55') && (phoneVal.length === 10 || phoneVal.length === 11)) {
+        phoneVal = '55' + phoneVal;
+      }
       const catBtnOn = $('.chip-opt[aria-checked="true"][data-value]');
     const titleVal = (title.value || '').trim();
     const nameVal = (name.value || '').trim();
     const cityVal = (city.value || '').trim();
     const catVal = catBtnOn ? catBtnOn.dataset.value : 'atleticas';
 
-    if (!phoneVal || phoneVal.length < 10) {
-      elReqHint.textContent = 'Informe um WhatsApp válido (com DDD).';
+      if (!phoneVal || phoneVal.length < 10) {
+        elReqHint.textContent = 'Informe um WhatsApp válido (ex: 34991231234).';
       return;
     }
     if (!titleVal || !cityVal) {
@@ -931,6 +929,28 @@
       e.preventDefault();
       handleRequestCreate();
     });
+
+    // Hero CTA button: scroll to calculator and focus phone input
+    const calcBtn = document.getElementById('calc-btn');
+    if (calcBtn) {
+      calcBtn.addEventListener('click', () => {
+        try {
+          const card = document.getElementById('calc-card');
+          if (card) {
+            card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // visual highlight for a short time
+            card.classList.add('calc-highlight');
+            setTimeout(() => card.classList.remove('calc-highlight'), 1800);
+          }
+          setTimeout(() => {
+            const p = document.getElementById('req-phone');
+            if (p) p.focus();
+          }, 450);
+        } catch (e) {
+          console.error('[ingressai] calc-btn click error', e);
+        }
+      });
+    }
 
     // chips categoria
     $$('.chip-opt[data-value]').forEach((btn) => {
@@ -1055,5 +1075,4 @@
     initHealth();
     initEvents();
   });
-  }
 })();
