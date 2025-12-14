@@ -1138,6 +1138,41 @@
       elSheetClose.addEventListener('click', closeSheet);
     }
   }
+
+  function initFeatureCards() {
+    const cards = $$('.feature[data-feature]');
+    if (!cards.length) return;
+
+    function collapseAll(except) {
+      cards.forEach((card) => {
+        if (card === except) return;
+        card.classList.remove('feature--open');
+        card.setAttribute('aria-expanded', 'false');
+      });
+    }
+
+    function toggleCard(card) {
+      const isOpen = card.classList.contains('feature--open');
+      if (isOpen) {
+        card.classList.remove('feature--open');
+        card.setAttribute('aria-expanded', 'false');
+        return;
+      }
+      collapseAll(card);
+      card.classList.add('feature--open');
+      card.setAttribute('aria-expanded', 'true');
+    }
+
+    cards.forEach((card) => {
+      card.addEventListener('click', () => toggleCard(card));
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+          e.preventDefault();
+          toggleCard(card);
+        }
+      });
+    });
+  }
   function showGlobalError(message, details) {
     try {
       const existing = document.getElementById('global-error-banner');
@@ -1181,6 +1216,7 @@
       initDrawer();
       initSheet();
       initSearch();
+      initFeatureCards();
       setupCalc();
       setupRequestForm();
       initHealth();
