@@ -149,60 +149,72 @@
     .btn-icon svg{width:100%;height:100%;display:block}
 
     .proofs{padding:var(--s2) 0 var(--s3)}
-    .features{display:grid;gap:calc(var(--s0)*var(--phi));grid-template-columns:repeat(1,minmax(0,1fr))}
-    @media(min-width:600px){.features{grid-template-columns:repeat(2,minmax(0,1fr))}}
-    @media(min-width:1100px){.features{grid-template-columns:repeat(4,minmax(0,1fr))}}
+    .features{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:calc(var(--s0)*1.05);
+      grid-auto-rows:1fr;
+    }
+    @media(max-width:520px){
+      .features{gap:var(--s0)}
+    }
     .feature{
-      background:linear-gradient(170deg,rgba(255,255,255,.98),rgba(246,248,252,.94));
-      border:1px solid rgba(15,23,42,.08);
-      border-radius:calc(var(--s1)*1.45);
-      padding:calc(var(--s1)*var(--phi));
+      background:linear-gradient(165deg,rgba(255,255,255,.97),rgba(245,247,251,.9));
+      border:1px solid rgba(15,23,42,.07);
+      border-radius:calc(var(--s1)*1.15);
+      padding:calc(var(--s0)*1.2);
       display:flex;
       flex-direction:column;
       align-items:flex-start;
       text-align:left;
-      gap:calc(var(--s0)*var(--phi));
+      gap:var(--s0);
       position:relative;
       overflow:hidden;
       cursor:pointer;
       transition:border-color var(--t-fast),box-shadow var(--t-fast),transform var(--t-fast),background var(--t-fast);
-      min-height:calc(var(--s3)*1.1);
+      min-height:210px;
       isolation:isolate;
       -webkit-tap-highlight-color:transparent;
     }
     .feature::after{
       content:'';
       position:absolute;
-      inset:12px;
-      border-radius:calc(var(--s1)*1.2);
-      background:radial-gradient(circle at 35% 15%,rgba(129,141,163,.25),rgba(129,141,163,0));
-      filter:blur(40px);
+      inset:10px;
+      border-radius:calc(var(--s1));
+      background:radial-gradient(circle at 30% 20%,rgba(149,155,168,.22),rgba(149,155,168,0));
+      filter:blur(32px);
       opacity:0;
       transition:opacity var(--t-fast);
       pointer-events:none;
       z-index:0;
     }
-    .feature:hover,.feature:focus-visible{border-color:rgba(15,23,42,.16);box-shadow:0 18px 44px rgba(15,23,42,.12);transform:translateY(-2px);background:linear-gradient(170deg,#ffffff,rgba(245,247,251,.96))}
-    .feature:focus-visible{box-shadow:var(--ring),0 18px 44px rgba(15,23,42,.12)}
+    .feature:hover,
+    .feature:focus-visible{
+      border-color:rgba(15,23,42,.14);
+      box-shadow:0 16px 30px rgba(15,23,42,.12);
+      transform:translateY(-1px);
+      background:linear-gradient(165deg,#ffffff,rgba(243,245,249,.95));
+    }
+    .feature:focus-visible{box-shadow:var(--ring),0 16px 30px rgba(15,23,42,.12)}
     .feature > *{position:relative;z-index:1}
     .feature:hover::after,.feature:focus-visible::after,.feature.feature--open::after{opacity:1}
     .feature-icon{
-      width:calc(38px*var(--phi));
-      height:calc(38px*var(--phi));
-      border-radius:calc(var(--s1)*1.05);
-      background:linear-gradient(145deg,#ffffff,rgba(245,247,251,.92));
+      width:54px;
+      height:54px;
+      border-radius:18px;
+      background:rgba(245,247,251,.85);
       border:1px solid rgba(15,23,42,.08);
       display:inline-flex;
       align-items:center;
       justify-content:center;
       color:#111827;
-      box-shadow:0 18px 38px rgba(15,23,42,.08),inset 0 0 0 1px rgba(255,255,255,.6);
+      box-shadow:0 8px 20px rgba(15,23,42,.08),inset 0 0 0 1px rgba(255,255,255,.7);
     }
     .feature-icon svg{
-      width:calc(1.15rem*var(--phi));
-      height:calc(1.15rem*var(--phi));
+      width:28px;
+      height:28px;
       stroke:currentColor;
-      stroke-width:1.5;
+      stroke-width:1.4;
       fill:none;
       stroke-linecap:round;
       stroke-linejoin:round;
@@ -232,18 +244,24 @@
       transform:rotate(45deg);
       transition:transform var(--t-fast);
     }
-    .feature-extra{margin:0;color:#4a5465;font-size:calc(var(--fs--1)*1.04);line-height:1.45;max-width:34ch}
+    .feature-extra{
+      margin:0;
+      color:#4a5465;
+      font-size:calc(var(--fs--1)*1.04);
+      line-height:1.45;
+      max-width:34ch;
+    }
     html.js-feature-ready .feature-extra{
       opacity:0;
       max-height:0;
-      transform:translateY(-6px);
-      transition:max-height var(--t-fast),opacity var(--t-fast),transform var(--t-fast);
+      transform:translateY(-8px);
+      transition:max-height .32s ease,opacity .22s ease,transform .22s ease;
     }
     .feature--open{
       border-color:rgba(15,23,42,.16);
-      box-shadow:0 26px 60px rgba(15,23,42,.12);
-      background:linear-gradient(165deg,#ffffff,rgba(243,245,249,.96));
-      transform:translateY(-3px);
+      box-shadow:0 20px 44px rgba(15,23,42,.14);
+      background:#fff;
+      transform:translateY(-2px);
     }
     .feature--open .feature-chevron{background:#111827;border-color:#111827;color:#fff}
     .feature--open .feature-chevron::after{transform:rotate(-135deg)}
@@ -480,36 +498,31 @@
         <article class="feature feature--open" data-feature="automation" role="button" tabindex="0" aria-expanded="true">
           <div class="feature-icon">
             <svg viewBox="0 0 32 32" aria-hidden="true">
-              <rect x="4.5" y="7" width="23" height="14" rx="4"></rect>
-              <path d="M10 21v5l4-4h9a4 4 0 0 0 4-4v-5"></path>
-              <circle cx="11.5" cy="14" r="1"></circle>
-              <circle cx="16" cy="14" r="1"></circle>
-              <circle cx="20.5" cy="14" r="1"></circle>
+              <rect x="9" y="4.5" width="14" height="23" rx="3.2"></rect>
+              <path d="M12 10h8M12 15h5"></path>
+              <path d="M12.5 21h5l1.5 3 1.5-3h2.5"></path>
             </svg>
           </div>
           <div class="feature-meta">
             <strong>Venda automatizada</strong>
-            <small>Bot oficial no WhatsApp</small>
+            <small>Bot oficial 24/7</small>
           </div>
-          <p class="feature-extra">O bot da IngressAI responde, cobra e libera ingressos confirmados em minutos — sem filas nem time operando.</p>
+          <p class="feature-extra">Venda seus ingressos de forma automatizada. Ao publicar seu evento os ingressos podem ser comprados em poucos cliques.</p>
           <span class="feature-chevron" aria-hidden="true"></span>
         </article>
         <article class="feature" data-feature="pix" role="button" tabindex="0" aria-expanded="false">
           <div class="feature-icon">
             <svg viewBox="0 0 32 32" aria-hidden="true">
-              <path d="M16 6 25 12l-9 6-9-6 9-6z"></path>
-              <path d="M16 20 9 15l7-5 7 5-7 5z"></path>
-              <line x1="4.5" y1="12" x2="8" y2="12"></line>
-              <line x1="24" y1="12" x2="27.5" y2="12"></line>
-              <line x1="4.5" y1="20" x2="8" y2="20"></line>
-              <line x1="24" y1="20" x2="27.5" y2="20"></line>
+              <path d="M16 6.5 25.5 16 16 25.5 6.5 16 16 6.5z"></path>
+              <path d="M4 16h4M24 16h4"></path>
+              <path d="M9 11l7 5 7-5M9 21l7-5 7 5"></path>
             </svg>
           </div>
           <div class="feature-meta">
             <strong>Repasse imediato</strong>
             <small>Pix T+0</small>
           </div>
-          <p class="feature-extra">Pagou, caiu. Cada venda confirma no bot e o valor segue direto para o Pix do organizador, sem esperar D+1.</p>
+          <p class="feature-extra">Os pagamentos recebidos são repassados via Pix na chave cadastrada do seu evento. Após a confirmação de pagamento o repasse é feito instantaneamente.</p>
           <span class="feature-chevron" aria-hidden="true"></span>
         </article>
         <article class="feature" data-feature="qr" role="button" tabindex="0" aria-expanded="false">
@@ -518,33 +531,32 @@
               <rect x="5.5" y="5.5" width="9" height="9" rx="2"></rect>
               <rect x="17.5" y="5.5" width="9" height="9" rx="2"></rect>
               <rect x="5.5" y="17.5" width="9" height="9" rx="2"></rect>
-              <path d="M26.5 17.5h-7v7h7z"></path>
-              <path d="M22 17.5v4.5M19.5 22H24"></path>
+              <rect x="17.5" y="17.5" width="9" height="9" rx="2"></rect>
+              <path d="M20 20h4v4"></path>
+              <path d="M8.5 9h3M8.5 12h3M20.5 9h3M8.5 21h3"></path>
             </svg>
           </div>
           <div class="feature-meta">
             <strong>QR Code antifraude</strong>
             <small>Validação oficial</small>
           </div>
-          <p class="feature-extra">Ingressos nascem com QR criptografado e passam pelo validador oficial da IngressAI. Prints e cópias não passam.</p>
+          <p class="feature-extra">Tenha acesso ao validador web que garante a veracidade dos ingressos e tenha controle dos ingressos validados e cancelados.</p>
           <span class="feature-chevron" aria-hidden="true"></span>
         </article>
         <article class="feature" data-feature="dashboard" role="button" tabindex="0" aria-expanded="false">
           <div class="feature-icon">
             <svg viewBox="0 0 32 32" aria-hidden="true">
-              <rect x="5" y="7" width="22" height="18" rx="4"></rect>
-              <path d="M9 22l5-6 4 3 5-6"></path>
-              <path d="M9 26h14"></path>
-              <line x1="10.5" y1="11.5" x2="12" y2="11.5"></line>
-              <line x1="15.5" y1="11.5" x2="17" y2="11.5"></line>
-              <line x1="20.5" y1="11.5" x2="22" y2="11.5"></line>
+              <rect x="5" y="6.5" width="22" height="19" rx="4"></rect>
+              <path d="M9 23l4-5.5 3 2.5 5-6 2 3"></path>
+              <path d="M9 26.5h14"></path>
+              <path d="M10.5 11h1.8M15.5 11h1.8M20.5 11h1.8"></path>
             </svg>
           </div>
           <div class="feature-meta">
             <strong>Dashboard</strong>
-            <small>Lotes, vendas e acesso</small>
+            <small>Gestão no WhatsApp</small>
           </div>
-          <p class="feature-extra">O painel no próprio WhatsApp mostra lotes, libera emissões manuais e compartilha o validador com a sua equipe.</p>
+          <p class="feature-extra">Acesso ao dashboard via WhatsApp. Emita ingressos, envie mensagens aos compradores e tenha controle sobre as vendas e pagamentos com relatórios emitidos em PDF.</p>
           <span class="feature-chevron" aria-hidden="true"></span>
         </article>
       </div>
