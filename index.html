@@ -153,6 +153,7 @@
       display:grid;
       grid-template-columns:repeat(2,minmax(0,1fr));
       gap:var(--s-2);
+      align-items:start;
     }
     @media(max-width:520px){
       .features{
@@ -481,10 +482,11 @@
         <div class="hero-cta">
           <button id="calc-btn" type="button" class="btn btn--sm btn--apple btn--calc" aria-label="Abrir calculadora de lucros">
             <span class="btn-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="4" y="3.5" width="16" height="17" rx="2.8"></rect>
-                <path d="M8 8h6M8 12h2M8 16h2M13 16h3"></path>
-                <path d="M15.5 12.5l2-2M17.5 12.5l-2-2"></path>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4.5" y="3.5" width="15" height="17" rx="2.5"></rect>
+                <path d="M8 7.8h7.5"></path>
+                <path d="M8 12h3M12.8 12h3.2"></path>
+                <path d="M8 16.2h0.01M11.2 16.2h0.01M14.4 16.2h0.01"></path>
               </svg>
             </span>
             <span>Calcule os lucros</span>
