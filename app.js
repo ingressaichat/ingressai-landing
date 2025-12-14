@@ -1164,7 +1164,10 @@
       card.setAttribute('aria-expanded', 'true');
     }
 
+    collapseAll(null);
+
     cards.forEach((card) => {
+      card.setAttribute('aria-expanded', 'false');
       card.addEventListener('click', () => toggleCard(card));
       card.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
@@ -1173,18 +1176,6 @@
         }
       });
     });
-
-    let initiallyOpen = cards.find((card) =>
-      card.classList.contains('feature--open')
-    );
-    if (!initiallyOpen) {
-      initiallyOpen = cards[0];
-    }
-    if (initiallyOpen) {
-      collapseAll(initiallyOpen);
-      initiallyOpen.classList.add('feature--open');
-      initiallyOpen.setAttribute('aria-expanded', 'true');
-    }
   }
   function showGlobalError(message, details) {
     try {
