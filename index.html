@@ -332,6 +332,9 @@
       flex-direction:column;
       padding:var(--s2);
       z-index:45;
+      overscroll-behavior:contain;
+      touch-action:pan-y;
+      overflow:hidden;
     }
     @media(min-width:900px){
       .sheet{
@@ -350,6 +353,7 @@
       padding-right:4px;
       padding-bottom:calc(20px + env(safe-area-inset-bottom));
       -webkit-overflow-scrolling:touch;
+      overscroll-behavior:contain;
     }
     .sheet-media{width:100%;aspect-ratio:var(--phi);border:1px solid #eaf1ff;border-radius:16px;background:
       radial-gradient(600px 280px at 20% 0%,rgba(47,125,217,.12),transparent 60%),
@@ -375,9 +379,9 @@
 
     /* Ações minimalistas dentro do sheet */
     .sheet-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:var(--s1)}
-    .sheet-btn{display:inline-flex;align-items:center;justify-content:space-between;gap:8px;padding:.7rem 1.1rem;border-radius:999px;border:1px solid #e6eaf6;background:#f9fbff;font-weight:800;font-size:.94rem;cursor:pointer;white-space:nowrap}
-    .sheet-btn--primary{background:linear-gradient(135deg,#ffffff,#f4f7ff);border-color:#d6e4ff;box-shadow:var(--shadow-soft)}
-    .sheet-btn--ghost{background:#fff;border-style:dashed}
+    .sheet-btn{display:inline-flex;align-items:center;gap:6px;padding:.6rem 1rem;border-radius:16px;border:1px solid rgba(11,18,32,.08);background:rgba(247,248,251,.9);font-weight:700;font-size:.9rem;cursor:pointer;white-space:nowrap;box-shadow:none;color:#121a2b}
+    .sheet-btn--primary{background:linear-gradient(135deg,#ffffff,#f6f7fb);border-color:rgba(11,18,32,.12)}
+    .sheet-btn--ghost{background:rgba(255,255,255,.9);border-style:solid;color:#4a5b78}
     .sheet-btn svg{width:18px;height:18px;flex:0 0 auto}
 
     .status-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid #e6eaf6;border-radius:999px;padding:.25rem .55rem;font-weight:800;font-size:.8rem}
