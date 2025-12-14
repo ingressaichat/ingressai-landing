@@ -334,7 +334,8 @@
       z-index:45;
       overscroll-behavior:contain;
       touch-action:pan-y;
-      overflow:hidden;
+      contain:layout paint;
+      -webkit-overflow-scrolling:touch;
     }
     @media(min-width:900px){
       .sheet{
