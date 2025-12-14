@@ -152,28 +152,30 @@
     .features{display:grid;gap:var(--s0);grid-template-columns:repeat(2,minmax(0,1fr))}
     @media(min-width:900px){.features{grid-template-columns:repeat(4,minmax(0,1fr))}}
     .feature{
-      background:#fff;
-      border:1px solid #e5ecff;
-      border-radius:16px;
-      padding:calc(var(--s0)*1.5);
+      background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(247,250,255,.92));
+      border:1px solid #dae4fa;
+      border-radius:calc(var(--s1)*1.4);
+      padding:calc(var(--s0)*1.4);
       display:flex;
       flex-direction:column;
+      align-items:center;
+      text-align:center;
       gap:calc(var(--s0)*.9);
       position:relative;
       overflow:hidden;
       cursor:pointer;
-      transition:border-color var(--t-fast),box-shadow var(--t-fast),transform var(--t-fast);
-      min-height:220px;
+      transition:border-color var(--t-fast),box-shadow var(--t-fast),transform var(--t-fast),background var(--t-fast);
+      min-height:240px;
       isolation:isolate;
       -webkit-tap-highlight-color:transparent;
     }
     .feature::after{
       content:'';
       position:absolute;
-      inset:10px;
-      border-radius:20px;
-      background:radial-gradient(circle at 30% 20%,rgba(85,145,241,.35),rgba(85,145,241,0));
-      filter:blur(30px);
+      inset:12px;
+      border-radius:calc(var(--s1)*1.2);
+      background:radial-gradient(circle at 30% 20%,rgba(85,145,241,.28),rgba(85,145,241,0));
+      filter:blur(32px);
       opacity:0;
       transition:opacity var(--t-fast);
       pointer-events:none;
@@ -184,14 +186,15 @@
     .feature > *{position:relative;z-index:1}
     .feature:hover::after,.feature:focus-visible::after,.feature.feature--open::after{opacity:1}
     .feature-icon{
-      width:58px;
-      height:58px;
-      border-radius:18px;
-      background:rgba(47,125,217,.08);
+      width:64px;
+      height:64px;
+      border-radius:22px;
+      background:linear-gradient(135deg,rgba(47,125,217,.18),rgba(47,125,217,.05));
       display:inline-flex;
       align-items:center;
       justify-content:center;
       color:#2b5cb7;
+      box-shadow:0 14px 34px rgba(47,125,217,.16);
     }
     .feature-icon svg{
       width:32px;
@@ -205,14 +208,37 @@
     }
     .feature-icon .bolt{fill:currentColor;stroke:none}
     .feature-icon .qr-fill{fill:currentColor;stroke:none}
-    .feature-meta{display:flex;flex-direction:column;gap:4px}
-    .feature strong{font-weight:800;font-size:calc(var(--fs-0)*1.02);line-height:1.2}
-    .feature small{color:var(--muted);font-size:calc(var(--fs--1)*1.04);line-height:1.4}
+    .feature-meta{display:flex;flex-direction:column;gap:4px;align-items:center}
+    .feature strong{font-weight:820;font-size:calc(var(--fs-0)*1.04);line-height:1.2}
+    .feature small{color:#415577;font-size:calc(var(--fs--1)*1.06);line-height:1.35}
+    .feature-chevron{
+      width:30px;
+      height:30px;
+      border-radius:999px;
+      border:1px solid rgba(47,125,217,.28);
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      color:#4268c7;
+      transition:transform var(--t-fast),border-color var(--t-fast),background var(--t-fast);
+    }
+    .feature-chevron::after{
+      content:'';
+      width:10px;
+      height:10px;
+      border-right:2px solid currentColor;
+      border-bottom:2px solid currentColor;
+      transform:rotate(45deg);
+      transition:transform var(--t-fast);
+    }
     .feature-extra{
       margin:0;
       color:#4a5b78;
-      font-size:calc(var(--fs--1)*1.02);
+      font-size:calc(var(--fs--1)*1.04);
       line-height:1.45;
+      max-width:34ch;
+    }
+    html.js-feature-ready .feature-extra{
       opacity:0;
       max-height:0;
       transform:translateY(-6px);
@@ -220,11 +246,15 @@
     }
     .feature--open{
       border-color:#c2d6ff;
-      box-shadow:0 20px 60px rgba(47,125,217,.15);
+      box-shadow:0 20px 60px rgba(47,125,217,.16);
+      background:linear-gradient(180deg,#ffffff,rgba(241,246,255,.96));
+      transform:translateY(-3px);
     }
-    .feature--open .feature-extra{
+    .feature--open .feature-chevron{background:#eaf1ff;border-color:#c2d6ff}
+    .feature--open .feature-chevron::after{transform:rotate(-135deg)}
+    html.js-feature-ready .feature--open .feature-extra{
       opacity:1;
-      max-height:200px;
+      max-height:220px;
       transform:translateY(0);
     }
 
@@ -452,7 +482,7 @@
     <section class="proofs" aria-labelledby="proofs-title">
       <h2 id="proofs-title" class="sr-only">Provas de valor</h2>
       <div class="features" aria-label="Provas">
-        <article class="feature" data-feature="automation" role="button" tabindex="0" aria-expanded="false">
+        <article class="feature feature--open" data-feature="automation" role="button" tabindex="0" aria-expanded="true">
           <div class="feature-icon">
             <svg viewBox="0 0 32 32" aria-hidden="true">
               <path d="M6 8h20a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3h-6.2l-4.3 4.3V20H6a3 3 0 0 1-3-3v-6a3 3 0 0 1 3-3z"></path>
@@ -464,6 +494,7 @@
             <small>via WhatsApp</small>
           </div>
           <p class="feature-extra">Dispare chats inteligentes e entregue ingressos confirmados em segundos, sem intervenção manual.</p>
+          <span class="feature-chevron" aria-hidden="true"></span>
         </article>
         <article class="feature" data-feature="pix" role="button" tabindex="0" aria-expanded="false">
           <div class="feature-icon">
@@ -479,6 +510,7 @@
             <small>via Pix</small>
           </div>
           <p class="feature-extra">Receba via Pix assim que a venda é aprovada — nada de esperar D+1. É fluxo de caixa T+0 na veia.</p>
+          <span class="feature-chevron" aria-hidden="true"></span>
         </article>
         <article class="feature" data-feature="qr" role="button" tabindex="0" aria-expanded="false">
           <div class="feature-icon">
@@ -497,6 +529,7 @@
             <small>+ validador</small>
           </div>
           <p class="feature-extra">Cada ingresso nasce com QR Code criptografado e validação oficial — adeus cópias e prints recirculando.</p>
+          <span class="feature-chevron" aria-hidden="true"></span>
         </article>
         <article class="feature" data-feature="dashboard" role="button" tabindex="0" aria-expanded="false">
           <div class="feature-icon">
@@ -511,6 +544,7 @@
             <small>Ingressos & acesso</small>
           </div>
           <p class="feature-extra">Dashboard no WhatsApp para emitir ingressos, validar entradas e acompanhar relatórios e métricas em tempo real.</p>
+          <span class="feature-chevron" aria-hidden="true"></span>
         </article>
       </div>
     </section>
@@ -745,6 +779,6 @@
   </script>
 
   <!-- app principal (com cache-busting) -->
-  <script defer src="./app.js?v=2025-12-11-mediafix-b"></script>
+  <script defer src="./app.js?v=2025-12-14-featurecards"></script>
 </body>
 </html>
