@@ -1,5 +1,5 @@
 // app.js — IngressAI landing
-// v=2025-12-11-mediafix-b
+// v=2025-12-14-featurecards
 // - Corrige fechamento de renderChips()
 // - Remove referência inválida a `img` em buildSheetContent()
 // - Tratamento inteligente de proporção da mídia no card fechado (cover vs contain)
@@ -1142,6 +1142,7 @@
   function initFeatureCards() {
     const cards = $$('.feature[data-feature]');
     if (!cards.length) return;
+    document.documentElement.classList.add('js-feature-ready');
 
     function collapseAll(except) {
       cards.forEach((card) => {
@@ -1172,6 +1173,18 @@
         }
       });
     });
+
+    let initiallyOpen = cards.find((card) =>
+      card.classList.contains('feature--open')
+    );
+    if (!initiallyOpen) {
+      initiallyOpen = cards[0];
+    }
+    if (initiallyOpen) {
+      collapseAll(initiallyOpen);
+      initiallyOpen.classList.add('feature--open');
+      initiallyOpen.setAttribute('aria-expanded', 'true');
+    }
   }
   function showGlobalError(message, details) {
     try {
