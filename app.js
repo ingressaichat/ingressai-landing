@@ -500,11 +500,17 @@
     buyBtn.href = waUrl;
     buyBtn.target = '_blank';
     buyBtn.rel = 'noopener noreferrer';
-    buyBtn.innerHTML =
-      '<span>Comprar no WhatsApp</span>' +
+    const eventName = ev.title || ev.name || 'evento';
+    const buyLabel = `Comprar ingresso para ${eventName}`;
+    const buySpan = document.createElement('span');
+    buySpan.textContent = buyLabel;
+    buyBtn.appendChild(buySpan);
+    buyBtn.insertAdjacentHTML(
+      'beforeend',
       '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-      '<path d="M5 12h11M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' +
-      '</svg>';
+        '<path d="M5 12h11M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' +
+        '</svg>'
+    );
     btnRow.appendChild(buyBtn);
 
     const shareLink = document.createElement('button');
