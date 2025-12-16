@@ -153,6 +153,7 @@
       display:grid;
       grid-template-columns:repeat(2,minmax(0,1fr));
       gap:var(--s-2);
+      align-items:start;
     }
     @media(max-width:520px){
       .features{
@@ -162,18 +163,18 @@
     .feature{
       background:linear-gradient(160deg,rgba(255,255,255,.98),rgba(243,244,248,.9));
       border:1px solid rgba(15,23,42,.05);
-      border-radius:calc(var(--s1)*.9);
-      padding:calc(var(--s0)*.8);
+      border-radius:10px;
+      padding:calc(var(--s0)*.6);
       display:flex;
       flex-direction:column;
       align-items:flex-start;
       text-align:left;
-      gap:var(--s-2);
+      gap:8px;
       position:relative;
       overflow:hidden;
       cursor:pointer;
       transition:border-color var(--t-fast),box-shadow var(--t-fast),transform var(--t-fast),background var(--t-fast);
-      min-height:150px;
+      min-height:120px;
       isolation:isolate;
       -webkit-tap-highlight-color:transparent;
     }
@@ -331,6 +332,10 @@
       flex-direction:column;
       padding:var(--s2);
       z-index:45;
+      overscroll-behavior:contain;
+      touch-action:pan-y;
+      contain:layout paint;
+      -webkit-overflow-scrolling:touch;
     }
     @media(min-width:900px){
       .sheet{
@@ -349,6 +354,7 @@
       padding-right:4px;
       padding-bottom:calc(20px + env(safe-area-inset-bottom));
       -webkit-overflow-scrolling:touch;
+      overscroll-behavior:contain;
     }
     .sheet-media{width:100%;aspect-ratio:var(--phi);border:1px solid #eaf1ff;border-radius:16px;background:
       radial-gradient(600px 280px at 20% 0%,rgba(47,125,217,.12),transparent 60%),
@@ -374,9 +380,9 @@
 
     /* Ações minimalistas dentro do sheet */
     .sheet-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:var(--s1)}
-    .sheet-btn{display:inline-flex;align-items:center;justify-content:space-between;gap:8px;padding:.7rem 1.1rem;border-radius:999px;border:1px solid #e6eaf6;background:#f9fbff;font-weight:800;font-size:.94rem;cursor:pointer;white-space:nowrap}
-    .sheet-btn--primary{background:linear-gradient(135deg,#ffffff,#f4f7ff);border-color:#d6e4ff;box-shadow:var(--shadow-soft)}
-    .sheet-btn--ghost{background:#fff;border-style:dashed}
+    .sheet-btn{display:inline-flex;align-items:center;gap:6px;padding:.6rem 1rem;border-radius:16px;border:1px solid rgba(11,18,32,.08);background:rgba(247,248,251,.9);font-weight:700;font-size:.9rem;cursor:pointer;white-space:nowrap;box-shadow:none;color:#121a2b}
+    .sheet-btn--primary{background:linear-gradient(135deg,#ffffff,#f6f7fb);border-color:rgba(11,18,32,.12)}
+    .sheet-btn--ghost{background:rgba(255,255,255,.9);border-style:solid;color:#4a5b78}
     .sheet-btn svg{width:18px;height:18px;flex:0 0 auto}
 
     .status-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid #e6eaf6;border-radius:999px;padding:.25rem .55rem;font-weight:800;font-size:.8rem}
@@ -481,10 +487,12 @@
         <div class="hero-cta">
           <button id="calc-btn" type="button" class="btn btn--sm btn--apple btn--calc" aria-label="Abrir calculadora de lucros">
             <span class="btn-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="4" y="3.5" width="16" height="17" rx="2.8"></rect>
-                <path d="M8 8h6M8 12h2M8 16h2M13 16h3"></path>
-                <path d="M15.5 12.5l2-2M17.5 12.5l-2-2"></path>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4.5" y="3.5" width="15" height="17" rx="2.8"></rect>
+                <path d="M8 8h8"></path>
+                <path d="M8 12h0.6M10.3 12h0.6M12.6 12h0.6M14.9 12h0.6"></path>
+                <path d="M8 15.5h0.4M10.1 15.5h0.4M12.2 15.5h0.4M14.3 15.5h0.4"></path>
+                <path d="M17.2 15l1.6 1.6M18.8 15l-1.6 1.6"></path>
               </svg>
             </span>
             <span>Calcule os lucros</span>
@@ -499,14 +507,13 @@
         <article class="feature" data-feature="automation" role="button" tabindex="0" aria-expanded="false">
           <div class="feature-icon">
             <svg viewBox="0 0 32 32" aria-hidden="true">
-              <path d="M6 7h20a3 3 0 0 1 3 3v6.5a3 3 0 0 1-3 3h-6l-4 4v-4H6a3 3 0 0 1-3-3V10a3 3 0 0 1 3-3z" fill="none"></path>
-              <path d="M11 12h10M11 15.5h7" fill="none"></path>
-              <path d="M22 9.5l1.4-3.2" fill="none"></path>
+              <path d="M4.5 8.5C4.5 6.6 6.1 5 8 5h16c1.9 0 3.5 1.6 3.5 3.5v6.5c0 1.9-1.6 3.5-3.5 3.5h-6.2l-4.3 4.3v-4.3H8c-1.9 0-3.5-1.6-3.5-3.5V8.5z" fill="none"></path>
+              <path d="M16.2 9.3l-1.6 2.6h2.3l-.9 2.8 2.6-3.4h-1.8l.8-2" stroke-width="1.2"></path>
             </svg>
           </div>
           <div class="feature-meta">
             <strong>Venda automatizada</strong>
-            <small>Bot oficial 24/7</small>
+            <small>via WhatsApp</small>
           </div>
           <p class="feature-extra">Venda seus ingressos de forma automatizada, ao publicar seu evento os ingressos podem ser comprados em poucos cliques.</p>
           <span class="feature-chevron" aria-hidden="true"></span>
@@ -515,13 +522,12 @@
           <div class="feature-icon">
             <svg viewBox="0 0 32 32" aria-hidden="true">
               <path d="M16 6.2 26 16 16 25.8 6 16 16 6.2z" fill="none"></path>
-              <path d="M4 16h4.5M23.5 16H28" fill="none"></path>
               <path d="M10 11l6 5-6 5M22 11l-6 5 6 5" fill="none"></path>
             </svg>
           </div>
           <div class="feature-meta">
             <strong>Repasse imediato</strong>
-            <small>Pix T+0</small>
+            <small>via Pix</small>
           </div>
           <p class="feature-extra">Os pagamentos recebidos são repassados via Pix na chave cadastrada do seu evento, após a confirmação de pagamento o repasse é feito instantaneamente.</p>
           <span class="feature-chevron" aria-hidden="true"></span>
@@ -529,11 +535,10 @@
         <article class="feature" data-feature="qr" role="button" tabindex="0" aria-expanded="false">
           <div class="feature-icon">
             <svg viewBox="0 0 32 32" aria-hidden="true">
-              <rect x="5.5" y="5.5" width="8.7" height="8.7" rx="1.8"></rect>
-              <rect x="17.8" y="5.5" width="8.7" height="8.7" rx="1.8"></rect>
-              <rect x="5.5" y="17.8" width="8.7" height="8.7" rx="1.8"></rect>
-              <path d="M20 17.5h6.5v6.5h-3.3M21.2 17.5v6.5" fill="none"></path>
-              <path d="M8.4 8.5h3.1M18.9 8.5h3.1M8.4 11.9h3.1M8.4 21.1h3.1" fill="none"></path>
+              <rect x="4.8" y="4.8" width="9.6" height="9.6" rx="2"></rect>
+              <rect x="17.6" y="4.8" width="9.6" height="9.6" rx="2"></rect>
+              <rect x="4.8" y="17.6" width="9.6" height="9.6" rx="2"></rect>
+              <rect x="21" y="21" width="4" height="4" rx="0.8"></rect>
             </svg>
           </div>
           <div class="feature-meta">
@@ -548,7 +553,6 @@
             <svg viewBox="0 0 32 32" aria-hidden="true">
               <rect x="6" y="7" width="20" height="17" rx="3.2"></rect>
               <path d="M9 22l4-5 3 2.4 5-6 2 3.1" fill="none"></path>
-              <path d="M9 25.5h14" fill="none"></path>
               <path d="M10.5 11.2h1.7M15.5 11.2h1.7M20.5 11.2h1.7" fill="none"></path>
             </svg>
           </div>
