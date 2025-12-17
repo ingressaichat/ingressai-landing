@@ -153,14 +153,10 @@
 
   function buildWhatsAppUrl(ev) {
     const phone = onlyDigits(ev.whatsapp || '5534999992747') || '5534999992747';
-    const id = getEventId(ev) || '';
     const qty = 1;
     const eventName = ev.title || ev.name || 'evento';
     const friendly = `Oi! Quero comprar ${qty === 1 ? '1 ingresso' : qty + ' ingressos'} para ${eventName} com a IngressAI.`;
-    const autoStart = id
-      ? `\ningressai:start ev=${id} qty=${qty} autopay=1`
-      : '';
-    const text = friendly + autoStart;
+    const text = friendly;
     return `https://wa.me/${encodeURIComponent(
       phone
     )}?text=${encodeURIComponent(text)}`;
