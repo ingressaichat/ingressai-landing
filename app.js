@@ -1,5 +1,5 @@
 // app.js — IngressAI landing
-// v=2025-12-14-featurecards
+// v=2025-12-19-wa-text
 // - Corrige fechamento de renderChips()
 // - Remove referência inválida a `img` em buildSheetContent()
 // - Tratamento inteligente de proporção da mídia no card fechado (cover vs contain)
