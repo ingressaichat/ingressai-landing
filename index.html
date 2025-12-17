@@ -298,7 +298,7 @@
     .status--sold{color:#6b7280}
     .card-media{width:100%;aspect-ratio:var(--phi);border-radius:calc(var(--s1));border:1px solid #eaf1ff;background:
       radial-gradient(600px 280px at 20% 0%,rgba(47,125,217,.12),transparent 60%),
-      linear-gradient(180deg,#fff,#f5f9ff);display:grid;place-items:center;color:#8fb5ff;font-weight:800;overflow:hidden;position:relative}
+      linear-gradient(180deg,#fff,#f5f9ff);display:grid;place-items:center;color:#8fb5ff;font-weight:800;overflow:hidden;position:relative;padding:0}
     .card-media img{width:100%;height:100%;object-fit:cover;object-position:center center;border-radius:inherit;display:block}
     .skeleton{position:relative;overflow:hidden;background:linear-gradient(90deg,#eef3ff 0%,#f6f8ff 40%,#eef3ff 80%);background-size:200% 100%;animation:s 1.4s infinite ease}
     @keyframes s{0%{background-position:200% 0}100%{background-position:-200% 0}}
@@ -326,8 +326,10 @@
       flex-direction:column;
       padding:var(--s2);
       z-index:45;
-      overscroll-behavior:contain;
+      overscroll-behavior-y:contain;
+      overscroll-behavior-x:none;
       touch-action:pan-y;
+      overflow:hidden;
       contain:layout paint;
       -webkit-overflow-scrolling:touch;
     }
@@ -341,19 +343,36 @@
     .sheet.is-open{transform:translate3d(0,0,0)}
     .sheet h3{margin:0;font-weight:900;line-height:1.2}
     .sheet .sheet-body{
-      overflow:auto;
+      overflow-y:auto;
+      overflow-x:hidden;
       display:flex;
       flex-direction:column;
       gap:10px;
       padding-right:4px;
       padding-bottom:calc(20px + env(safe-area-inset-bottom));
       -webkit-overflow-scrolling:touch;
-      overscroll-behavior:contain;
+      overscroll-behavior-y:contain;
+      overscroll-behavior-x:none;
+      touch-action:pan-y;
     }
     .sheet-media{width:100%;aspect-ratio:var(--phi);border:1px solid #eaf1ff;border-radius:16px;background:
       radial-gradient(600px 280px at 20% 0%,rgba(47,125,217,.12),transparent 60%),
-      linear-gradient(180deg,#fff,#f5f9ff);margin-top:var(--s0);margin-bottom:var(--s1);overflow:hidden;display:block}
-    .sheet-media img{width:100%;height:100%;object-fit:cover;object-position:center center;display:block}
+      linear-gradient(180deg,#fff,#f5f9ff);margin-top:var(--s0);margin-bottom:var(--s1);overflow:hidden;display:block;padding:0}
+    .sheet-media img{width:100%;height:100%;object-fit:cover;object-position:center center;display:block;border-radius:inherit}
+    .media-fit-contain img{object-fit:contain}
+    .media-fit-padded{padding:clamp(8px,1.8vw,16px)}
+    .card-media.media-fit-contain,
+    .sheet-media.media-fit-contain{
+      background:
+        radial-gradient(600px 280px at 20% 0%,rgba(47,125,217,.08),transparent 60%),
+        linear-gradient(180deg,#fff,#f6f9ff);
+    }
+    .card-media.media-fit-padded,
+    .sheet-media.media-fit-padded{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
 
     .sheet-close{
       position:fixed;
