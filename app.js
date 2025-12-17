@@ -102,14 +102,24 @@
     if (!w || !h) return;
 
     const ratio = h ? w / h : 1;
-    const shouldContain = ratio < 0.85 || ratio > 1.85;
-    const needsPadding = ratio < 0.7 || ratio > 2.2;
+    const shouldContain = ratio < 0.95 || ratio > 1.85;
+    const needsPadding = ratio < 0.78 || ratio > 2.1;
 
     mediaEl.classList.remove('media-fit-contain', 'media-fit-padded');
+    mediaEl.style.removeProperty('--media-ratio');
+    if (imgEl && imgEl.style) {
+      imgEl.style.objectFit = 'cover';
+      imgEl.style.objectPosition = 'center center';
+    }
 
     if (shouldContain) {
       mediaEl.classList.add('media-fit-contain');
       if (needsPadding) mediaEl.classList.add('media-fit-padded');
+      const ratioClamped = Math.max(0.45, Math.min(ratio, 2.8));
+      mediaEl.style.setProperty('--media-ratio', ratioClamped.toFixed(3));
+      if (imgEl && imgEl.style) {
+        imgEl.style.objectFit = 'contain';
+      }
     }
   }
 
@@ -144,7 +154,13 @@
   function buildWhatsAppUrl(ev) {
     const phone = onlyDigits(ev.whatsapp || '5534999992747') || '5534999992747';
     const id = getEventId(ev) || '';
-    const text = `ingressai:start ev=${id} qty=1 autopay=1`;
+    const qty = 1;
+    const eventName = ev.title || ev.name || 'evento';
+    const friendly = `Oi! Quero comprar ${qty === 1 ? '1 ingresso' : qty + ' ingressos'} para ${eventName} com a IngressAI.`;
+    const autoStart = id
+      ? `\ningressai:start ev=${id} qty=${qty} autopay=1`
+      : '';
+    const text = friendly + autoStart;
     return `https://wa.me/${encodeURIComponent(
       phone
     )}?text=${encodeURIComponent(text)}`;
@@ -525,13 +541,11 @@
     buyBtn.href = waUrl;
     buyBtn.target = '_blank';
     buyBtn.rel = 'noopener noreferrer';
-    const eventName = ev.title || ev.name || 'evento';
-    const qty = 1;
-    const unitLabel = qty === 1 ? 'ingresso' : 'ingressos';
-    const buyLabel = `${eventName} · ${qty} ${unitLabel}`;
     const buySpan = document.createElement('span');
-    buySpan.textContent = buyLabel;
+    buySpan.textContent = 'Comprar no WhatsApp';
     buyBtn.appendChild(buySpan);
+    const buyLabel = ev.title || ev.name ? `Comprar no WhatsApp para ${ev.title || ev.name}` : 'Comprar no WhatsApp';
+    buyBtn.setAttribute('aria-label', buyLabel);
     buyBtn.insertAdjacentHTML(
       'beforeend',
       '<svg viewBox="0 0 24 24" aria-hidden="true">' +
@@ -652,6 +666,7 @@
         img.addEventListener('error', () => {
           // se a imagem real falhar, cai pro placeholder
           media.innerHTML = '';
+          media.style.removeProperty('--media-ratio');
           const ph = document.createElement('img');
           ph.src = placeholderData;
           ph.alt = 'Imagem do evento ainda não cadastrada';
@@ -665,6 +680,7 @@
 
         media.appendChild(img);
       } else {
+        media.style.removeProperty('--media-ratio');
         const img = document.createElement('img');
         img.src = placeholderData;
         img.alt = 'Imagem do evento ainda não cadastrada';
