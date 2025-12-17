@@ -95,6 +95,24 @@
     return normalizeImageUrl(img);
   }
 
+  function updateMediaFit(mediaEl, imgEl) {
+    if (!mediaEl || !imgEl) return;
+    const w = imgEl.naturalWidth || 0;
+    const h = imgEl.naturalHeight || 0;
+    if (!w || !h) return;
+
+    const ratio = h ? w / h : 1;
+    const shouldContain = ratio < 0.85 || ratio > 1.85;
+    const needsPadding = ratio < 0.7 || ratio > 2.2;
+
+    mediaEl.classList.remove('media-fit-contain', 'media-fit-padded');
+
+    if (shouldContain) {
+      mediaEl.classList.add('media-fit-contain');
+      if (needsPadding) mediaEl.classList.add('media-fit-padded');
+    }
+  }
+
   function onlyDigits(s) {
     return String(s || '').replace(/[^\d]/g, '');
   }
@@ -447,8 +465,15 @@
       img.alt = `Imagem do evento ${ev.title || ev.name || ''}`;
       img.loading = 'lazy';
       img.decoding = 'async';
-      img.style.objectFit = 'cover';
-      img.addEventListener('load', () => media.classList.remove('skeleton'));
+      const handleLoad = () => {
+        media.classList.remove('skeleton');
+        updateMediaFit(media, img);
+      };
+      if (img.complete && img.naturalWidth) {
+        handleLoad();
+      } else {
+        img.addEventListener('load', handleLoad, { once: true });
+      }
       img.addEventListener('error', () => media.classList.remove('skeleton'));
       media.appendChild(img);
       wrap.appendChild(media);
@@ -500,11 +525,19 @@
     buyBtn.href = waUrl;
     buyBtn.target = '_blank';
     buyBtn.rel = 'noopener noreferrer';
-    buyBtn.innerHTML =
-      '<span>Comprar no WhatsApp</span>' +
+    const eventName = ev.title || ev.name || 'evento';
+    const qty = 1;
+    const unitLabel = qty === 1 ? 'ingresso' : 'ingressos';
+    const buyLabel = `${eventName} · ${qty} ${unitLabel}`;
+    const buySpan = document.createElement('span');
+    buySpan.textContent = buyLabel;
+    buyBtn.appendChild(buySpan);
+    buyBtn.insertAdjacentHTML(
+      'beforeend',
       '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-      '<path d="M5 12h11M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' +
-      '</svg>';
+        '<path d="M5 12h11M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' +
+        '</svg>'
+    );
     btnRow.appendChild(buyBtn);
 
     const shareLink = document.createElement('button');
@@ -606,32 +639,15 @@
         img.alt = `Imagem do evento ${ev.title || ev.name || ''}`;
         img.loading = 'lazy';
         img.decoding = 'async';
-        img.style.width = '100%';
-        img.style.height = '100%';
-        img.style.objectFit = 'cover';
-        img.style.objectPosition = 'center center';
-
-        img.addEventListener('load', () => {
+        const handleLoad = () => {
           media.classList.remove('skeleton');
-          // escolhe cover x contain baseado na proporção real da arte
-          try {
-            const w = img.naturalWidth || 0;
-            const h = img.naturalHeight || 0;
-            const ratio = h > 0 ? w / h : 0;
-
-            // ~16:9 → cover bonito; muito quadrado/vertical → contain com respiro
-            if (ratio && ratio > 1.3 && ratio < 2.1) {
-              img.style.objectFit = 'cover';
-              img.style.padding = '0';
-            } else {
-              img.style.objectFit = 'contain';
-              img.style.padding = '16px';
-            }
-          } catch (e) {
-            // se der qualquer erro, mantém cover padrão
-            img.style.objectFit = 'cover';
-          }
-        });
+          updateMediaFit(media, img);
+        };
+        if (img.complete && img.naturalWidth) {
+          handleLoad();
+        } else {
+          img.addEventListener('load', handleLoad, { once: true });
+        }
 
         img.addEventListener('error', () => {
           // se a imagem real falhar, cai pro placeholder
@@ -641,15 +657,9 @@
           ph.alt = 'Imagem do evento ainda não cadastrada';
           ph.loading = 'lazy';
           ph.decoding = 'async';
-          ph.style.width = '100%';
-          ph.style.height = '100%';
-          ph.style.objectFit = 'contain';
-          ph.style.objectPosition = 'center center';
-          ph.style.padding = '16px';
-          ph.addEventListener('load', () =>
-            media.classList.remove('skeleton')
-          );
+          ph.addEventListener('load', () => media.classList.remove('skeleton'));
           media.appendChild(ph);
+          media.classList.add('media-fit-contain', 'media-fit-padded');
           isPlaceholder = true;
         });
 
@@ -660,13 +670,9 @@
         img.alt = 'Imagem do evento ainda não cadastrada';
         img.loading = 'lazy';
         img.decoding = 'async';
-        img.style.width = '100%';
-        img.style.height = '100%';
-        img.style.objectFit = 'contain';
-        img.style.objectPosition = 'center center';
-        img.style.padding = '16px';
         img.addEventListener('load', () => media.classList.remove('skeleton'));
         media.appendChild(img);
+        media.classList.add('media-fit-contain', 'media-fit-padded');
         isPlaceholder = true;
       }
 
