@@ -171,17 +171,17 @@
 
     .proofs{padding:calc(var(--s3)/var(--phi)) 0 calc(var(--s3))}
     .features{
-      display:grid;
-      grid-template-columns:repeat(2,minmax(0,1fr));
-      gap:calc(var(--s1)*var(--phi)/2);
+      display:flex;
+      gap:calc(var(--s1)*var(--phi)/2.4);
       margin:0 auto;
-      max-width:calc(360px * var(--phi));
+      max-width:calc(420px * var(--phi));
     }
-    @media(min-width:900px){
-      .features{
-        max-width:calc(420px * var(--phi));
-        gap:calc(var(--s1)*var(--phi)/1.5);
-      }
+    .feature-col{
+      flex:1;
+      min-width:0;
+      display:flex;
+      flex-direction:column;
+      gap:calc(var(--s1)/var(--phi));
     }
     .feature{
       background:linear-gradient(160deg,rgba(255,255,255,.98),rgba(243,244,248,.9));
@@ -543,65 +543,69 @@
     <section class="proofs" aria-labelledby="proofs-title">
       <h2 id="proofs-title" class="sr-only">Provas de valor</h2>
       <div class="features" aria-label="Provas">
-        <article class="feature" data-feature="automation" role="button" tabindex="0" aria-expanded="false">
-          <div class="feature-icon">
-            <svg viewBox="0 0 32 32" aria-hidden="true">
-              <path d="M4.5 8.5C4.5 6.6 6.1 5 8 5h16c1.9 0 3.5 1.6 3.5 3.5v6.5c0 1.9-1.6 3.5-3.5 3.5h-6.2l-4.3 4.3v-4.3H8c-1.9 0-3.5-1.6-3.5-3.5V8.5z" fill="none"></path>
-              <path d="M16.2 9.3l-1.6 2.6h2.3l-.9 2.8 2.6-3.4h-1.8l.8-2" stroke-width="1.2"></path>
-            </svg>
-          </div>
-          <div class="feature-meta">
-            <strong>Venda automatizada</strong>
-            <small>via WhatsApp</small>
-          </div>
-          <p class="feature-extra">Venda seus ingressos de forma automatizada, ao publicar seu evento os ingressos podem ser comprados em poucos cliques.</p>
-          <span class="feature-chevron" aria-hidden="true"></span>
-        </article>
-        <article class="feature" data-feature="pix" role="button" tabindex="0" aria-expanded="false">
-          <div class="feature-icon">
-            <svg viewBox="0 0 32 32" aria-hidden="true">
-              <path d="M16 6.2 26 16 16 25.8 6 16 16 6.2z" fill="none"></path>
-              <path d="M10 11l6 5-6 5M22 11l-6 5 6 5" fill="none"></path>
-            </svg>
-          </div>
-          <div class="feature-meta">
-            <strong>Repasse imediato</strong>
-            <small>via Pix</small>
-          </div>
-          <p class="feature-extra">Os pagamentos recebidos são repassados via Pix na chave cadastrada do seu evento, após a confirmação de pagamento o repasse é feito instantaneamente.</p>
-          <span class="feature-chevron" aria-hidden="true"></span>
-        </article>
-        <article class="feature" data-feature="qr" role="button" tabindex="0" aria-expanded="false">
-          <div class="feature-icon">
-            <svg viewBox="0 0 32 32" aria-hidden="true">
-              <rect x="4.8" y="4.8" width="9.6" height="9.6" rx="2"></rect>
-              <rect x="17.6" y="4.8" width="9.6" height="9.6" rx="2"></rect>
-              <rect x="4.8" y="17.6" width="9.6" height="9.6" rx="2"></rect>
-              <rect x="21" y="21" width="4" height="4" rx="0.8"></rect>
-            </svg>
-          </div>
-          <div class="feature-meta">
-            <strong>QR Code antifraude</strong>
-            <small>Validação oficial</small>
-          </div>
-          <p class="feature-extra">Tenha acesso ao validador web que garante a veracidade dos ingressos e tenha controle dos ingressos validados e cancelados.</p>
-          <span class="feature-chevron" aria-hidden="true"></span>
-        </article>
-        <article class="feature" data-feature="dashboard" role="button" tabindex="0" aria-expanded="false">
-          <div class="feature-icon">
-            <svg viewBox="0 0 32 32" aria-hidden="true">
-              <rect x="6" y="7" width="20" height="17" rx="3.2"></rect>
-              <path d="M9 22l4-5 3 2.4 5-6 2 3.1" fill="none"></path>
-              <path d="M10.5 11.2h1.7M15.5 11.2h1.7M20.5 11.2h1.7" fill="none"></path>
-            </svg>
-          </div>
-          <div class="feature-meta">
-            <strong>Dashboard</strong>
-            <small>Gestão no WhatsApp</small>
-          </div>
-          <p class="feature-extra">Acesso ao dashboard via WhatsApp. Emita ingressos, envie mensagens aos compradores e tenha controle sobre as vendas e pagamentos com relatórios emitidos em PDF.</p>
-          <span class="feature-chevron" aria-hidden="true"></span>
-        </article>
+        <div class="feature-col">
+          <article class="feature" data-feature="automation" role="button" tabindex="0" aria-expanded="false">
+            <div class="feature-icon">
+              <svg viewBox="0 0 32 32" aria-hidden="true">
+                <path d="M4.5 8.5C4.5 6.6 6.1 5 8 5h16c1.9 0 3.5 1.6 3.5 3.5v6.5c0 1.9-1.6 3.5-3.5 3.5h-6.2l-4.3 4.3v-4.3H8c-1.9 0-3.5-1.6-3.5-3.5V8.5z" fill="none"></path>
+                <path d="M16.2 9.3l-1.6 2.6h2.3l-.9 2.8 2.6-3.4h-1.8l.8-2" stroke-width="1.2"></path>
+              </svg>
+            </div>
+            <div class="feature-meta">
+              <strong>Venda automatizada</strong>
+              <small>via WhatsApp</small>
+            </div>
+            <p class="feature-extra">Venda seus ingressos de forma automatizada, ao publicar seu evento os ingressos podem ser comprados em poucos cliques.</p>
+            <span class="feature-chevron" aria-hidden="true"></span>
+          </article>
+          <article class="feature" data-feature="qr" role="button" tabindex="0" aria-expanded="false">
+            <div class="feature-icon">
+              <svg viewBox="0 0 32 32" aria-hidden="true">
+                <rect x="4.8" y="4.8" width="9.6" height="9.6" rx="2"></rect>
+                <rect x="17.6" y="4.8" width="9.6" height="9.6" rx="2"></rect>
+                <rect x="4.8" y="17.6" width="9.6" height="9.6" rx="2"></rect>
+                <rect x="21" y="21" width="4" height="4" rx="0.8"></rect>
+              </svg>
+            </div>
+            <div class="feature-meta">
+              <strong>QR Code antifraude</strong>
+              <small>Validação oficial</small>
+            </div>
+            <p class="feature-extra">Tenha acesso ao validador web que garante a veracidade dos ingressos e tenha controle dos ingressos validados e cancelados.</p>
+            <span class="feature-chevron" aria-hidden="true"></span>
+          </article>
+        </div>
+        <div class="feature-col">
+          <article class="feature" data-feature="pix" role="button" tabindex="0" aria-expanded="false">
+            <div class="feature-icon">
+              <svg viewBox="0 0 32 32" aria-hidden="true">
+                <path d="M16 6.2 26 16 16 25.8 6 16 16 6.2z" fill="none"></path>
+                <path d="M10 11l6 5-6 5M22 11l-6 5 6 5" fill="none"></path>
+              </svg>
+            </div>
+            <div class="feature-meta">
+              <strong>Repasse imediato</strong>
+              <small>via Pix</small>
+            </div>
+            <p class="feature-extra">Os pagamentos recebidos são repassados via Pix na chave cadastrada do seu evento, após a confirmação de pagamento o repasse é feito instantaneamente.</p>
+            <span class="feature-chevron" aria-hidden="true"></span>
+          </article>
+          <article class="feature" data-feature="dashboard" role="button" tabindex="0" aria-expanded="false">
+            <div class="feature-icon">
+              <svg viewBox="0 0 32 32" aria-hidden="true">
+                <rect x="6" y="7" width="20" height="17" rx="3.2"></rect>
+                <path d="M9 22l4-5 3 2.4 5-6 2 3.1" fill="none"></path>
+                <path d="M10.5 11.2h1.7M15.5 11.2h1.7M20.5 11.2h1.7" fill="none"></path>
+              </svg>
+            </div>
+            <div class="feature-meta">
+              <strong>Dashboard</strong>
+              <small>Gestão no WhatsApp</small>
+            </div>
+            <p class="feature-extra">Acesso ao dashboard via WhatsApp. Emita ingressos, envie mensagens aos compradores e tenha controle sobre as vendas e pagamentos com relatórios emitidos em PDF.</p>
+            <span class="feature-chevron" aria-hidden="true"></span>
+          </article>
+        </div>
       </div>
     </section>
 
