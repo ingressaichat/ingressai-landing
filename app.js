@@ -467,6 +467,7 @@
 
   function buildSheetContent(ev, imgUrl) {
     const wrap = document.createElement('div');
+    wrap.className = 'sheet-content';
 
     if (imgUrl) {
       const media = document.createElement('figure');
