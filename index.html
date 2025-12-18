@@ -109,7 +109,12 @@
 
     .hero{padding:calc(var(--s3)*1.25) 0;opacity:calc(1 - var(--hero-p,0));transform:translateY(calc(-6px * var(--hero-p,0)));transition:opacity var(--t-fast) linear,transform var(--t-fast) linear}
     @media(min-width:720px){.hero{padding:var(--s4) 0}}
-    .hero-cta{display:flex;justify-content:center;margin-top:calc(var(--s1)/var(--phi))}
+    .hero-cta{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      margin-top:calc(var(--s2)/1.1);
+    }
     .calc-highlight{transform:translateY(-4px);box-shadow:0 18px 44px rgba(47,125,217,.12);border-color:#d6e8ff}
     .hero.is-hidden{opacity:0;height:0;padding:0;margin:0;overflow:hidden}
     .hero h1{font-size:clamp(calc(1.25rem*var(--phi)),6.2vw,calc(1.25rem*var(--phi)*var(--phi)));line-height:var(--lh-compact);margin:0 0 var(--s2) 0;font-weight:850;text-align:center}
@@ -149,15 +154,15 @@
       min-height:42px;
       padding:0 calc(var(--s1)/1.25);
       border-radius:14px;
-      border:1px solid rgba(47,125,217,.28);
-      background:#fff;
-      color:#1d2f4b;
+      border:1px solid rgba(91,107,134,.3);
+      background:var(--bg);
+      color:#55637a;
       gap:10px;
       box-shadow:none;
       font-size:.94rem;
       font-weight:760;
     }
-    .btn--calc:hover{border-color:rgba(47,125,217,.45);color:#0f2952}
+    .btn--calc:hover{border-color:rgba(91,107,134,.45);color:#3b4658}
     .btn--calc:active{transform:scale(.99)}
     .calc-icon{
       width:32px;
