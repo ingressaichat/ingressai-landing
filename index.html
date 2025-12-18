@@ -145,29 +145,33 @@
     .btn--sm{min-height:44px;padding:0 var(--s1);font-size:.98rem}
     .btn--apple{background:rgba(255,255,255,.4);border-color:rgba(91,107,134,.2);box-shadow:none;color:#6f778d;font-weight:800}
     .btn--apple:hover{color:var(--ink);border-color:rgba(47,125,217,.28)}
-    .btn--calc{color:#6a7283}
-    .btn--calc:hover{color:#4d5666}
-    .btn-icon{
-      width:calc(var(--s1)*.9);
-      height:calc(var(--s1)*.9);
-      border-radius:12px;
-      background:rgba(47,125,217,.08);
-      border:1px solid rgba(47,125,217,.2);
+    .btn--calc{
+      min-height:42px;
+      padding:0 calc(var(--s1)/1.25);
+      border-radius:14px;
+      border:1px solid rgba(47,125,217,.28);
+      background:#fff;
+      color:#1d2f4b;
+      gap:10px;
+      box-shadow:none;
+      font-size:.94rem;
+      font-weight:760;
+    }
+    .btn--calc:hover{border-color:rgba(47,125,217,.45);color:#0f2952}
+    .btn--calc:active{transform:scale(.99)}
+    .calc-icon{
+      width:32px;
+      height:32px;
+      border-radius:10px;
+      border:1px solid rgba(47,125,217,.18);
+      background:linear-gradient(180deg,#fff,rgba(234,243,255,.9));
       display:inline-flex;
       align-items:center;
       justify-content:center;
-      color:var(--blue-2);
-      box-shadow:inset 0 0 0 1px rgba(255,255,255,.6);
+      color:#1B5FB3;
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.8);
     }
-    .btn-icon svg{
-      width:70%;
-      height:70%;
-      display:block;
-    }
-    .btn--calc .btn-icon{
-      background:linear-gradient(145deg,rgba(255,255,255,.9),rgba(235,243,255,.9));
-      border-color:rgba(47,125,217,.25);
-    }
+    .calc-icon svg{width:18px;height:18px;display:block}
 
     .proofs{padding:calc(var(--s3)/var(--phi)) 0 calc(var(--s3))}
     .features{
@@ -388,7 +392,7 @@
     }
     .sheet-media{width:100%;aspect-ratio:var(--media-ratio,var(--phi));border:1px solid #eaf1ff;border-radius:16px;background:
       radial-gradient(600px 280px at 20% 0%,rgba(47,125,217,.12),transparent 60%),
-      linear-gradient(180deg,#fff,#f5f9ff);margin-top:var(--s0);margin-bottom:var(--s1);overflow:hidden;display:grid;place-items:center;padding:0}
+      linear-gradient(180deg,#fff,#f5f9ff);margin-top:var(--s0);margin-bottom:var(--s1);margin-inline:auto;overflow:hidden;display:grid;place-items:center;padding:0}
     .sheet-media img{width:100%;height:100%;object-fit:cover;object-position:center center;display:block;border-radius:inherit}
     .media-fit-contain img{object-fit:contain;height:auto;max-height:100%}
     .card-media.media-fit-padded,
@@ -418,7 +422,23 @@
     .sheet-close:active{transform:scale(.98)}
 
     /* Ações minimalistas dentro do sheet */
-    .sheet-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:var(--s1)}
+    .sheet-content{
+      width:100%;
+      max-width:min(560px,calc(320px*var(--phi)));
+      margin:0 auto;
+      display:flex;
+      flex-direction:column;
+      gap:calc(var(--s0));
+      padding:0 calc(var(--s-1));
+    }
+    @media(min-width:640px){
+      .sheet-content{padding:0 calc(var(--s0))}
+    }
+    .sheet-content h3{margin-top:0;margin-bottom:2px;text-align:left}
+    .sheet-content p{margin:0}
+    .sheet-content .subtle{font-size:.92rem}
+
+    .sheet-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:var(--s1);justify-content:center}
     .sheet-btn{display:inline-flex;align-items:center;gap:6px;padding:.6rem 1rem;border-radius:16px;border:1px solid rgba(11,18,32,.08);background:rgba(247,248,251,.9);font-weight:700;font-size:.9rem;cursor:pointer;white-space:nowrap;box-shadow:none;color:#121a2b}
     .sheet-btn--primary{background:linear-gradient(135deg,#ffffff,#f6f7fb);border-color:rgba(11,18,32,.12)}
     .sheet-btn--ghost{background:rgba(255,255,255,.9);border-style:solid;color:#4a5b78}
@@ -524,14 +544,13 @@
       </div>
       <h1 id="hero-title">Crie eventos com a IngressAI.</h1>
         <div class="hero-cta">
-          <button id="calc-btn" type="button" class="btn btn--sm btn--apple btn--calc" aria-label="Abrir calculadora de lucros">
-            <span class="btn-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="4.5" y="3.5" width="15" height="17" rx="2.8"></rect>
-                <path d="M8 8h8"></path>
-                <path d="M8 12h0.6M10.3 12h0.6M12.6 12h0.6M14.9 12h0.6"></path>
-                <path d="M8 15.5h0.4M10.1 15.5h0.4M12.2 15.5h0.4M14.3 15.5h0.4"></path>
-                <path d="M17.2 15l1.6 1.6M18.8 15l-1.6 1.6"></path>
+          <button id="calc-btn" type="button" class="btn btn--calc" aria-label="Abrir calculadora de lucros">
+            <span class="calc-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="5" y="3.8" width="14" height="16.4" rx="3" />
+                <path d="M8.2 8h7.6" />
+                <path d="M8.2 11.8h0.01M11.8 11.8h0.01M15.4 11.8h0.01" />
+                <path d="M8.2 15.2h0.01M11.8 15.2h0.01M15.4 15.2h0.01" />
               </svg>
             </span>
             <span>Calcule os lucros</span>
